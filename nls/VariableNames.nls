@@ -8,16 +8,68 @@ globals [
   night? ;; nightime
   dataset ;; Penobscot Model Domain
   velocity-data ;; velocity file data
-  depth-data ;; depth velocity data
-  neighbor-patches ;; neighbors for missing data
+  depth-data ;; depth data
+  salinity-data ;; salinity data
+  SSC-data ;; Suspended Sediments data
+  tide-phase ;; tracks tidal phase
   ]
 
 patches-own [ 
   patchtype ;; defines location of patch within simulatied environment
   location ;; defines main river stem
   patch-terrain ;; defines terrain of patch
-  velocity ;; depth-averaged velocity 
-  depth ;; water-level
+  velocity ;; records values of depth-averaged velocity in patch
+  depth ;; records water level of patch
+  salinity ;; records levels of salinity in patch
+  SSC ;; records levels of suspended sediment concentration in patch
   interpolated-patch? ;; was data interpolated for this area
   target-patch? ;; data needs interpolation
+  prey-eaten-in-patch ;; records number of prey eaten in patch
+  spawning-events-in-patch ;; records number of spawning events in patch
 ]
+
+Alewives-own [
+  age ;; set age of fish
+  sex ;; defines sex of fish
+  min-speed ;; species lower limit of speed
+  max-speed ;; species upper limit of speed
+  speed ;; distance to swim on tick
+  schoolmates ;; agentset of nearby prey fish
+  nearest-neighbor  ;; closest one of schoolmates
+  minimum-separation ;; minimum separation distance for schooling
+  align-coefficient ;; align coefficient for schooling
+  cohere-coefficient ;; align coefficient for schooling
+  separate-coefficient ;; separation coefficient for schooling
+]
+
+StripedBass-own [
+  age ;; set age of fish
+  sex ;; defines sex of fish
+  min-speed ;; species lower limit of speed
+  max-speed ;; species upper limit of speed
+  speed ;; distance to swim on tick
+  schoolmates  ;; agentset of nearby prey fish
+  nearest-neighbor  ;; closest one of schoolmates
+  minimum-separation ;; minimum separation distance for schooling
+  align-coefficient ;; align coefficient for schooling
+  cohere-coefficient ;; cohere coefficient for schooling
+  separate-coefficient ;; separation coefficient for schooling
+]
+
+Shortnose-own [
+  age ;; set age of fish
+  sex ;; defines sex of fish
+  min-speed ;; species lower limit of speed
+  max-speed ;; species upper limit of speed
+  speed ;; distance to swim on tick
+  schoolmates  ;; agentset of nearby prey fish
+  nearest-neighbor  ;; closest one of schoolmates
+  minimum-separation ;; minimum separation distance for schooling
+  align-coefficient ;; align coefficient for schooling
+  cohere-coefficient ;; cohere coefficient for schooling
+  separate-coefficient ;; separation coefficient for schooling
+]
+
+breed [alewives prey] ;; defines alewives as prey
+breed [stripedbass predator] ;; defines striped bass as predator
+breed [shortnose forager] ;; defines shortnose sturgeon as forager

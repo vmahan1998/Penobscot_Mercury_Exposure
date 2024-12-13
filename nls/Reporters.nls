@@ -1,0 +1,29 @@
+to-report average-schoolmate-heading  ;; prey procedure, borrowed from orignal flocking model, used for align
+  let x-component sum [dx] of schoolmates
+  let y-component sum [dy] of schoolmates
+  ifelse x-component = 0 and y-component = 0
+    [ report heading ]
+  [ report atan x-component y-component ]
+end
+
+to-report average-heading-towards-schoolmates
+  let schoolmates-list other turtles with [self != myself] ; Exclude the current turtle from the list of schoolmates
+
+  ifelse any? schoolmates-list [
+    let avg-heading mean [heading] of schoolmates-list
+    report avg-heading
+  ] [
+    ; If there are no schoolmates, return a default heading (e.g., 0)
+    report 0
+  ]
+end
+
+to-report tidal-phase
+  if 0.75 * count patches with [patchtype = "sea" and velocity > 0] > count patches with [patchtype = "sea"] [
+    report "ebb"
+  ]
+  
+  if 0.75 * count patches with [patchtype = "sea" and velocity <= 0] > count patches with [patchtype = "sea"] [
+    report "flood"
+  ]
+end

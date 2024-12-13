@@ -1,0 +1,10 @@
+;;; SEPARATE
+
+to separate  ;; turtle procedure
+  ifelse member? nearest-neighbor schoolmates in-cone minimum-separation 60 ;; if nearest is in front, slow down, else turn to avoid
+  [ if speed > min-speed
+    [ set speed speed - .1 ]
+  ]
+  [ rt (separate-coefficient / 100) * (subtract-headings heading (towards nearest-neighbor)) ;; turns a fraction towards the direction facing directly away from nearest neighbor
+  ]
+end

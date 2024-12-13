@@ -1,0 +1,28 @@
+to setup-alewives
+ create-alewives initial-alewives ; create striped bass
+  [
+    let migration-patch one-of patches with [patchtype = "sea"]
+    if migration-patch != nobody [
+      move-to migration-patch
+    ]
+    
+ set align-coefficient 50
+ set cohere-coefficient 50
+ set separate-coefficient 50
+ set minimum-separation 0.5
+ set size 1
+ set color black
+ set age "adult"
+ set speed 3
+ set min-speed 0.2 ;; species limit
+ set max-speed 5.0 ;; species limit 
+ ;;assign gender to fish
+ ifelse random-float 1 < 0.5 [
+ set sex "male"
+ ;set numMales numMales + 1
+  ] [
+ set sex "female"
+ ;set numFemales numFemales + 1
+    ]
+  ]
+end

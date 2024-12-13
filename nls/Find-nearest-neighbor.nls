@@ -1,0 +1,3 @@
+to find-nearest-neighbor ;; prey procedure
+  set nearest-neighbor min-one-of schoolmates [distance myself]
+end

@@ -1,0 +1,18 @@
+to school  ;; prey procedure
+  find-schoolmates
+  if any? schoolmates
+    [
+      ;let target-patch one-of neighbors with [patch-terrain = "water"]
+      ;if target-patch != nobody [
+      find-nearest-neighbor
+      ;if distance nearest-neighbor = 0.00000 [ die ] ;; bug patch- removes duplicates to fix crash due to same point netlogo error
+      ifelse distance nearest-neighbor < minimum-separation ;; see BOIDS paper for schooling basics (separate, align, cohere)
+      [ separate ]
+      [ cohere
+        align ]
+      adjust-alewife-speed  ;; adjust speed to stay in a school, can be though of as part of "cohere"
+;      
+;      move-to target-patch
+    ;]
+  ]
+end

@@ -1,0 +1,3 @@
+to find-schoolmates  ;; prey procedure
+  set schoolmates other alewives ;in-radius alewife-vision
+end

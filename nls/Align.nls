@@ -1,0 +1,5 @@
+;;; ALIGN
+
+to align  ;; turtle procedure
+  rt (align-coefficient / 100) * (subtract-headings average-schoolmate-heading heading) ;; asmpytotic approach to perfect alignment
+end

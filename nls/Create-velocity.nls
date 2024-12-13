@@ -24,4 +24,5 @@ to create-velocity
       ]
     ]
   ]
+  velocity-color
 end

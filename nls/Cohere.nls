@@ -1,0 +1,5 @@
+;;; COHERE
+
+to cohere  ;; prey procedure
+  rt (cohere-coefficient / 100) * (subtract-headings average-heading-towards-schoolmates heading) ;; asmptotic approach to center of pack, will never reach because of separate
+end

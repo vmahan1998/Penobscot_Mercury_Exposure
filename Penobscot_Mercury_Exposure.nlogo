@@ -12,35 +12,74 @@ __includes[
   "nls/Fill-Missing-Data.nls"
   "nls/Identify-Missing-Patches.nls"
   "nls/Velocity-Color.nls"
+  "nls/Schooling.nls"
+  "nls/Find-Schoolmates.nls"
+  "nls/Find-nearest-neighbor.nls"
+  "nls/Align.nls"
+  "nls/Cohere.nls"
+  "nls/Separate.nls"
+  "nls/Setup-Alewives.nls"
+  "nls/Setup-StripedBass.nls"
+  "nls/Setup-ShortnoseSturgeon.nls"
+  "nls/Adjust-Alewife-speed.nls"
+  "nls/Adjust-StripedBass-speed.nls"
+  "nls/Adjust-ShortnoseSturgeon-speed.nls"
+  "nls/Reporters.nls"
 ]
 
 to setup
-  clear-all ; reset variables
-  setup-GIS ; create map
+  clear-all ;; reset variables
+  setup-GIS ;; create map
   set velocity-data csv:from-file "inputs/velocity_px_py.csv"
   set depth-data csv:from-file "inputs/depth_px_py.csv"
-  set minute 0  ;; Initialize the minute variable as 0
-  set hour 0  ;; Initialize the hour variable as 0
+
+  ;; initialize variables
+  set minute 0 ;; Initialize the minute variable as 0
+  set hour 0 ;; Initialize the hour variable as 0
   set day starting-date ;; Initialize the day variable as 0
   set month "September" ;; Initialize the month variable as 0
   set monthnum 9 ;; Initialize the monthnum variable as 0
+
+  ;; hydrodynamic model data here (salinity & sediment)
   create-velocity ;; Initialize Velocity
   create-depth ;; Initialize Depth
-  ;; hydrodynamic model data here (salinity & sediment)
   identify-missing-patches ;; Identify patches needing interpolation
-  ;; initalize any other variables
-  reset-ticks ; Reset the tick counter
+
+  ;; agent setup
+  set-default-shape turtles "fish" ;; change default shape to fish
+  setup-alewives ;; initialize alewives
+  setup-stripedbass ;; initialize striped bass
+  setup-shortnose ;; initialize shortnose sturgeon
+
+  ;; initialize any other variables
+  reset-ticks ;; Reset the tick counter
 end
 
 to go
   calendar ;; Call the calendar procedure to update hour, day, and month
-  update-velocity ;; Call Modeled hourly depth-averaged Velocity
-  update-depth ;; call modeled hourly water-level
+  update-velocity ;; Call modeled hourly depth-averaged Velocity
+  update-depth ;; Call modeled hourly water-level
   if minute = 0 [ ;; interpolate patches every hour
     fill-missing-patches
   ]
+
   ;; behavior rules
-  tick ; Increment the tick counter
+  ask alewives with [age = "adult"] [
+    school
+    ;landward-migration
+  ]
+
+  ask stripedbass with [age = "adult"] [
+    school
+    ;landward-migration
+  ]
+
+  ask shortnose with [age = "adult"] [
+    school
+    ;landward-migration
+  ]
+
+  tick ;; Increment the tick counter
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -130,10 +169,55 @@ starting-date
 starting-date
 0
 266
-254.0
+260.0
 1
 1
 day of the year
+HORIZONTAL
+
+SLIDER
+28
+209
+200
+242
+initial-stripedbass
+initial-stripedbass
+0
+1000
+51.0
+1
+1
+fish
+HORIZONTAL
+
+SLIDER
+29
+162
+201
+195
+initial-alewives
+initial-alewives
+0
+10000
+52.0
+1
+1
+fish
+HORIZONTAL
+
+SLIDER
+29
+257
+201
+290
+initial-shortnose
+initial-shortnose
+0
+1000
+77.0
+1
+1
+NIL
 HORIZONTAL
 
 @#$#@#$#@
