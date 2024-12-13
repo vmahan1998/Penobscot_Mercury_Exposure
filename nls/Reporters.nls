@@ -19,11 +19,15 @@ to-report average-heading-towards-schoolmates
 end
 
 to-report tidal-phase
+  ;; Check conditions for tide phase
   if 0.75 * count patches with [patchtype = "sea" and velocity > 0] > count patches with [patchtype = "sea"] [
-    report "ebb"
-  ]
-  
-  if 0.75 * count patches with [patchtype = "sea" and velocity <= 0] > count patches with [patchtype = "sea"] [
     report "flood"
   ]
+  if 0.75 * count patches with [patchtype = "sea" and velocity <= 0] > count patches with [patchtype = "sea"] [
+    report "ebb"
+  ]
+
+  ;; Default case if none of the conditions match
+  report "unknown"
+  
 end

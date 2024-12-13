@@ -1,0 +1,7 @@
+to migrate-landward
+  ;; Check if the tidal phase is "flood"
+  print (word "Current tide phase: " tidal-phase)
+  if tidal-phase = "flood" [
+  
+  ]
+end

@@ -25,6 +25,8 @@ __includes[
   "nls/Adjust-StripedBass-speed.nls"
   "nls/Adjust-ShortnoseSturgeon-speed.nls"
   "nls/Reporters.nls"
+  "nls/Landward-Migration.nls"
+  "nls/Swim.nls"
 ]
 
 to setup
@@ -63,20 +65,28 @@ to go
     fill-missing-patches
   ]
 
-  ;; behavior rules
+  ;; potential behavioral rules
   ask alewives with [age = "adult"] [
-    school
-    ;landward-migration
+    school ;align, cohere, separate, separation minimum, schoolmates
+    ;migrate ;time, tidal-phase,  depth preference
+    ;flee-predators ;distance to nearest predator, energy, swim speed
+    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+    ;spawning ; potential spawning encounters
   ]
 
   ask stripedbass with [age = "adult"] [
-    school
-    ;landward-migration
+    school ;align, cohere, separate, separation minimum, schoolmates
+    ;migrate ;time, tidal-phase, depth preference
+    ;prey-on-alewives ;; stomach capacity, energy, swim speed
+    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
   ]
 
   ask shortnose with [age = "adult"] [
-    school
-    ;landward-migration
+    school ;align, cohere, separate, separation minimum, schoolmates,
+    ;migrate ;time, tidal-phase, depth preference
+    ;forgage ;; energy, foraging time?, foraging source?, swim speed
+    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+    ;spawning ; potential spawning encounters
   ]
 
   tick ;; Increment the tick counter
@@ -199,7 +209,7 @@ initial-alewives
 initial-alewives
 0
 10000
-52.0
+54.0
 1
 1
 fish
@@ -214,7 +224,7 @@ initial-shortnose
 initial-shortnose
 0
 1000
-77.0
+84.0
 1
 1
 NIL
