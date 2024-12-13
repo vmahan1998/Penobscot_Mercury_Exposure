@@ -1,0 +1,22 @@
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Large input files
+inputs/hydrodynamic_velocity_time_data.csv
+inputs/hydrodynamic_salinity_time_data.csv
+inputs/hydrodynamic_depth_time_data.csv
+inputs/hydrodynamic_time_data.csv
+inputs/depth_px_py.csv
+inputs/velocity_px_py.csv
+
+# Ignore everything in outputs directory
+outputs/
+inputs/
+
+# General
+*.log       # Log files
+*.tmp       # Temporary files
+*.bak       # Backup files
+*.swp       # Swap files (e.g., from vim)
