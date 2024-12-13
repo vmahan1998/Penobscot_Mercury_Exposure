@@ -1,0 +1,26 @@
+to create-depth
+  let header first depth-data        ; Extract the header row (optional, if relevant)
+  let rows but-first depth-data      ; Exclude the header for actual data rows
+  
+  ; Iterate over each row of depth data
+  foreach rows [
+    row ->
+    let x item 0 row                  ; First column: X coordinate
+    let y item 1 row                  ; Second column: Y coordinate
+    
+    ; Assume depth data starts at column 3
+    let initial-depth abs item 2 row  ; Third column: Initial depth value (absolute value)
+    
+    ask patch x y [
+      set depth initial-depth         ; Set depth for the patch
+      
+      ; Optionally, assign terrain based on depth
+      if depth > 0 [
+        set patch-terrain "water"
+      ]
+      if depth = 0 [
+        set patch-terrain "land"
+      ]
+    ]
+  ]
+end

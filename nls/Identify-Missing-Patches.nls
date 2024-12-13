@@ -1,0 +1,14 @@
+to identify-missing-patches
+  ; Reset target-patch? for all patches
+  ask patches [
+    set target-patch? false
+  ]
+  
+  ; Identify missing patches
+  ask patches [
+    if (velocity = 0 or depth = 0 and location = "Penobscot") and any? patches in-radius 2 with [velocity != 0 or depth != 0] [
+      set target-patch? true
+      ;set pcolor yellow ; Optional: Highlight target patches for debugging
+    ]
+  ]
+end

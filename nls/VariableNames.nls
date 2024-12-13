@@ -1,0 +1,23 @@
+globals [
+  minute ;; records minute in hour
+  hour ;; records hour of day
+  day ;; records day of year
+  month ;; records month
+  monthnum ;; records number of month
+  year ;; records years
+  night? ;; nightime
+  dataset ;; Penobscot Model Domain
+  velocity-data ;; velocity file data
+  depth-data ;; depth velocity data
+  neighbor-patches ;; neighbors for missing data
+  ]
+
+patches-own [ 
+  patchtype ;; defines location of patch within simulatied environment
+  location ;; defines main river stem
+  patch-terrain ;; defines terrain of patch
+  velocity ;; depth-averaged velocity 
+  depth ;; water-level
+  interpolated-patch? ;; was data interpolated for this area
+  target-patch? ;; data needs interpolation
+]

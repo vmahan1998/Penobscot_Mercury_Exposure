@@ -1,0 +1,18 @@
+to velocity-color
+ ;; update map colors 
+   ask patches with [location = "Penobscot"] [
+    set pcolor blue
+    if velocity > 0 [ ;; downstream current
+        set pcolor blue 
+      ]
+      if velocity <= 0 [ ;; upstream current
+        set pcolor red
+      ]
+  ]
+  
+  ask patches with [location != "Penobscot"] [
+    set pcolor green
+    set patch-terrain "land"
+  ]
+  
+end

@@ -1,0 +1,49 @@
+to setup-GIS
+  resize-world 0 200 0 350
+  set-patch-size 3
+  ;let max-y max-pycor / 2
+  ;let common-crs "+proj=longlat +datum=WGS84"  ; Define your common CRS
+
+  let view1 gis:load-dataset "inputs/Upper_Penobscot_agg_pts.shp" ; Upper Penobscot
+  let view2 gis:load-dataset "inputs/Middle_Penobscot_agg_pts.shp" ; Middle Penobsct
+  let view3 gis:load-dataset "inputs/Lower_Penobscot_agg_pts.shp" ; Lower Penobscot
+  let view4 gis:load-dataset "inputs/Sea_Penobscot_agg_pts.shp" ; Sea Patches
+  
+  set dataset gis:load-dataset "inputs/studyarea_pts.shp"
+ 
+  gis:set-world-envelope gis:envelope-of dataset
+  
+  ask patches gis:intersecting view1 [ ;upper penobscot
+    ;set pcolor blue
+    set patchtype "upper estuary"
+    set location "Penobscot"
+    set patch-terrain "water"
+  ]
+  
+  ask patches gis:intersecting view2 [ ;middle penobscot
+    ;set pcolor blue
+    set patchtype "middle estuary"
+    set location "Penobscot"
+    set patch-terrain "water"
+  ]
+  
+  ask patches gis:intersecting view3 [ ;lower penobscot
+    ;set pcolor blue
+    set patchtype "lower estuary"
+    set location "Penobscot"
+    set patch-terrain "water"
+  ]
+  
+  ask patches gis:intersecting view4 [ ;sea
+    ;set pcolor blue
+    set patchtype "sea"
+    set location "Penobscot"
+    set patch-terrain "water"
+  ]
+  
+  ask patches with [patch-terrain != "water"] [
+    ;set pcolor green
+    ;set patch-terrain "land"
+  ]
+
+end

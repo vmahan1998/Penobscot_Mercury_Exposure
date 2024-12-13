@@ -1,0 +1,51 @@
+to fill-missing-patches
+; Interpolate only for pre-identified target patches
+  ask patches with [target-patch? = true] [
+    let radius 2
+    let potential-neighbors patches in-radius radius with [
+      (velocity != 0 or depth != 0)
+    ]
+    
+    while [count potential-neighbors < 5 and radius <= 10] [
+      set radius radius + 1
+      set potential-neighbors patches in-radius radius with [
+        (velocity != 0 or depth != 0)
+      ]
+    ]
+   ;show (word "Potential neighbors: " count potential-neighbors)
+
+    ; Sort potential neighbors by distance to the current patch
+    let sorted-neighbors sort-on [distance myself] potential-neighbors
+    
+    ; Select the closest 5 neighbors
+    let valid-neighbors n-of 5 sorted-neighbors
+    
+    ; Convert the list of valid neighbors to an agentset
+    let valid-neighbors-set patch-set valid-neighbors
+      
+    ; Check if the agentset is not empty
+    if any? valid-neighbors-set [
+    ; Calculate interpolated values using the agentset
+    let avg-velocity mean [velocity] of valid-neighbors-set
+    let avg-depth mean [depth] of valid-neighbors-set
+      
+      ; Assign interpolated values
+      set velocity avg-velocity
+      set depth avg-depth
+      
+      ; Update patch color
+      if velocity >= 0 [
+        ;set pcolor blue ;; check interpolation
+        set patch-terrain "water"
+      ]
+      if velocity < 0 [
+        ;set pcolor red ;; check interpolation
+        set patch-terrain "water"
+      ]
+      
+      ; Optional: Remove target-patch? if interpolation is completed
+      set interpolated-patch? true
+    ]
+  ]
+  velocity-color
+end
