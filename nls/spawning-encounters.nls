@@ -1,0 +1,58 @@
+to count-spawning-encounters
+  ask alewives with [sex = "female"] [
+    if patchtype = "pond" and any? other alewives-here with [sex = "male" and spawning-encounters < limit-alewife-spawning-encounters and daytime-spawning-encounters < 1] [
+      let male-partner one-of other alewives-here with [sex = "male" and spawning-encounters < limit-alewife-spawning-encounters and daytime-spawning-encounters < 1]
+      if spawning-encounters < limit-alewife-spawning-encounters and daytime-spawning-encounters < 1 [ 
+      
+        ask male-partner [ ;; male partner count
+          set daytime-spawning-encounters daytime-spawning-encounters + 1
+          set spawning-encounters spawning-encounters + 1
+        ]
+        
+      set daytime-spawning-encounters daytime-spawning-encounters + 1
+      set spawning-encounters spawning-encounters + 1
+      set spawning-events-in-patch spawning-events-in-patch + 1
+      set net-spawning-encounters net-spawning-encounters + 1
+      ; Print the updated value of spawning-encounters for debugging
+      ;print (word "spawning-encounters after: " spawning-encounters)
+    ]
+  ]
+  ]
+end
+
+to reset-daytime-spawning-encounters
+  if time-since-spawning-encounters >= rest-between-spawning  [ ;ticks every 5 minutes but waits to spawn for 3 days (288 ticks per day X 3 day)
+    set daytime-spawning-encounters 0
+    set time-since-spawning-encounters 0 ]
+end
+
+to count-time-since-spawning-encounters ;; counts how long the fish needs to wait before spawning again
+  if daytime-spawning-encounters >= 1 [
+    set time-since-spawning-encounters time-since-spawning-encounters + 1
+  ]
+end
+
+to count-mean-spawning-encounters
+  ;print (word "START count-mean-spawning-encounters")  
+  ifelse any? alewives with [spawning-encounters > 0] [
+    set mean-spawning-encounters mean [spawning-encounters] of alewives
+    set mean-daily-spawning-encounters mean [daytime-spawning-encounters] of alewives
+    ;;output for spawning encounters
+  print (word "Cumulative Mean Spawning Encounters: " mean-spawning-encounters)
+  print (word "Mean Daily Spawning Encounters: " mean-daily-spawning-encounters)
+  ;print (word "END count-mean-spawning-encounters")n)
+  ] [
+    set mean-spawning-encounters 0
+    set mean-daily-spawning-encounters 0
+    print (word "Mean Spawning Encounters: " mean-spawning-encounters)
+    print (word "Mean Daily Spawning Encounters: " mean-daily-spawning-encounters)
+  ]
+end
+
+to highlight-patches-with-spawning-encounters
+  ask patches [
+    if spawning-events-in-patch != 0 [
+      set pcolor green ; You can choose any color you want to highlight the patches
+    ]
+  ]
+end

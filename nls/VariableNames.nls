@@ -12,6 +12,8 @@ globals [
   salinity-data ;; salinity data
   SSC-data ;; Suspended Sediments data
   tide-phase ;; tracks tidal phase
+  mean-daytime-prey-eaten ;; records mean number of daily prey eaten
+  numAlewivesEaten ;; records number of alewives eaten by Striped Bass
   ]
 
 patches-own [ 
@@ -36,10 +38,14 @@ Alewives-own [
   speed ;; distance to swim on tick
   schoolmates ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
-  minimum-separation ;; minimum separation distance for schooling
+  minimum-separation ;; minimum separation distance in patches for schooling
   align-coefficient ;; align coefficient for schooling
   cohere-coefficient ;; align coefficient for schooling
   separate-coefficient ;; separation coefficient for schooling
+  vision ;; sight in patches distance
+  energy ;; energy allowance
+  fleeing?  ;; boolean of whether or not prey is fleeing from predator
+  rest-time ;; time time in ticks to recoup energy (could be foraging for more energy)
 ]
 
 StripedBass-own [
@@ -50,10 +56,24 @@ StripedBass-own [
   speed ;; distance to swim on tick
   schoolmates  ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
-  minimum-separation ;; minimum separation distance for schooling
+  minimum-separation ;; minimum separation distance in patches for schooling
   align-coefficient ;; align coefficient for schooling
   cohere-coefficient ;; cohere coefficient for schooling
   separate-coefficient ;; separation coefficient for schooling
+  vision ;; sight distance in patches
+  energy ;; energy allowance
+  bursting?  ;; boolean of whether or not predator is bursting towards prey
+  rest-time  ;; time to recharge burst energy
+  predator-turn-coefficient ;; probability to turn towards prey in vision
+  prey-in-vision ;; prey within vision radius
+  nearest-prey ;; shortest distance prey
+  prey-in-front  ;; prey within 30 degree vision cone (used to determine bursting)
+  target  ;; nearest prey within a 30 degree vision cone 
+  daytime-prey-eaten ;; counts number of prey eaten by bass in single day
+  yearly-prey-eaten ;; counts number of prey eaten by bass in a single year
+  time-since-full ;; counts how long the fish needs to digest before eating again
+  limit-daily-prey-allowance ;; total prey allowance (may be dependent on size)
+  numAlewivesEaten ;; total alewives eaten
 ]
 
 Shortnose-own [
@@ -64,10 +84,13 @@ Shortnose-own [
   speed ;; distance to swim on tick
   schoolmates  ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
-  minimum-separation ;; minimum separation distance for schooling
+  minimum-separation ;; minimum separation distance in patches for schooling
   align-coefficient ;; align coefficient for schooling
   cohere-coefficient ;; cohere coefficient for schooling
   separate-coefficient ;; separation coefficient for schooling
+  vision ;; sight distance in patches
+  energy ;; energy allowance
+  rest-time ;; time in ticks to recoup energy (could be foraging for more energy)
 ]
 
 breed [alewives prey] ;; defines alewives as prey

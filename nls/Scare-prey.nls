@@ -1,0 +1,9 @@
+to scare-prey ;; predator procedure
+
+  scare-right  ;; prey on right side will flee right
+  rt 90
+  scare-left  ;; prey on left side will flee left
+  left 90
+  scare-down ;; prey underneath will flee down
+  right 180
+end

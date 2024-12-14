@@ -27,6 +27,15 @@ __includes[
   "nls/Reporters.nls"
   "nls/Landward-Migration.nls"
   "nls/Swim.nls"
+  "nls/flee-stripedbass.nls"
+  "nls/Eat.nls"
+  "nls/Chase-nearest-alewife.nls"
+  "nls/Scare-down.nls"
+  "nls/Scare-left.nls"
+  "nls/Scare-right.nls"
+  "nls/Scare-prey.nls"
+  "nls/Wander.nls"
+  "nls/Count-prey-eaten.nls"
 ]
 
 to setup
@@ -77,8 +86,21 @@ to go
   ask stripedbass with [age = "adult"] [
     school ;align, cohere, separate, separation minimum, schoolmates
     ;migrate ;time, tidal-phase, depth preference
-    ;prey-on-alewives ;; stomach capacity, energy, swim speed
     ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+
+    ;; prey on alewives
+    set prey-in-vision alewives in-radius vision ;; defines alewives in vision radius
+
+    ifelse any? prey-in-vision
+    [ chase-nearest-alewife ]  ;; point towards nearest prey in "nls/Chase-nearest-alewife.nls"
+    [ wander ] ;; wander if no prey in sight in "nls/Wander.nls"
+
+    adjust-stripedbass-speed  ;; predator will speed up when making an attack
+    scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
+    eat ;; eat prey if within neighbors in "nls/Eat.nls"
+    reset-daytime-prey-eaten ;; limit daily prey eaten
+    count-time-since-full ;; fish rests when full
+
   ]
 
   ask shortnose with [age = "adult"] [
@@ -93,10 +115,10 @@ to go
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-12
-821
-1074
+408
+10
+1019
+1072
 -1
 -1
 3.0
@@ -120,10 +142,10 @@ ticks
 60.0
 
 BUTTON
-12
-20
-109
-53
+214
+56
+311
+89
 Setup
 setup
 NIL
@@ -137,10 +159,10 @@ NIL
 1
 
 BUTTON
-120
-20
-183
-53
+322
+56
+385
+89
 Go
 go
 T
@@ -154,10 +176,10 @@ NIL
 1
 
 BUTTON
-121
-63
-184
-96
+323
+99
+386
+132
 Step
 go
 NIL
@@ -171,25 +193,25 @@ NIL
 1
 
 SLIDER
-4
-108
-202
-141
+188
+146
+386
+179
 starting-date
 starting-date
 0
 266
-260.0
+254.0
 1
 1
 day of the year
 HORIZONTAL
 
 SLIDER
-28
-209
-200
-242
+210
+279
+382
+312
 initial-stripedbass
 initial-stripedbass
 0
@@ -201,25 +223,25 @@ fish
 HORIZONTAL
 
 SLIDER
-29
-162
-201
-195
+211
+232
+383
+265
 initial-alewives
 initial-alewives
 0
 10000
-54.0
+55.0
 1
 1
 fish
 HORIZONTAL
 
 SLIDER
-29
-257
-201
-290
+211
+327
+383
+360
 initial-shortnose
 initial-shortnose
 0
@@ -227,8 +249,138 @@ initial-shortnose
 84.0
 1
 1
-NIL
+fish
 HORIZONTAL
+
+SLIDER
+131
+458
+381
+491
+initial-stripedbass-energy
+initial-stripedbass-energy
+0
+10
+5.0
+1
+1
+Energy Units
+HORIZONTAL
+
+SLIDER
+160
+408
+381
+441
+initial-alewife-energy
+initial-alewife-energy
+0
+10
+5.0
+1
+1
+Energy Units
+HORIZONTAL
+
+TEXTBOX
+260
+196
+410
+225
+Species
+24
+0.0
+1
+
+TEXTBOX
+259
+373
+409
+402
+Energy
+24
+0.0
+1
+
+SLIDER
+146
+508
+381
+541
+initial-shortnose-energy
+initial-shortnose-energy
+0
+10
+5.0
+1
+1
+Energy Units
+HORIZONTAL
+
+TEXTBOX
+234
+562
+384
+591
+Rest Time
+24
+0.0
+1
+
+SLIDER
+115
+599
+382
+632
+alewife-rest-time
+alewife-rest-time
+0
+1000
+50.0
+1
+1
+tick (1 tick = 5 minutes)
+HORIZONTAL
+
+SLIDER
+92
+649
+382
+682
+stripedbass-rest-time
+stripedbass-rest-time
+0
+1000
+157.0
+1
+1
+tick (1 tick = 5 minutes)
+HORIZONTAL
+
+SLIDER
+103
+699
+384
+732
+shortnose-rest-time
+shortnose-rest-time
+0
+1000
+50.0
+1
+1
+tick (1 tick = 5 minutes)
+HORIZONTAL
+
+TEXTBOX
+185
+19
+442
+77
+Initialize Simulation
+24
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?

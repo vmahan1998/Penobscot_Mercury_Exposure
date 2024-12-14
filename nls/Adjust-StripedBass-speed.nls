@@ -1,35 +1,29 @@
 to adjust-stripedbass-speed ;; predator procedure
-  ;set prey-in-front alewives in-cone stripedbass-vision 90 ;; find prey in front of predator (90 degrees)
+  set prey-in-front alewives in-cone vision 90 ;; find prey in front of predator (90 degrees)
 
-  ;ifelse any? prey-in-front and burst-energy > 0 ;; burst if there is a target and have energy
-  ;[ set bursting? true ]
-  ;[ set bursting? false ]
+  ifelse any? prey-in-front and energy > 0 ;; burst if there is a target and have energy
+  [ set bursting? true ]
+  [ set bursting? false ]
 
-  ;ifelse bursting?
-  ;[ if speed <= max-stripedbass-speed
-  ;  [ set speed speed + .3
-  ;    set burst-energy burst-energy - 1 ]
-   ; set time-until-rested burst-recharge-time
+  ifelse bursting?
+  [ if speed <= max-speed
+    [ set speed speed + .3
+      set energy energy - 1 ]
+    set rest-time stripedbass-rest-time
     ;set color green
-  ;]
+  ]
   
-  ;[ ;; not bursting
-  ;  set speed min-stripedbass-speed
-  ;  ;set color yellow
-  ;  if burst-energy < predator-burst-energy [ ;;if not bursting and energy less than limit fish is "resting"
-  ;   set time-until-rested time-until-rested - 1 
-  ;  ] ;; 
+  [ ;; not bursting
+    set speed min-speed
+    ;set color yellow
+    if energy < initial-stripedbass-energy [ ;;if not bursting and energy less than limit fish is "resting"
+     set rest-time rest-time - 1 
+    ] ;; 
     
-  ;  if time-until-rested <= 0 [
-   ;   set burst-energy predator-burst-energy
-   ; ] ;; reset bursting energy
+    if rest-time <= 0 [
+      set energy initial-stripedbass-energy
+    ] ;; reset bursting energy
     
-   ; 
-   ; ]  
+    
+    ]  
 end
-
-;to count-time-since-full ;; counts how long the fish needs to digest before eating again
-;  if daytime-prey-eaten = limit-daily-prey-allowance [
-;    set time-since-full time-since-full + 1
-;  ]
-;end

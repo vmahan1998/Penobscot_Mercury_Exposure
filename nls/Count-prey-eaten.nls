@@ -1,0 +1,34 @@
+to reset-daytime-prey-eaten
+  if time-since-full = 288  [ ;ticks every 5 minutes
+    set daytime-prey-eaten 0
+    set time-since-full 0 ]
+end
+
+to count-time-since-full ;; counts how long the fish needs to digest before eating again
+  if daytime-prey-eaten = limit-daily-prey-allowance [
+    set time-since-full time-since-full + 1
+  ]
+end
+
+to highlight-patches-with-prey-eaten
+  ask patches [
+    if prey-eaten-in-patch != 0 [
+      set pcolor red ; You can choose any color you want to highlight the patches
+    ]
+  ]
+end
+
+to count-mean-daytime-prey-eaten
+  ;print "Start count-mean-daytime-prey-eaten")
+  
+  ifelse any? stripedbass with [daytime-prey-eaten > 0] [
+    set mean-daytime-prey-eaten mean [daytime-prey-eaten] of stripedbass
+    
+    ;; Output
+    print (word "Mean Daily Prey Eaten: " mean-daytime-prey-eaten)
+  ] [
+    set mean-daytime-prey-eaten 0
+    print (word "Mean Daytime Prey Eaten: " mean-daytime-prey-eaten)
+  ]
+end
+
