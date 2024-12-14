@@ -13,8 +13,8 @@ __includes[
   ;"nls/Update-salinity.nls"
   ;"nls/Create-SSC.nls"
   ;"nls/Update-SSC.nls"
-  ;"nls/Create-Hg.nls"
-  ;"nls/Create-MeHg.nls"
+  "nls/Create-Hg.nls"
+  "nls/Create-MeHg.nls"
   "nls/Fill-Missing-Data.nls"
   "nls/Identify-Missing-Patches.nls"
   "nls/Velocity-Color.nls"
@@ -32,8 +32,8 @@ __includes[
   "nls/Adjust-ShortnoseSturgeon-speed.nls"
   "nls/Reporters.nls"
   "nls/Landward-Migration.nls"
-  ;"nls/Seaward-Migration.nls"
-  ;"nls/Migrate.nls"
+  "nls/Seaward-Migration.nls"
+  "nls/Migrate.nls"
   "nls/Swim.nls"
   "nls/flee-stripedbass.nls"
   "nls/Eat.nls"
@@ -44,6 +44,7 @@ __includes[
   "nls/Scare-prey.nls"
   "nls/Wander.nls"
   "nls/Count-prey-eaten.nls"
+  "nls/Prey-on-Alewives.nls"
   "nls/Mercury-Contamination.nls"
 ]
 
@@ -97,18 +98,6 @@ to go
     ;migrate ;time, tidal-phase, depth preference
     ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
 
-    ;; prey on alewives
-    set prey-in-vision alewives in-radius vision ;; defines alewives in vision radius
-
-    ifelse any? prey-in-vision
-    [ chase-nearest-alewife ]  ;; point towards nearest prey in "nls/Chase-nearest-alewife.nls"
-    [ wander ] ;; wander if no prey in sight in "nls/Wander.nls"
-
-    adjust-stripedbass-speed  ;; predator will speed up when making an attack
-    scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
-    eat ;; eat prey if within neighbors in "nls/Eat.nls"
-    reset-daytime-prey-eaten ;; limit daily prey eaten
-    count-time-since-full ;; fish rests when full
 
   ]
 
@@ -269,7 +258,7 @@ SLIDER
 initial-stripedbass-energy
 initial-stripedbass-energy
 0
-10
+100
 5.0
 1
 1
@@ -284,7 +273,7 @@ SLIDER
 initial-alewife-energy
 initial-alewife-energy
 0
-10
+100
 5.0
 1
 1
@@ -319,7 +308,7 @@ SLIDER
 initial-shortnose-energy
 initial-shortnose-energy
 0
-10
+100
 5.0
 1
 1

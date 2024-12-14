@@ -1,0 +1,17 @@
+to prey-on-alewives  ;; predator procedure
+  if daytime-prey-eaten < limit-daily-prey-allowance and location = "Penobscot" [
+  let nearby (turtle-set alewives-here alewives-on neighbors)
+  if any? nearby [ ;; if there is a catch, stop to eat the fish
+    ;set color black
+    ;;
+    ask one-of nearby [
+      die  ;alewife eaten
+    ]
+    set numAlewivesEaten numAlewivesEaten + 1
+    set daytime-prey-eaten daytime-prey-eaten + 1
+    set yearly-prey-eaten yearly-prey-eaten + 1
+    set prey-eaten-in-patch prey-eaten-in-patch + 1
+  ]
+  
+  ]
+end

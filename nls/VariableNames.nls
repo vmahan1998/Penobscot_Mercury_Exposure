@@ -37,7 +37,7 @@ Alewives-own [
   sex ;; defines sex of fish
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
-  speed ;; distance to swim on tick
+  speed ;; patches/tick
   home-patch ;; defines home patch of sea habitat
   schoolmates ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
@@ -55,6 +55,13 @@ Alewives-own [
   hg-exposure-total ;; sum of known mercury contamination levels exposed to
   mehg-exposure-total ;; sum of known mercury contamination levels exposed to
   SSC-total ;; sum of known sediment concentration levels exposed to
+  migration-action ;; defines migratory purpose
+  completed-action? ;; has migratory objective been completed?
+  migration-destination ;; defines migratory location homing
+  at-destination? ;; is fish at migratory destination?
+  landward-migration-time ;; time to travel inland and complete objective
+  seaward-migration-time ;; time to travel seaward after completing objective
+  acclimated-salinity-level ;; level of salinity fish is acclimated to currently
 ]
 
 StripedBass-own [
@@ -62,7 +69,7 @@ StripedBass-own [
   sex ;; defines sex of fish
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
-  speed ;; distance to swim on tick
+  speed ;; patches/tick
   home-patch ;; defines home patch of sea habitat
   schoolmates  ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
@@ -90,6 +97,13 @@ StripedBass-own [
   hg-exposure-total ;; sum of known mercury contamination levels exposed to
   mehg-exposure-total ;; sum of known mercury contamination levels exposed to
   SSC-total ;; sum of known sediment concentration levels exposed to
+  migration-action ;; defines migratory purpose
+  completed-action? ;; has migratory objective been completed?
+  migration-destination ;; defines migratory location homing
+  at-destination? ;; is fish at migratory destination?
+  landward-migration-time ;; time to travel inland and complete objective
+  seaward-migration-time ;; time to travel seaward after completing objective
+  acclimated-salinity-level ;; level of salinity fish is acclimated to currently
 ]
 
 Shortnose-own [
@@ -97,7 +111,7 @@ Shortnose-own [
   sex ;; defines sex of fish
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
-  speed ;; distance to swim on tick
+  speed ;; patches/tick
   home-patch ;; defines home patch of sea habitat
   schoolmates  ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
@@ -114,6 +128,13 @@ Shortnose-own [
   hg-exposure-total ;; sum of known mercury contamination levels exposed to
   mehg-exposure-total ;; sum of known mercury contamination levels exposed to
   SSC-total ;; sum of known sediment concentration levels exposed to
+  migration-action ;; defines migratory purpose
+  completed-action? ;; has migratory objective been completed?
+  landward-migration-time ;; time to travel inland and complete objective
+  seaward-migration-time ;; time to travel seaward after completing objective
+  migration-destination ;; defines migratory location homing
+  at-destination? ;; is fish at migratory destination?
+  acclimated-salinity-level ;; level of salinity fish is acclimated to currently
 ]
 
 breed [alewives prey] ;; defines alewives as prey
