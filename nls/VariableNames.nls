@@ -23,6 +23,8 @@ patches-own [
   velocity ;; records values of depth-averaged velocity in patch
   depth ;; records water level of patch
   salinity ;; records levels of salinity in patch
+  mercury ;; records levels of mercury in patch
+  methylmercury ;; records levels of methylmercury in patch
   SSC ;; records levels of suspended sediment concentration in patch
   interpolated-patch? ;; was data interpolated for this area
   target-patch? ;; data needs interpolation
@@ -36,6 +38,7 @@ Alewives-own [
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
   speed ;; distance to swim on tick
+  home-patch ;; defines home patch of sea habitat
   schoolmates ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
   minimum-separation ;; minimum separation distance in patches for schooling
@@ -46,6 +49,12 @@ Alewives-own [
   energy ;; energy allowance
   fleeing?  ;; boolean of whether or not prey is fleeing from predator
   rest-time ;; time time in ticks to recoup energy (could be foraging for more energy)
+  hg-exposure-duration ;; time spent highly contaminated mercury patches
+  mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
+  SSC-exposure-duration ;; ;; time spent in patches with high suspended sediment concentrations
+  hg-exposure-total ;; sum of known mercury contamination levels exposed to
+  mehg-exposure-total ;; sum of known mercury contamination levels exposed to
+  SSC-total ;; sum of known sediment concentration levels exposed to
 ]
 
 StripedBass-own [
@@ -54,6 +63,7 @@ StripedBass-own [
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
   speed ;; distance to swim on tick
+  home-patch ;; defines home patch of sea habitat
   schoolmates  ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
   minimum-separation ;; minimum separation distance in patches for schooling
@@ -74,6 +84,12 @@ StripedBass-own [
   time-since-full ;; counts how long the fish needs to digest before eating again
   limit-daily-prey-allowance ;; total prey allowance (may be dependent on size)
   numAlewivesEaten ;; total alewives eaten
+  hg-exposure-duration ;; time spent highly contaminated mercury patches
+  mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
+  SSC-exposure-duration ;; ;; time spent in patches with high suspended sediment concentrations
+  hg-exposure-total ;; sum of known mercury contamination levels exposed to
+  mehg-exposure-total ;; sum of known mercury contamination levels exposed to
+  SSC-total ;; sum of known sediment concentration levels exposed to
 ]
 
 Shortnose-own [
@@ -82,6 +98,7 @@ Shortnose-own [
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
   speed ;; distance to swim on tick
+  home-patch ;; defines home patch of sea habitat
   schoolmates  ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
   minimum-separation ;; minimum separation distance in patches for schooling
@@ -91,6 +108,12 @@ Shortnose-own [
   vision ;; sight distance in patches
   energy ;; energy allowance
   rest-time ;; time in ticks to recoup energy (could be foraging for more energy)
+  hg-exposure-duration ;; time spent highly contaminated mercury patches
+  mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
+  SSC-exposure-duration ;; ;; time spent in patches with high suspended sediment concentrations
+  hg-exposure-total ;; sum of known mercury contamination levels exposed to
+  mehg-exposure-total ;; sum of known mercury contamination levels exposed to
+  SSC-total ;; sum of known sediment concentration levels exposed to
 ]
 
 breed [alewives prey] ;; defines alewives as prey
