@@ -9,7 +9,7 @@ to setup-GIS
   let view3 gis:load-dataset "inputs/Lower_Penobscot_agg_pts.shp" ; Lower Penobscot
   let view4 gis:load-dataset "inputs/Sea_Penobscot_agg_pts.shp" ; Sea Patches
   
-  set dataset gis:load-dataset "inputs/studyarea_pts.shp"
+  set dataset gis:load-dataset "inputs/studyarea_AggregatePoint.shp"
  
   gis:set-world-envelope gis:envelope-of dataset
   

@@ -16,6 +16,21 @@ to setup-shortnose
  set speed 0.5 ;; initial speed
  set min-speed 0.2 ;; species limit
  set max-speed 5.0 ;; species limit 
+ set energy initial-shortnose-energy;; energy allowance
+ set rest-time shortnose-rest-time;; time in ticks to recoup energy (could be foraging for more energy)
+ set hg-exposure-duration 0;; time spent highly contaminated mercury patches
+ set mehg-exposure-duration 0;; time spent highly contaminated methylmercury patches
+ set SSC-exposure-duration 0;; ;; time spent in patches with high suspended sediment concentrations
+ set hg-exposure-total 0;; sum of known mercury contamination levels exposed to
+ set mehg-exposure-total 0;; sum of known mercury contamination levels exposed to
+ set SSC-total 0;; sum of known sediment concentration levels exposed to
+ set migration-action "foraging";; defines migratory purpose
+ set completed-action? false;; has migratory objective been completed?
+ set landward-migration-time 0;; time to travel inland and complete objective
+ set seaward-migration-time 0;; time to travel seaward after completing objective
+ set migration-destination "middle estuary";; defines migratory location homing
+ set at-destination? false;; is fish at migratory destination?
+ set acclimated-salinity-level [salinity] of patch-here ;; level of salinity fish is acclimated to currently
     
  ;;assign gender to fish
  ifelse random-float 1 < 0.5 [

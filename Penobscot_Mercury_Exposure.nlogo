@@ -53,7 +53,7 @@ to setup
   setup-GIS ;; create map
   set velocity-data csv:from-file "inputs/velocity_px_py.csv"
   set depth-data csv:from-file "inputs/depth_px_py.csv"
-
+  set mercury-data csv:from-file "inputs/mercury_contamination_px_py.csv"
   ;; initialize variables
   set minute 0 ;; Initialize the minute variable as 0
   set hour 0 ;; Initialize the hour variable as 0
@@ -64,13 +64,15 @@ to setup
   ;; hydrodynamic model data here (salinity & sediment)
   create-velocity ;; Initialize Velocity
   create-depth ;; Initialize Depth
+  create-Hg ;; Initialize mercury
+  create-MeHg ;; Initialize methylmercury
   identify-missing-patches ;; Identify patches needing interpolation
 
   ;; agent setup
   set-default-shape turtles "fish" ;; change default shape to fish
-  setup-alewives ;; initialize alewives
+  ;setup-alewives ;; initialize alewives
   setup-stripedbass ;; initialize striped bass
-  setup-shortnose ;; initialize shortnose sturgeon
+  ;setup-shortnose ;; initialize shortnose sturgeon
 
   ;; initialize any other variables
   reset-ticks ;; Reset the tick counter
@@ -87,7 +89,7 @@ to go
   ;; potential behavioral rules
   ask alewives with [age = "adult"] [
     school ;align, cohere, separate, separation minimum, schoolmates
-    ;migrate ;time, tidal-phase,  depth preference
+    migrate ;time, tidal-phase,  depth preference
     ;flee-predators ;distance to nearest predator, energy, swim speed
     ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
     ;spawning ; potential spawning encounters
@@ -95,14 +97,14 @@ to go
 
   ask stripedbass with [age = "adult"] [
     school ;align, cohere, separate, separation minimum, schoolmates
-    ;migrate ;time, tidal-phase, depth preference
+    migrate ;time, tidal-phase, depth preference
     ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
 
 
   ]
 
   ask shortnose with [age = "adult"] [
-    school ;align, cohere, separate, separation minimum, schoolmates,
+    ;school ;align, cohere, separate, separation minimum, schoolmates,
     ;migrate ;time, tidal-phase, depth preference
     ;forgage ;; energy, foraging time?, foraging source?, swim speed
     ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
@@ -214,7 +216,7 @@ initial-stripedbass
 initial-stripedbass
 0
 1000
-51.0
+1.0
 1
 1
 fish
@@ -259,7 +261,7 @@ initial-stripedbass-energy
 initial-stripedbass-energy
 0
 100
-5.0
+100.0
 1
 1
 Energy Units
@@ -374,7 +376,7 @@ TEXTBOX
 185
 19
 442
-77
+48
 Initialize Simulation
 24
 0.0

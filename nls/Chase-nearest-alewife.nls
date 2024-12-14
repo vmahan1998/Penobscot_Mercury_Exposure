@@ -1,5 +1,5 @@
 to chase-nearest-alewife ;; predator procedure
-    let alewife-prey prey-in-vision with [breed = alewives and (patchtype = "channel" or patchtype = "pond")] ; only chase alewives in pond and channel
+    let alewife-prey prey-in-vision with [breed = alewives and (location = "Penobscot")] ; only chase alewives in pond and channel
   if any? alewife-prey [
     let nearest-alewife-prey min-one-of alewife-prey [distance myself]
     if nearest-alewife-prey != nobody [

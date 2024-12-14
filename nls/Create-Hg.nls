@@ -1,16 +1,53 @@
 to create-hg
-  ;let data csv:from-file "raw_data_processing/adult_alewife_habitat_results_with_px_py.csv" ;; replace with mercury contamination maps for penobscot
-  ;let header first data
-  ;let rows but-first data
-  ;foreach rows [
-  ;  row ->
-  ;  let x item 0 row
-  ;  let y item 1 row
-  ;  let mean-hg item 2 row
-  ;  
-  ;  ;let px 
-  ;  ask patch x y [
-  ;    set mercury mean-hg
-  ;  ]
-  ;]
+  ;; Assign initial mercury values from data
+  let header first mercury-data
+  let rows but-first mercury-data
+  foreach rows [
+    row ->
+    let x item 0 row
+    let y item 1 row
+    let mean-hg item 2 row
+    
+    ask patch x y [
+      set mercury mean-hg
+    ]
+  ]
+
+  ;; Interpolate mercury for water patches in Penobscot
+  ask patches with [patch-terrain = "water" and location = "Penobscot" and mercury = 0] [
+    let radius 2
+    let potential-neighbors patches in-radius radius with [
+      mercury != 0
+    ]
+    
+    ;; Expand the radius until enough valid neighbors are found
+    while [count potential-neighbors < 5 and radius <= 30] [
+      set radius radius + 1
+      set potential-neighbors patches in-radius radius with [
+        mercury != 0
+      ]
+    ]
+    ; show (word "Potential neighbors: " count potential-neighbors)
+    
+    ;; Sort potential neighbors by distance to the current patch
+    let sorted-neighbors sort-on [distance myself] potential-neighbors
+    
+    ;; Select the closest 5 neighbors
+    let valid-neighbors n-of 5 sorted-neighbors
+    
+    ;; Convert the list of valid neighbors to an agentset
+    let valid-neighbors-set patch-set valid-neighbors
+    
+    ;; Check if the agentset is not empty
+    if any? valid-neighbors-set [
+      ;; Calculate interpolated mercury value using the agentset
+      let avg-mercury mean [mercury] of valid-neighbors-set
+      
+      ;; Assign interpolated mercury value
+      set mercury avg-mercury
+      ;set pcolor yellow
+      ;; Mark patch as interpolated
+      ;set interpolated-patch? true
+    ]
+  ]
 end

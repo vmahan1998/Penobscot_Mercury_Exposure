@@ -11,6 +11,7 @@ globals [
   depth-data ;; depth data
   salinity-data ;; salinity data
   SSC-data ;; Suspended Sediments data
+  mercury-data ;; mercury contamination data
   tide-phase ;; tracks tidal phase
   mean-daytime-prey-eaten ;; records mean number of daily prey eaten
   numAlewivesEaten ;; records number of alewives eaten by Striped Bass

@@ -1,17 +1,13 @@
 to prey-on-alewives  ;; predator procedure
-  if daytime-prey-eaten < limit-daily-prey-allowance and location = "Penobscot" [
-  let nearby (turtle-set alewives-here alewives-on neighbors)
-  if any? nearby [ ;; if there is a catch, stop to eat the fish
-    ;set color black
-    ;;
-    ask one-of nearby [
-      die  ;alewife eaten
-    ]
-    set numAlewivesEaten numAlewivesEaten + 1
-    set daytime-prey-eaten daytime-prey-eaten + 1
-    set yearly-prey-eaten yearly-prey-eaten + 1
-    set prey-eaten-in-patch prey-eaten-in-patch + 1
-  ]
-  
-  ]
+set prey-in-vision alewives in-radius vision ;; defines alewives in vision radius
+
+    ifelse any? prey-in-vision
+    [ chase-nearest-alewife ]  ;; point towards nearest prey in "nls/Chase-nearest-alewife.nls"
+    [ wander ] ;; wander if no prey in sight in "nls/Wander.nls"
+
+    adjust-stripedbass-speed  ;; predator will speed up when making an attack
+    scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
+    eat ;; eat prey if within neighbors in "nls/Eat.nls"
+    reset-daytime-prey-eaten ;; limit daily prey eaten
+    count-time-since-full ;; fish rests when full
 end

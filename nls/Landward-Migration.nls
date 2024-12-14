@@ -5,13 +5,13 @@ to migrate-landward
   ;; Define swimming range and ability
   let swimming-range max-speed - min-speed
   set speed min-speed + (energy / 100) * swimming-range ;; Adjust speed based on energy level
-  
+  let abs-current-velocity abs([velocity] of patch-here)
   ; takes more energy to migrate through higher velocities in the opposite direction (positive velocitities)
   
   ;; Energy expenditure increases with opposing velocity
-  if velocity > 0 [
-    set energy energy - (velocity * 0.2) ;; Higher velocity costs more energy
-    set speed max (list (speed - (velocity / 2)) min-speed) ;; Adjust speed against flow
+  if [velocity] of patch-here > 0 [
+    set energy energy - (abs-current-velocity * 0.2) ;; Higher velocity costs more energy
+    set speed max (list (speed - (abs-current-velocity / 2)) min-speed) ;; Adjust speed against flow
   ]
   
   ; fish slow down as they start to get tired until they eventually stop and move with current downstream for resting 
@@ -35,14 +35,14 @@ to migrate-landward
   ;; fish must rest to regain energy and acclimate to salinity (move downstream with current or in patches with low velocity (may be species dependent))
   ;; Must stay in patches where salinity is tolerable
   ;; Check salinity tolerance
-  let salinity-difference abs (salinity - acclimated-salinity-level)
+  let salinity-difference abs ([salinity] of patch-here - acclimated-salinity-level)
 
   if salinity-difference > 2 [
   print "Salinity is intolerable. Resting or moving downstream."
   
   ;; Find a suitable patch with tolerable salinity and low velocity
   let suitable-patch one-of patches with [
-      salinity <= [acclimated-salinity-level] of myself + 2 and salinity >= [acclimated-salinity-level] of myself - 2 and velocity <= (swimming-range * 0.25)
+      salinity <= [acclimated-salinity-level] of myself + 2 and salinity >= [acclimated-salinity-level] of myself - 2 and abs-current-velocity <= (swimming-range * 0.25)
   ]
   
   ifelse suitable-patch != nobody [
@@ -56,11 +56,11 @@ to migrate-landward
   ]
   
   stop ;; End the function to avoid further actions in this tick
-]
+  ]
   
   ;; where are they going?
   ;; how will fish move landward through velocity
-  let upstream-patch one-of patches with [patchtype = "upper penobscot"]
+  let upstream-patch one-of patches with [patchtype = [migration-destination] of myself]
   if upstream-patch != nobody [
     face upstream-patch
     fd speed
@@ -69,7 +69,7 @@ to migrate-landward
   
   ;; what are they doing? (spawning, eating)
   ;; maybe patchtype = "upper penobscot"
-  if patchtype = "upper penobscot" [
+  if patchtype = migration-destination [
   ; reproduce
   ; hunt
   ; forage

@@ -4,13 +4,13 @@ to migrate
 
   ;; how do fish know when to migrate landward
     print (word "Current tide phase: " tidal-phase)
-  if tidal-phase = "flood" and day >= starting-date and completed-action? = false [ ;; maybe each species has a specific migratory date
+  if tidal-phase = "unknown" and day >= starting-date and completed-action? = false [ ;; maybe each species has a specific migratory date
   ;start migration action
     migrate-landward
   ]
   ;; why are they swimming there? (could be changed by species)
   ;; how do fish know when to migrate seaward?
-  if tidal-phase = "flood" and completed-action? = true [;; has migratory objective been completed?
+  if tidal-phase = "ebb" and completed-action? = true [;; has migratory objective been completed?
     migrate-seaward
   ]
 end
