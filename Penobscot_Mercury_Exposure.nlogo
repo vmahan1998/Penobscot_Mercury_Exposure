@@ -71,7 +71,7 @@ to setup
   ;; agent setup
   set-default-shape turtles "fish" ;; change default shape to fish
   ;setup-alewives ;; initialize alewives
-  setup-stripedbass ;; initialize striped bass
+  ;setup-stripedbass ;; initialize striped bass
   ;setup-shortnose ;; initialize shortnose sturgeon
 
   ;; initialize any other variables
@@ -88,16 +88,16 @@ to go
 
   ;; potential behavioral rules
   ask alewives with [age = "adult"] [
-    school ;align, cohere, separate, separation minimum, schoolmates
-    migrate ;time, tidal-phase,  depth preference
+    ;school ;align, cohere, separate, separation minimum, schoolmates
+    ;migrate ;time, tidal-phase,  depth preference
     ;flee-predators ;distance to nearest predator, energy, swim speed
     ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
     ;spawning ; potential spawning encounters
   ]
 
   ask stripedbass with [age = "adult"] [
-    school ;align, cohere, separate, separation minimum, schoolmates
-    migrate ;time, tidal-phase, depth preference
+    ;school ;align, cohere, separate, separation minimum, schoolmates
+    ;migrate ;time, tidal-phase, depth preference
     ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
 
 
