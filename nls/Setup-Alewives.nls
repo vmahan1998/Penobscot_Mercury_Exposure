@@ -16,7 +16,7 @@ to setup-alewives
  set speed 3
  set min-speed 0.2 ;; species limit
  set max-speed 5.0 ;; species limit 
- set energy initial-alewife-energy;; energy allowance
+ set energy 100;; energy allowance
  set fleeing? false;; boolean of whether or not prey is fleeing from predator
  set rest-time alewife-rest-time;; time time in ticks to recoup energy (could be foraging for more energy)
  set hg-exposure-duration 0;; time spent highly contaminated mercury patches
@@ -31,7 +31,14 @@ to setup-alewives
  set at-destination? false;; is fish at migratory destination?
  set landward-migration-time 0;; time to travel inland and complete objective
  set seaward-migration-time 0;; time to travel seaward after completing objective
- set acclimated-salinity-level [salinity] of patch-here ;; level of salinity fish is acclimated to currently
+ set osmolarity-level 0 ;; deviance from homeostasis
+ set ionregulatory-stress 1 ;; level of stress used for osmoregulation (chloride cell proliferation)
+ set chloride-density-min 10 ;; minimum level of choride cells (present during low stress)
+ set chloride-density-max 100 ;; maximum level of chloride cells (present during high stress)
+ set chloride-cell-density 50 ;; Initial chloride cell density
+ set chloride-stress-threshold 5 ;; Threshold for chloride cell density adjustment
+ set base-energy-cost 1 ;; Base energy cost for maintaining chloride cells
+ set chloride-cell-rate 0.05 ;; Rate of change for chloride cell density (teleost 0.05%)
     
  ;;assign gender to fish
  ifelse random-float 1 < 0.5 [

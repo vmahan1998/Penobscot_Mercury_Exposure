@@ -35,14 +35,14 @@ to migrate-landward
   ;; fish must rest to regain energy and acclimate to salinity (move downstream with current or in patches with low velocity (may be species dependent))
   ;; Must stay in patches where salinity is tolerable
   ;; Check salinity tolerance
-  let salinity-difference abs ([salinity] of patch-here - acclimated-salinity-level)
+  let salinity-difference abs ([salinity] of patch-here - osmolarity-level)
 
   if salinity-difference > 2 [
   print "Salinity is intolerable. Resting or moving downstream."
   
   ;; Find a suitable patch with tolerable salinity and low velocity
   let suitable-patch one-of patches with [
-      salinity <= [acclimated-salinity-level] of myself + 2 and salinity >= [acclimated-salinity-level] of myself - 2 and abs-current-velocity <= (swimming-range * 0.25)
+      salinity <= [osmolarity-level] of myself + 2 and salinity >= [osmolarity-level] of myself - 2 and abs-current-velocity <= (swimming-range * 0.25)
   ]
   
   ifelse suitable-patch != nobody [

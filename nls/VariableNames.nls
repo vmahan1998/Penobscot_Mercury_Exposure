@@ -24,6 +24,7 @@ patches-own [
   velocity ;; records values of depth-averaged velocity in patch
   depth ;; records water level of patch
   salinity ;; records levels of salinity in patch
+  osmolarity ;; calculates osmolarity of patch
   mercury ;; records levels of mercury in patch
   methylmercury ;; records levels of methylmercury in patch
   SSC ;; records levels of suspended sediment concentration in patch
@@ -62,7 +63,15 @@ Alewives-own [
   at-destination? ;; is fish at migratory destination?
   landward-migration-time ;; time to travel inland and complete objective
   seaward-migration-time ;; time to travel seaward after completing objective
-  acclimated-salinity-level ;; level of salinity fish is acclimated to currently
+  osmolarity-level ;; level of salinity fish is acclimated to currently
+  ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
+  chloride-density-min ;; minimum level of choride cells (present during low stress)
+  chloride-density-max ;; maximum level of chloride cells (present during high stress)
+  chloride-cell-density  ;; Current chloride cell density
+  chloride-stress-threshold  ;; Threshold for chloride cell density adjustment
+  response-time  ;; Time to respond to stress
+  base-energy-cost  ;; Base energy cost for maintaining chloride cells
+  chloride-cell-rate  ;; Rate of change for chloride cell density
 ]
 
 StripedBass-own [
@@ -104,7 +113,15 @@ StripedBass-own [
   at-destination? ;; is fish at migratory destination?
   landward-migration-time ;; time to travel inland and complete objective
   seaward-migration-time ;; time to travel seaward after completing objective
-  acclimated-salinity-level ;; level of salinity fish is acclimated to currently
+  osmolarity-level ;; level of salinity fish is acclimated to currently
+  ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
+  chloride-density-min ;; minimum level of choride cells (present during low stress)
+  chloride-density-max ;; maximum level of chloride cells (present during high stress)
+  chloride-cell-density  ;; Current chloride cell density
+  chloride-stress-threshold  ;; Threshold for chloride cell density adjustment
+  response-time  ;; Time to respond to stress
+  base-energy-cost  ;; Base energy cost for maintaining chloride cells
+  chloride-cell-rate  ;; Rate of change for chloride cell density
 ]
 
 Shortnose-own [
@@ -135,9 +152,56 @@ Shortnose-own [
   seaward-migration-time ;; time to travel seaward after completing objective
   migration-destination ;; defines migratory location homing
   at-destination? ;; is fish at migratory destination?
-  acclimated-salinity-level ;; level of salinity fish is acclimated to currently
-]
+  osmolarity-level ;; level of salinity fish is acclimated to currently
+  ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
+  chloride-density-min ;; minimum level of choride cells (present during low stress)
+  chloride-density-max ;; maximum level of chloride cells (present during high stress)
+  chloride-cell-density  ;; Current chloride cell density
+  chloride-stress-threshold  ;; Threshold for chloride cell density adjustment
+  response-time  ;; Time to respond to stress
+  base-energy-cost  ;; Base energy cost for maintaining chloride cells
+  chloride-cell-rate  ;; Rate of change for chloride cell density
+  ]
 
+Atlantic-own [
+  age ;; set age of fish
+  sex ;; defines sex of fish
+  min-speed ;; species lower limit of speed
+  max-speed ;; species upper limit of speed
+  speed ;; patches/tick
+  home-patch ;; defines home patch of sea habitat
+  schoolmates  ;; agentset of nearby prey fish
+  nearest-neighbor  ;; closest one of schoolmates
+  minimum-separation ;; minimum separation distance in patches for schooling
+  align-coefficient ;; align coefficient for schooling
+  cohere-coefficient ;; cohere coefficient for schooling
+  separate-coefficient ;; separation coefficient for schooling
+  vision ;; sight distance in patches
+  energy ;; energy allowance
+  rest-time ;; time in ticks to recoup energy (could be foraging for more energy)
+  hg-exposure-duration ;; time spent highly contaminated mercury patches
+  mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
+  SSC-exposure-duration ;; ;; time spent in patches with high suspended sediment concentrations
+  hg-exposure-total ;; sum of known mercury contamination levels exposed to
+  mehg-exposure-total ;; sum of known mercury contamination levels exposed to
+  SSC-total ;; sum of known sediment concentration levels exposed to
+  migration-action ;; defines migratory purpose
+  completed-action? ;; has migratory objective been completed?
+  landward-migration-time ;; time to travel inland and complete objective
+  seaward-migration-time ;; time to travel seaward after completing objective
+  migration-destination ;; defines migratory location homing
+  at-destination? ;; is fish at migratory destination?
+  osmolarity-level ;; level of salinity fish is acclimated to currently
+  ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
+  chloride-density-min ;; minimum level of choride cells (present during low stress)
+  chloride-density-max ;; maximum level of chloride cells (present during high stress)
+  chloride-cell-density  ;; Current chloride cell density
+  chloride-stress-threshold  ;; Threshold for chloride cell density adjustment
+  response-time  ;; Time to respond to stress
+  base-energy-cost  ;; Base energy cost for maintaining chloride cells
+  chloride-cell-rate  ;; Rate of change for chloride cell density
+]
 breed [alewives prey] ;; defines alewives as prey
 breed [stripedbass predator] ;; defines striped bass as predator
-breed [shortnose forager] ;; defines shortnose sturgeon as forager
+breed [shortnose forager1] ;; defines shortnose sturgeon as forager
+breed [atlantic forager2] ;; defines shortnose sturgeon as forager

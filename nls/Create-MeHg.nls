@@ -35,7 +35,7 @@ to create-mehg
     let sorted-neighbors sort-on [distance myself] potential-neighbors
     
     ;; Select the closest 5 neighbors
-    let valid-neighbors n-of 5 sorted-neighbors
+    let valid-neighbors n-of 3 sorted-neighbors
     
     ;; Convert the list of valid neighbors to an agentset
     let valid-neighbors-set patch-set valid-neighbors

@@ -1,0 +1,63 @@
+to osmoregulate ;; calculate chloride cell densities
+  
+  ;; should be proportional where max stress leads to max chloride cell density over 7 days
+  ;; min stress leads to min chloride cell density over 7 days
+  ;; stess is measured by the difference between internal osmolarity and salinity and proportional to chloride cell density where larger amounts of chloride cells compensate for stress better
+  ;; increased stress should trigger increased cell composition and large energy cost (base energy cost (cost at homeostasis where stress = 1) + cost to make new cell (# of cells) * stress differential for increased rates of regulation at higher stress)
+  ;; decreased stress should trigger decreased cell composition and smaller energy cost (base energy cost (cost at homeostasis where stress = 1) + stress differential for increased rates of regulation at higher stress) 
+  ask turtles [
+    if ionregulatory-stress >= chloride-stress-threshold [ ; if stress is greater than threshhold, increase chloride cell density
+      increase-chloride-cell-density
+    ]
+    if ionregulatory-stress < chloride-stress-threshold [
+      decrease-chloride-cell-density
+    ]
+  ]
+end
+
+to increase-chloride-cell-density ;; increasing response
+  ask turtles [
+    if chloride-cell-density < chloride-density-max and energy > 0[ ;; if chloride cell density is less than max
+      set chloride-cell-density chloride-cell-density + chloride-cell-rate ;; set chloride cell density to [cell density + (cell density*chloride-cell-rate)
+      set energy energy - (base-energy-cost + base-energy-cost * chloride-cell-density * chloride-cell-rate)  ;; Adjust energy cost as needed
+    ]
+    ;if energy < 0
+    ;decrease osmolarity-level
+  ]
+end
+
+to decrease-chloride-cell-density ;; decreasing response
+  ask turtles [
+    if chloride-cell-density > chloride-density-min [
+      set chloride-cell-density chloride-cell-density - (chloride-cell-density * chloride-cell-rate)
+      set energy energy - (base-energy-cost + base-energy-cost * chloride-cell-density * chloride-cell-rate)  ;; Adjust energy cost as needed
+    ]
+    ;increase osmolarity-level
+  ]
+end
+
+to calculate-ionregulatory-stress ;; stress factor
+  ask turtles [
+    let patch-osmolarity [osmolarity] of patch-here
+    let agent-osmolarity osmolarity-level
+    let chloride-density chloride-cell-density
+    set ionregulatory-stress osmolarity-to-stress agent-osmolarity patch-osmolarity chloride-density
+  ]
+end
+
+to-report osmolarity-to-stress [agent-osmolarity patch-osmolarity chloride-density]
+  ;; Calculate the difference between agent osmolarity and patch osmolarity
+  let difference abs(agent-osmolarity - patch-osmolarity)
+  
+  ;; Normalize the difference to a scale from 1 to 10
+  ;; Assuming a maximum difference of 100 for this example; adjust as needed
+  let max-difference 100
+  let stress min (list 10 (max (list 1 (10 * difference / max-difference))))
+  
+  ;; Adjust stress based on chloride cell density
+  ;; Example adjustment: reduce stress by a factor proportional to chloride cell density
+  let adjusted-stress stress - (chloride-density * 0.1)  ;; Adjust the factor as needed
+  set adjusted-stress max (list 1 adjusted-stress)  ;; Ensure stress does not go below 1
+  
+  report adjusted-stress
+end

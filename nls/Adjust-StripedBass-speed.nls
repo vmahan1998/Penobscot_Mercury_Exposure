@@ -16,12 +16,12 @@ to adjust-stripedbass-speed ;; predator procedure
   [ ;; not bursting
     set speed min-speed
     ;set color yellow
-    if energy < initial-stripedbass-energy [ ;;if not bursting and energy less than limit fish is "resting"
+    if energy < 100 [ ;;if not bursting and energy less than limit fish is "resting"
      set rest-time rest-time - 1 
     ] ;; 
     
     if rest-time <= 0 [
-      set energy initial-stripedbass-energy
+      set energy 100
     ] ;; reset bursting energy
     
     

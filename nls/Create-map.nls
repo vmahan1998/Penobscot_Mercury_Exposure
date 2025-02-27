@@ -47,3 +47,48 @@ to setup-GIS
   ]
 
 end
+
+to penobscot-parameters
+  set velocity-data csv:from-file "inputs/velocity_px_py.csv"
+  set depth-data csv:from-file "inputs/depth_px_py.csv"
+  set mercury-data csv:from-file "inputs/mercury_contamination_px_py.csv"
+   ;; hydrodynamic model data here (salinity & sediment)
+  create-velocity ;; Initialize Velocity
+  create-depth ;; Initialize Depth
+  create-Hg ;; Initialize mercury
+  create-MeHg ;; Initialize methylmercury
+  identify-missing-patches ;; Identify patches needing interpolation
+end
+
+to penobscot-go
+  update-velocity ;; Call modeled hourly depth-averaged Velocity
+  update-depth ;; Call modeled hourly water-level
+  if minute = 0 [ ;; interpolate patches every hour
+    fill-missing-patches
+  ]
+
+  ;; potential behavioral rules
+  ask alewives with [age = "adult"] [
+    ;school ;align, cohere, separate, separation minimum, schoolmates
+    ;migrate ;time, tidal-phase,  depth preference
+    ;flee-predators ;distance to nearest predator, energy, swim speed
+    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+    ;spawning ; potential spawning encounters
+  ]
+
+  ask stripedbass with [age = "adult"] [
+    ;school ;align, cohere, separate, separation minimum, schoolmates
+    ;migrate ;time, tidal-phase, depth preference
+    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+
+
+  ]
+
+  ask shortnose with [age = "adult"] [
+    ;school ;align, cohere, separate, separation minimum, schoolmates,
+    ;migrate ;time, tidal-phase, depth preference
+    ;forgage ;; energy, foraging time?, foraging source?, swim speed
+    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+    ;spawning ; potential spawning encounters
+  ]
+end

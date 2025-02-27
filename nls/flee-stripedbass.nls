@@ -10,11 +10,11 @@ to flee-stripedbass
     ]
     [ ;; not bursting
       ; set color yellow
-      if energy < initial-alewife-energy [ ;; if not fleeing and energy less than limit, fish is "resting"
+      if energy < 100 [ ;; if not fleeing and energy less than limit, fish is "resting"
         set rest-time rest-time - 1 
       ] 
       if rest-time <= 0 [
-        set energy initial-alewife-energy
+        set energy 100
       ] ;; reset bursting energy
     ]
       

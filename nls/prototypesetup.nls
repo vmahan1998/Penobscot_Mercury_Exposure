@@ -1,0 +1,84 @@
+to prototype-setup
+  resize-world 0 200 0 350
+  set-patch-size 3
+end
+
+to prototype-parameters
+  ask patches [ 
+    set velocity random-float 3 - 1.5  ;; random value between -1.5 and 1.5
+    if velocity > 0 [
+      set pcolor blue
+    ] 
+    if velocity <= 0 [
+      set pcolor red
+    ]
+    set patch-terrain "water"
+    set depth random-float 5  ;; random value between 0 and 5 meters
+    set salinity random-float 35  ;; random value between 0.5 and 35 psu
+    set mercury random-float 700  ;; random value between 0.0 and 700.0
+    set methylmercury random-float 65  ;; random value between 0 and 65
+    set SSC random-float 0.0004  ;; random value between 0 and 0.0004
+  ] 
+  setup-migration
+  
+end
+
+to migrate-fish [fish-type]
+  ask fish-type [
+    let prototype-patch one-of patches
+    if prototype-patch != nobody [
+      move-to prototype-patch
+    ]
+  ]
+end
+
+to setup-migration
+  migrate-fish alewives
+  migrate-fish stripedbass
+  migrate-fish shortnose
+  migrate-fish atlantic
+end
+
+to prototype-go
+;; update the data
+  ask patches [ 
+    set velocity random-float 3 - 1.5  ;; random value between -1.5 and 1.5
+    if velocity > 0 [
+      set pcolor blue
+    ] 
+    if velocity <= 0 [
+      set pcolor red
+    ]
+    set patch-terrain "water"
+    set depth random-float 5  ;; random value between 0 and 5 meters
+    set salinity random-float 35  ;; random value between 0.5 and 35 psu
+    set mercury random-float 700  ;; random value between 0.0 and 700.0
+    set methylmercury random-float 65  ;; random value between 0 and 65
+    set SSC random-float 0.0004  ;; random value between 0 and 0.0004
+  ] 
+  
+;; potential behavioral rules
+  ask alewives with [age = "adult"] [
+    ;school ;align, cohere, separate, separation minimum, schoolmates
+    ;migrate ;time, tidal-phase,  depth preference
+    ;flee-predators ;distance to nearest predator, energy, swim speed
+    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+    ;spawning ; potential spawning encounters
+  ]
+
+  ask stripedbass with [age = "adult"] [
+    ;school ;align, cohere, separate, separation minimum, schoolmates
+    ;migrate ;time, tidal-phase, depth preference
+    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+
+
+  ]
+
+  ask shortnose with [age = "adult"] [
+    ;school ;align, cohere, separate, separation minimum, schoolmates,
+    ;migrate ;time, tidal-phase, depth preference
+    ;forgage ;; energy, foraging time?, foraging source?, swim speed
+    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+    ;spawning ; potential spawning encounters
+  ]
+end

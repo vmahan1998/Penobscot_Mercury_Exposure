@@ -5,6 +5,7 @@ __includes[
   "nls/calendar.nls"
   "nls/VariableNames.nls"
   "nls/Create-map.nls"
+  "nls/prototypesetup.nls"
   "nls/Create-velocity.nls"
   "nls/Update-velocity.nls"
   "nls/Create-depth.nls"
@@ -27,9 +28,11 @@ __includes[
   "nls/Setup-Alewives.nls"
   "nls/Setup-StripedBass.nls"
   "nls/Setup-ShortnoseSturgeon.nls"
+  "nls/Setup-AtlanticSturgeon.nls"
   "nls/Adjust-Alewife-speed.nls"
   "nls/Adjust-StripedBass-speed.nls"
   "nls/Adjust-ShortnoseSturgeon-speed.nls"
+  "nls/Adjust-AtlanticSturgeon-speed.nls"
   "nls/Reporters.nls"
   "nls/Landward-Migration.nls"
   "nls/Seaward-Migration.nls"
@@ -46,70 +49,41 @@ __includes[
   "nls/Count-prey-eaten.nls"
   "nls/Prey-on-Alewives.nls"
   "nls/Mercury-Contamination.nls"
+  "nls/Osmoregulation.nls"
+  "nls/Calculate-Osmolarity.nls"
 ]
 
 to setup
   clear-all ;; reset variables
-  setup-GIS ;; create map
-  set velocity-data csv:from-file "inputs/velocity_px_py.csv"
-  set depth-data csv:from-file "inputs/depth_px_py.csv"
-  set mercury-data csv:from-file "inputs/mercury_contamination_px_py.csv"
+
   ;; initialize variables
   set minute 0 ;; Initialize the minute variable as 0
   set hour 0 ;; Initialize the hour variable as 0
   set day starting-date ;; Initialize the day variable as 0
   set month "September" ;; Initialize the month variable as 0
   set monthnum 9 ;; Initialize the monthnum variable as 0
+  if model-type = "penobscot" [setup-GIS] ;; runs setup procedure for regular model and creates simulation environment
+  if model-type = "prototype" [prototype-setup] ;; runs setup procedure for prototype model in "nls/prototypesetup.nls"
 
-  ;; hydrodynamic model data here (salinity & sediment)
-  create-velocity ;; Initialize Velocity
-  create-depth ;; Initialize Depth
-  create-Hg ;; Initialize mercury
-  create-MeHg ;; Initialize methylmercury
-  identify-missing-patches ;; Identify patches needing interpolation
+  if model-type = "penobscot" [penobscot-parameters]
+  if model-type = "prototype" [prototype-parameters]
 
   ;; agent setup
   set-default-shape turtles "fish" ;; change default shape to fish
-  ;setup-alewives ;; initialize alewives
-  ;setup-stripedbass ;; initialize striped bass
-  ;setup-shortnose ;; initialize shortnose sturgeon
-
+  setup-alewives ;; initialize alewives
+  setup-stripedbass ;; initialize striped bass
+  setup-shortnose ;; initialize shortnose sturgeon
+  setup-atlantic ;; initialize atlantic sturgeon
   ;; initialize any other variables
+
   reset-ticks ;; Reset the tick counter
 end
 
 to go
   calendar ;; Call the calendar procedure to update hour, day, and month
-  update-velocity ;; Call modeled hourly depth-averaged Velocity
-  update-depth ;; Call modeled hourly water-level
-  if minute = 0 [ ;; interpolate patches every hour
-    fill-missing-patches
-  ]
 
-  ;; potential behavioral rules
-  ask alewives with [age = "adult"] [
-    ;school ;align, cohere, separate, separation minimum, schoolmates
-    ;migrate ;time, tidal-phase,  depth preference
-    ;flee-predators ;distance to nearest predator, energy, swim speed
-    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
-    ;spawning ; potential spawning encounters
-  ]
-
-  ask stripedbass with [age = "adult"] [
-    ;school ;align, cohere, separate, separation minimum, schoolmates
-    ;migrate ;time, tidal-phase, depth preference
-    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
-
-
-  ]
-
-  ask shortnose with [age = "adult"] [
-    ;school ;align, cohere, separate, separation minimum, schoolmates,
-    ;migrate ;time, tidal-phase, depth preference
-    ;forgage ;; energy, foraging time?, foraging source?, swim speed
-    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
-    ;spawning ; potential spawning encounters
-  ]
+  if model-type = "penobscot" [penobscot-go]
+  if model-type = "prototype" [prototype-go]
 
   tick ;; Increment the tick counter
 end
@@ -216,7 +190,7 @@ initial-stripedbass
 initial-stripedbass
 0
 1000
-1.0
+10.0
 1
 1
 fish
@@ -231,7 +205,7 @@ initial-alewives
 initial-alewives
 0
 10000
-55.0
+10.0
 1
 1
 fish
@@ -246,40 +220,10 @@ initial-shortnose
 initial-shortnose
 0
 1000
-84.0
+10.0
 1
 1
 fish
-HORIZONTAL
-
-SLIDER
-131
-458
-381
-491
-initial-stripedbass-energy
-initial-stripedbass-energy
-0
-100
-100.0
-1
-1
-Energy Units
-HORIZONTAL
-
-SLIDER
-160
-408
-381
-441
-initial-alewife-energy
-initial-alewife-energy
-0
-100
-5.0
-1
-1
-Energy Units
 HORIZONTAL
 
 TEXTBOX
@@ -293,60 +237,35 @@ Species
 1
 
 TEXTBOX
-259
-373
-409
-402
-Energy
-24
-0.0
-1
-
-SLIDER
-146
-508
-381
-541
-initial-shortnose-energy
-initial-shortnose-energy
-0
-100
-5.0
-1
-1
-Energy Units
-HORIZONTAL
-
-TEXTBOX
-234
-562
-384
-591
+236
+422
+386
+451
 Rest Time
 24
 0.0
 1
 
 SLIDER
-115
-599
-382
-632
+117
+459
+384
+492
 alewife-rest-time
 alewife-rest-time
 0
 1000
-50.0
+52.0
 1
 1
 tick (1 tick = 5 minutes)
 HORIZONTAL
 
 SLIDER
-92
-649
-382
-682
+94
+509
+384
+542
 stripedbass-rest-time
 stripedbass-rest-time
 0
@@ -358,15 +277,15 @@ tick (1 tick = 5 minutes)
 HORIZONTAL
 
 SLIDER
-103
-699
-384
-732
+105
+559
+386
+592
 shortnose-rest-time
 shortnose-rest-time
 0
 1000
-50.0
+57.0
 1
 1
 tick (1 tick = 5 minutes)
@@ -380,6 +299,46 @@ TEXTBOX
 Initialize Simulation
 24
 0.0
+1
+
+SLIDER
+212
+373
+384
+406
+initial-atlantic
+initial-atlantic
+0
+1000
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+114
+611
+387
+644
+atlantic-rest-time
+atlantic-rest-time
+0
+1000
+60.0
+1
+1
+tick (1 tick = 5 minutes)
+HORIZONTAL
+
+CHOOSER
+27
+23
+165
+68
+model-type
+model-type
+"penobscot" "prototype"
 1
 
 @#$#@#$#@
