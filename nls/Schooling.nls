@@ -13,6 +13,7 @@ to school  ;; prey procedure
       adjust-alewife-speed  ;; adjust speed to stay in a school, can be though of as part of "cohere"
 ;      
       move-to target-patch
+      set energy energy - 1
     ]
   ]
 end
@@ -32,6 +33,7 @@ to stage  ;; prey procedure
       adjust-alewife-speed  ;; adjust speed to stay in a school, can be though of as part of "cohere"
 ;      
       move-to target-patch
+      set energy energy + 2
     ]
   ]
 end

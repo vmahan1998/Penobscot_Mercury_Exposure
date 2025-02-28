@@ -79,6 +79,7 @@ Alewives-own [
   E-creation  ;; The energy cost for producing new chloride cells.
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
+  Met-max ;; maximum metabilic cost of new choride cell creation
 ]
 
 StripedBass-own [
@@ -136,6 +137,7 @@ StripedBass-own [
   E_creation  ;; The energy cost for producing new chloride cells.
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
+  Met-max ;; maximum metabilic cost of new choride cell creation
 ]
 
 Shortnose-own [
@@ -182,6 +184,7 @@ Shortnose-own [
   E_creation  ;; The energy cost for producing new chloride cells.
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
+  Met-max ;; maximum metabilic cost of new choride cell creation
   ]
 
 Atlantic-own [
@@ -227,6 +230,7 @@ Atlantic-own [
   E_creation  ;; The energy cost for producing new chloride cells.
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
+  Met-max ;; maximum metabilic cost of new choride cell creation
 ]
 breed [alewives prey] ;; defines alewives as prey
 breed [stripedbass predator] ;; defines striped bass as predator
