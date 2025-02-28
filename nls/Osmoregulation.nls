@@ -81,8 +81,8 @@ to regulate-chloride-cell-density
         ((chloride-density-max - chloride-density-min) * (ionregulatory-stress / 10))
 
     ;; If acclimated for a long time, reduce chloride density faster
-    if stable-time > 20 [
-      set target-chloride-density target-chloride-density * 0.9  
+    if stable-time > 288 [
+      set target-chloride-density target-chloride-density * 0.99  
       show "Acclimation: Reducing Chloride Cell Density"
     ]
 
@@ -147,8 +147,8 @@ to-report salinity-to-stress [salinity-difference chloride-density previous-stre
   set stress max (list 1 (min (list 10 stress)))
 
   ;; Acclimation reduces stress **only after prolonged stability**
-  if stable-time > 20 [
-    set stress stress * 0.98  
+  if stable-time > 288 [
+    set stress stress * 0.99  
     show "Acclimation Reducing Stress"
   ]
 

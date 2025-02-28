@@ -32,6 +32,7 @@ patches-own [
   target-patch? ;; data needs interpolation
   prey-eaten-in-patch ;; records number of prey eaten in patch
   spawning-events-in-patch ;; records number of spawning events in patch
+  staging? ;; boolean to track if agent is staging
 ]
 
 Alewives-own [
@@ -80,6 +81,7 @@ Alewives-own [
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   Met-max ;; maximum metabilic cost of new choride cell creation
+  staging? ;; boolean to track if agent is staging
 ]
 
 StripedBass-own [
@@ -138,6 +140,7 @@ StripedBass-own [
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   Met-max ;; maximum metabilic cost of new choride cell creation
+  staging? ;; boolean to track if agent is staging
 ]
 
 Shortnose-own [
@@ -185,6 +188,7 @@ Shortnose-own [
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   Met-max ;; maximum metabilic cost of new choride cell creation
+  staging? ;; boolean to track if agent is staging
   ]
 
 Atlantic-own [
@@ -231,6 +235,7 @@ Atlantic-own [
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   Met-max ;; maximum metabilic cost of new choride cell creation
+  staging? ;; boolean to track if agent is staging
 ]
 breed [alewives prey] ;; defines alewives as prey
 breed [stripedbass predator] ;; defines striped bass as predator

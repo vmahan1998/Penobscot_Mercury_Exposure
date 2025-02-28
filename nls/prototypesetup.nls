@@ -83,13 +83,14 @@ to create-fish [fish-type num-fish]
     set chloride-cell-density 10  ;; Initial chloride cell density
     set chloride-max-proliferation 0.05  ;; Max chloride cell increase per time step (5% of max density)
     set chloride-cells-this-tick 0.0  ;; Chloride cells created/destroyed this tick
-    set acclimation-rate 0.1  ;; Chloride cell density increase rate per time step
+    set acclimation-rate 0.002  ;; Chloride cell density increase rate per time step
     set C-mid 0.5  ;; Midpoint for stress buffering effectiveness
     set time-since-last-osmoregulation 0  ;; Tracks elapsed time since last regulation
     set E-osmo 0  ;; Initial osmoregulatory energy usage
     set E-base 0.04  ;; Base energy cost per chloride cell maintenance 4% in teleosts
     set stable-time 0;; 
     set Met-max 0.035 ;; max energy cost per chloride cell created 3.5% in teleosts
+    set staging? false ;; boolean for staging behavior
   ]
 end
 
@@ -112,18 +113,25 @@ to prototype-go
   ] 
   
 ;; potential behavioral rules
-  ask alewives with [age = "adult"] [
-    osmoregulate ;
-    if ionregulatory-stress <= 5 and energy > 25 [ ;; migration occurs under low stress and high energy
-    school ;align, cohere, separate, separation minimum, schoolmates
+   ask alewives with [age = "adult"] [
+     osmoregulate  ;; Always regulate osmoregulation
+    
+     if energy > 25 [  
+       school  ;; Continue schooling as long as energy is above 25
+     ]
+    
+    ;; Enter staging only if energy ≤ 25
+    if energy <= 25 [  
+      set staging? true  ;; Flag agent as staging
     ]
-    if ionregulatory-stress > 5 or energy <= 25[ ;; migration stalls under high stress or low energy
-    stage ;align, cohere, separate, separation minimum, schoolmates
-    ] 
-    ;migrate ;time, tidal-phase,  depth preference
-    ;flee-predators ;distance to nearest predator, energy, swim speed
-    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
-    ;spawning ; potential spawning encounters
+    
+    ;; Agents remain in staging until energy reaches 75 & stress = 1
+    if staging? [
+      stage  
+      if energy >= 75 and ionregulatory-stress = 1 [  
+        set staging? false  ;; Exit staging once fully recovered
+      ]
+    ]
   ]
 
   ask stripedbass with [age = "adult"] [
