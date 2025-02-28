@@ -25,7 +25,6 @@ patches-own [
   velocity ;; records values of depth-averaged velocity in patch
   depth ;; records water level of patch
   salinity ;; records levels of salinity in patch
-  osmolarity ;; calculates osmolarity of patch
   mercury ;; records levels of mercury in patch
   methylmercury ;; records levels of methylmercury in patch
   SSC ;; records levels of suspended sediment concentration in patch
