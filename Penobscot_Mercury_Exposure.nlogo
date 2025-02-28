@@ -56,31 +56,41 @@ __includes[
 to setup
   clear-all ;; reset variables
 
-  ;; initialize variables
-  set minute 0 ;; Initialize the minute variable as 0
-  set hour 0 ;; Initialize the hour variable as 0
-  set day starting-date ;; Initialize the day variable as 0
-  set month "September" ;; Initialize the month variable as 0
-  set monthnum 9 ;; Initialize the monthnum variable as 0
-  if model-type = "penobscot" [setup-GIS] ;; runs setup procedure for regular model and creates simulation environment
-  if model-type = "prototype" [prototype-setup] ;; runs setup procedure for prototype model in "nls/prototypesetup.nls"
+  ;; Initialize time variables
+  set minute 0
+  set hour 0
+  set day starting-date
+  set month "September"
+  set monthnum 9
 
+  ;; Initialize the model environment
+  if model-type = "penobscot" [setup-GIS]
+  if model-type = "prototype" [prototype-setup]
+
+  ;; Set environment parameters based on model type
   if model-type = "penobscot" [penobscot-parameters]
   if model-type = "prototype" [prototype-parameters]
 
-  ;; agent setup
-  set-default-shape turtles "fish" ;; change default shape to fish
-  setup-alewives ;; initialize alewives
-  setup-stripedbass ;; initialize striped bass
-  setup-shortnose ;; initialize shortnose sturgeon
-  setup-atlantic ;; initialize atlantic sturgeon
-  ;; initialize any other variables
+  ;; Agent setup
+  set-default-shape turtles "fish"
+
+  ;; Create fish agents randomly in the prototype model
+  if model-type = "prototype" [setup-migration]
+
+  ;; Initialize species-specific fish
+  if model-type = "penobscot" [
+    setup-alewives
+    setup-stripedbass
+    setup-shortnose
+    setup-atlantic
+  ]
 
   reset-ticks ;; Reset the tick counter
 end
 
 to go
   calendar ;; Call the calendar procedure to update hour, day, and month
+  calculate-patch-osmolarity
 
   if model-type = "penobscot" [penobscot-go]
   if model-type = "prototype" [prototype-go]
@@ -340,6 +350,97 @@ model-type
 model-type
 "penobscot" "prototype"
 1
+
+PLOT
+1040
+445
+1250
+601
+Energy Dynamics
+ticks
+values
+1.0
+100.0
+0.0
+100.0
+true
+false
+"clear-all-plots\n" ""
+PENS
+"Agent Energy" 1.0 0 -13840069 true "" "plot mean [energy] of alewives"
+
+PLOT
+1037
+283
+1249
+433
+Chloride Cells
+ticks
+Chloride Cell Percentage
+0.0
+10.0
+0.0
+100.0
+true
+false
+"clear-all-plots" ""
+PENS
+"default" 1.0 0 -8630108 true "" "plot mean [chloride-cell-density] of alewives"
+
+PLOT
+1261
+282
+1461
+432
+Stress Dynamics
+ticks
+stress
+0.0
+10.0
+0.0
+10.0
+true
+false
+"clear-all-plots" ""
+PENS
+"Ion-Regulatory Stress" 1.0 0 -13840069 true "" "plot mean [ionregulatory-stress] of alewives"
+
+PLOT
+1035
+20
+1459
+275
+Salinity
+ticks
+Salinity
+0.0
+10.0
+0.0
+35.0
+true
+true
+"" ""
+PENS
+"Salinity (psu0" 1.0 0 -16777216 true "" "plot mean [salinity] of patches"
+"Acclimated-Salinity" 1.0 0 -817084 true "" "plot mean [acclimated-salinity] of turtles"
+
+PLOT
+1262
+445
+1461
+601
+Osmoregulation Energy
+ticks
+Energy Consumed
+0.0
+1.0
+0.0
+0.005
+true
+false
+"" ""
+PENS
+"Osmo_Energy" 1.0 0 -16777216 true "" "plot mean [E-osmo] of turtles"
 
 @#$#@#$#@
 ## WHAT IS IT?

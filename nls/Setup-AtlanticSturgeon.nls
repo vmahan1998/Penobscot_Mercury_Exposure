@@ -30,14 +30,19 @@ to setup-atlantic
  set seaward-migration-time 0;; time to travel seaward after completing objective
  set migration-destination "middle estuary";; defines migratory location homing
  set at-destination? false;; is fish at migratory destination?
- set osmolarity-level 0 ;; deviance from homeostasis
+ set acclimated-salinity 35 ;; level of salinity fish is acclimated to currently 
  set ionregulatory-stress 1 ;; level of stress used for osmoregulation (chloride cell proliferation)
  set chloride-density-min 10 ;; minimum level of choride cells (present during low stress)
  set chloride-density-max 100 ;; maximum level of chloride cells (present during high stress)
  set chloride-cell-density 50 ;; Initial chloride cell density
- set chloride-stress-threshold 5 ;; Threshold for chloride cell density adjustment
- set base-energy-cost 1 ;; Base energy cost for maintaining chloride cells
- set chloride-cell-rate 0.05 ;; Rate of change for chloride cell density (teleost 0.05%)
+ set chloride-max-proliferation 0.05  ;; Max chloride cell increase per time step (5% of max density)
+ set chloride-cells-this-tick 0.0  ;; Starts at zero, adjusts dynamically per timestep
+ set acclimation-rate 0.1  ;; Chloride cell density increases at 10% per unit time
+ set C-mid 0.5  ;; 50% chloride cell density at which stress buffering is most effective
+ set time-since-last-osmoregulation 0  ;; Starts at zero, accumulates as time progresses
+ set E-osmo 0  ;; Initial osmoregulatory energy usage (scales based on chloride cell demands)
+ set E-base 0.05  ;; Base energy cost per chloride cell for maintenance
+ set E-creation 0.02  ;; Energy cost per new chloride cell created
     
  ;;assign gender to fish
  ifelse random-float 1 < 0.5 [

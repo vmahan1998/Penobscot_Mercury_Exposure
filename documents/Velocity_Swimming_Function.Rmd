@@ -1,0 +1,25 @@
+---
+title: "Velocity Swimming Function"
+author: "Vanessa Quintana"
+date: "`r Sys.Date()`"
+output: html_document
+---
+# Velocity Swimming Function
+
+if ismoregulatory-stress < 5 
+
+swim
+
+if osmoregulatory dtress >= 5 [
+
+stage
+]
+
+to stage [
+
+ask agents [
+
+move to one of nearest neighbor where pycor <= myself
+
+]
+]

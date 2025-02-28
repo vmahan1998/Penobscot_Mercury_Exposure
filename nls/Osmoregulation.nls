@@ -1,63 +1,156 @@
-to osmoregulate ;; calculate chloride cell densities
+; OSMOREGULATION
+;; Methods of Function: To model ion-regulatory stress on a scale of 1-10, we can define stress as a function of osmotic difference (abs(agent osmolarity - patch osmolarity)) and agent chloride cell density
+;; Chloride cell density can be expressed as a percentage where 10% is minumum (always expressing some chloride cell function) and 100%
+to osmoregulate
+  show "=== Osmoregulation Step ==="
   
-  ;; should be proportional where max stress leads to max chloride cell density over 7 days
-  ;; min stress leads to min chloride cell density over 7 days
-  ;; stess is measured by the difference between internal osmolarity and salinity and proportional to chloride cell density where larger amounts of chloride cells compensate for stress better
-  ;; increased stress should trigger increased cell composition and large energy cost (base energy cost (cost at homeostasis where stress = 1) + cost to make new cell (# of cells) * stress differential for increased rates of regulation at higher stress)
-  ;; decreased stress should trigger decreased cell composition and smaller energy cost (base energy cost (cost at homeostasis where stress = 1) + stress differential for increased rates of regulation at higher stress) 
-  ask turtles [
-    if ionregulatory-stress >= chloride-stress-threshold [ ; if stress is greater than threshhold, increase chloride cell density
-      increase-chloride-cell-density
-    ]
-    if ionregulatory-stress < chloride-stress-threshold [
-      decrease-chloride-cell-density
-    ]
-  ]
+  ;; Step 1: Calculate ion-regulatory stress
+  calculate-ionregulatory-stress
+  
+  ;; Step 2: Regulate chloride cell density
+  regulate-chloride-cell-density
+  
+  ;; Step 3: Deduct osmoregulation energy cost
+  calculate-osmoregulation-energy
 end
 
-to increase-chloride-cell-density ;; increasing response
-  ask turtles [
-    if chloride-cell-density < chloride-density-max and energy > 0[ ;; if chloride cell density is less than max
-      set chloride-cell-density chloride-cell-density + chloride-cell-rate ;; set chloride cell density to [cell density + (cell density*chloride-cell-rate)
-      set energy energy - (base-energy-cost + base-energy-cost * chloride-cell-density * chloride-cell-rate)  ;; Adjust energy cost as needed
+;; **Step 1: Calculate Ion-Regulatory Stress**
+to calculate-ionregulatory-stress
+    ;; Get previous salinity (safe check)
+    let previous-salinity 35
+    if previous-patch != nobody [
+      set previous-salinity [salinity] of previous-patch
     ]
-    ;if energy < 0
-    ;decrease osmolarity-level
-  ]
-end
 
-to decrease-chloride-cell-density ;; decreasing response
-  ask turtles [
+    ;; Get current patch salinity
+    let patch-salinity [salinity] of patch-here
+    let agent-salinity acclimated-salinity
+    let previous-stress ionregulatory-stress
+
+    ;; Compute **scaled salinity difference** (relative to acclimated level)
+    let scaled-difference abs(agent-salinity - patch-salinity)
+
+    ;; Compute **salinity-driven stress**
+    let salinity-stress salinity-to-stress scaled-difference chloride-cell-density previous-stress 
+
+    ;; **Acclimation logic**: If salinity remains stable, adjust acclimated salinity
+    let salinity-change abs(patch-salinity - previous-salinity)
+    if salinity-change < 1 [  ;; Adjust threshold as needed
+      set stable-time stable-time + 1
+    ] 
+    if salinity-change >= 1 [
+      set stable-time 0  ;; Reset if salinity fluctuates
+    ]
+
+    ;; **NEW: Delay Stress Reduction Until Chloride Cells Increase**
+    if stable-time > 4 and chloride-cell-density > chloride-density-min [
+      set salinity-stress salinity-stress * 0.98  
+      set acclimated-salinity acclimated-salinity + (patch-salinity - acclimated-salinity) * 0.02  
+      show "Acclimation Occurring: Adjusting Acclimated Salinity"
+    ]
+
+    ;; Compute chloride cell buffering
+    let stress-reduction calculate-stress-reduction-chloride-function chloride-cell-density
+
+    ;; **NEW: Stress Only Decreases When Chloride Cells Increase**
     if chloride-cell-density > chloride-density-min [
-      set chloride-cell-density chloride-cell-density - (chloride-cell-density * chloride-cell-rate)
-      set energy energy - (base-energy-cost + base-energy-cost * chloride-cell-density * chloride-cell-rate)  ;; Adjust energy cost as needed
+      set ionregulatory-stress max (list 1 (salinity-stress - stress-reduction * 0.8))  
+    ] 
+    if chloride-cell-density <= chloride-density-min [
+      set ionregulatory-stress salinity-stress  ;; No stress reduction if chloride cells are too low
     ]
-    ;increase osmolarity-level
+
+    ;; Debugging prints
+    show (word "Salinity Change: " salinity-change " | Stable Time: " stable-time)
+    show (word "Acclimated Salinity: " acclimated-salinity " | Patch Salinity: " patch-salinity)
+    show (word "Ion-Regulatory Stress: " ionregulatory-stress " | Stress Reduction: " stress-reduction)
+
+    ;; **Update tracking variables**
+    set previous-patch patch-here
+    set previous-stress ionregulatory-stress
+end
+
+;; **Step 2: Regulate Chloride Cell Density**
+to regulate-chloride-cell-density
+  set time-since-last-osmoregulation time-since-last-osmoregulation + 1
+
+  if time-since-last-osmoregulation >= acclimation-rate [
+    
+    let target-chloride-density chloride-density-min + 
+        ((chloride-density-max - chloride-density-min) * (ionregulatory-stress / 10))
+
+    ;; If acclimated for a long time, reduce chloride density faster
+    if stable-time > 20 [
+      set target-chloride-density target-chloride-density * 0.9  
+      show "Acclimation: Reducing Chloride Cell Density"
+    ]
+
+    ;; Constrain within limits
+    set target-chloride-density max (list chloride-density-min (min (list chloride-density-max target-chloride-density)))
+
+    ;; Increase adjustment rate  
+    let change (target-chloride-density - chloride-cell-density) * (chloride-max-proliferation * 2)  
+
+    ;; Allow larger changes  
+    let max-change-rate (chloride-density-max - chloride-density-min) * chloride-max-proliferation  
+    set change max (list (-1 * max-change-rate) (min (list max-change-rate change)))
+
+    ;; Reduce change if energy is low
+    if energy <= 50 [ 
+      set change change * 0.5  
+    ]
+
+    ;; Apply the change
+    set chloride-cell-density chloride-cell-density + change
+    set chloride-cell-density max (list chloride-density-min (min (list chloride-density-max chloride-cell-density)))
+
+    show (word "Chloride Cell Change: " change " | Target Density: " target-chloride-density " | Current Density: " chloride-cell-density)
+
+    ;; Reset osmoregulation timer
+    set time-since-last-osmoregulation 0  
   ]
 end
 
-to calculate-ionregulatory-stress ;; stress factor
-  ask turtles [
-    let patch-osmolarity [osmolarity] of patch-here
-    let agent-osmolarity osmolarity-level
-    let chloride-density chloride-cell-density
-    set ionregulatory-stress osmolarity-to-stress agent-osmolarity patch-osmolarity chloride-density
-  ]
+;; **Step 3: Calculate Osmoregulation Energy**
+to calculate-osmoregulation-energy
+    let maintenance-cost E-base * chloride-cell-density
+    let new-cell-cost E-creation * chloride-cells-this-tick
+    set E-osmo maintenance-cost + new-cell-cost
+
+    ;; Debugging prints
+    show (word "Osmoregulation Energy Cost: " E-osmo " | Maintenance: " maintenance-cost " | New Cells: " new-cell-cost)
+
+    set energy max (list 0 (energy - E-osmo))  
 end
 
-to-report osmolarity-to-stress [agent-osmolarity patch-osmolarity chloride-density]
-  ;; Calculate the difference between agent osmolarity and patch osmolarity
-  let difference abs(agent-osmolarity - patch-osmolarity)
-  
-  ;; Normalize the difference to a scale from 1 to 10
-  ;; Assuming a maximum difference of 100 for this example; adjust as needed
-  let max-difference 100
-  let stress min (list 10 (max (list 1 (10 * difference / max-difference))))
-  
-  ;; Adjust stress based on chloride cell density
-  ;; Example adjustment: reduce stress by a factor proportional to chloride cell density
-  let adjusted-stress stress - (chloride-density * 0.1)  ;; Adjust the factor as needed
-  set adjusted-stress max (list 1 adjusted-stress)  ;; Ensure stress does not go below 1
-  
-  report adjusted-stress
+;; **Chloride Buffering Function**
+to-report calculate-stress-reduction-chloride-function [chloride-density]
+  let reduction 5 * (1 - exp(chloride-density * -0.5 / C-mid))  ;; Weakened buffering
+
+  show (word "Chloride Buffering Effect: " reduction " | Chloride Density: " chloride-density)
+  report reduction
+end
+
+;; **Salinity-Based Stress Function**
+to-report salinity-to-stress [salinity-difference chloride-density previous-stress]
+  ;; Logarithmic scaling so large differences matter more
+  let scaled-difference (log (1 + abs(salinity-difference)) 10) * 10
+
+  ;; Compute buffering effect
+  let buffering-factor 1 + exp(-2 * (chloride-density / C-mid))  
+
+  ;; Compute stress based on salinity difference
+  let stress (scaled-difference / buffering-factor)  
+
+  ;; Ensure stress stays within 1-10 range
+  set stress max (list 1 (min (list 10 stress)))
+
+  ;; Acclimation reduces stress **only after prolonged stability**
+  if stable-time > 20 [
+    set stress stress * 0.98  
+    show "Acclimation Reducing Stress"
+  ]
+
+  show (word "Ion-Regulatory Stress: " stress " | Salinity Difference: " salinity-difference " | Buffering Factor: " buffering-factor)
+  report stress
 end

@@ -15,6 +15,7 @@ globals [
   tide-phase ;; tracks tidal phase
   mean-daytime-prey-eaten ;; records mean number of daily prey eaten
   numAlewivesEaten ;; records number of alewives eaten by Striped Bass
+  salinity-cycle
   ]
 
 patches-own [ 
@@ -63,15 +64,22 @@ Alewives-own [
   at-destination? ;; is fish at migratory destination?
   landward-migration-time ;; time to travel inland and complete objective
   seaward-migration-time ;; time to travel seaward after completing objective
-  osmolarity-level ;; level of salinity fish is acclimated to currently
+  acclimated-salinity ;; level of salinity fish is acclimated to currently
   ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
   chloride-density-min ;; minimum level of choride cells (present during low stress)
   chloride-density-max ;; maximum level of chloride cells (present during high stress)
   chloride-cell-density  ;; Current chloride cell density
-  chloride-stress-threshold  ;; Threshold for chloride cell density adjustment
-  response-time  ;; Time to respond to stress
-  base-energy-cost  ;; Base energy cost for maintaining chloride cells
-  chloride-cell-rate  ;; Rate of change for chloride cell density
+  chloride-max-proliferation  ;; The max number of chloride cells that can be expressed per time step.
+  chloride-cells-this-tick  ;; The number of chloride cells created (or destroyed) in the current time step.
+  stress_threshold  ;; stress level determining expression of chloride cells
+  acclimation-rate  ;; The rate at which chloride cell density increases over time.
+  C-mid  ;; The chloride cell density at which stress buffering is 50% effective.
+  time-since-last-osmoregulation  ;; The time elapsed since the last chloride cell regulation event.
+  E-osmo  ;; Total energy used for ion regulation (osmoregulation).
+  E-base  ;; Base energy cost for maintaining chloride cells
+  E-creation  ;; The energy cost for producing new chloride cells.
+  previous-patch ;; stores previous patch
+  stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
 ]
 
 StripedBass-own [
@@ -113,15 +121,22 @@ StripedBass-own [
   at-destination? ;; is fish at migratory destination?
   landward-migration-time ;; time to travel inland and complete objective
   seaward-migration-time ;; time to travel seaward after completing objective
-  osmolarity-level ;; level of salinity fish is acclimated to currently
+  acclimated-salinity ;; level of salinity fish is acclimated to currently
   ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
   chloride-density-min ;; minimum level of choride cells (present during low stress)
   chloride-density-max ;; maximum level of chloride cells (present during high stress)
   chloride-cell-density  ;; Current chloride cell density
-  chloride-stress-threshold  ;; Threshold for chloride cell density adjustment
-  response-time  ;; Time to respond to stress
-  base-energy-cost  ;; Base energy cost for maintaining chloride cells
-  chloride-cell-rate  ;; Rate of change for chloride cell density
+  chloride-max-proliferation  ;; The max number of chloride cells that can be expressed per time step.
+  chloride-cells-this-tick  ;; The number of chloride cells created (or destroyed) in the current time step.
+  stress_threshold  ;; stress level determining expression of chloride cells
+  acclimation-rate  ;; The rate at which chloride cell density increases over time.
+  C-mid  ;; The chloride cell density at which stress buffering is 50% effective.
+  time-since-last-osmoregulation  ;; The time elapsed since the last chloride cell regulation event.
+  E-osmo  ;; Total energy used for ion regulation (osmoregulation).
+  E-base  ;; Base energy cost for maintaining chloride cells
+  E_creation  ;; The energy cost for producing new chloride cells.
+  previous-patch ;; stores previous patch
+  stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
 ]
 
 Shortnose-own [
@@ -152,15 +167,22 @@ Shortnose-own [
   seaward-migration-time ;; time to travel seaward after completing objective
   migration-destination ;; defines migratory location homing
   at-destination? ;; is fish at migratory destination?
-  osmolarity-level ;; level of salinity fish is acclimated to currently
+  acclimated-salinity ;; level of salinity fish is acclimated to currently
   ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
   chloride-density-min ;; minimum level of choride cells (present during low stress)
   chloride-density-max ;; maximum level of chloride cells (present during high stress)
   chloride-cell-density  ;; Current chloride cell density
-  chloride-stress-threshold  ;; Threshold for chloride cell density adjustment
-  response-time  ;; Time to respond to stress
-  base-energy-cost  ;; Base energy cost for maintaining chloride cells
-  chloride-cell-rate  ;; Rate of change for chloride cell density
+  chloride-max-proliferation  ;; The max number of chloride cells that can be expressed per time step.
+  chloride-cells-this-tick  ;; The number of chloride cells created (or destroyed) in the current time step.
+  stress_threshold  ;; stress level determining expression of chloride cells
+  acclimation-rate  ;; The rate at which chloride cell density increases over time.
+  C-mid  ;; The chloride cell density at which stress buffering is 50% effective.
+  time-since-last-osmoregulation  ;; The time elapsed since the last chloride cell regulation event.
+  E-osmo  ;; Total energy used for ion regulation (osmoregulation).
+  E-base  ;; Base energy cost for maintaining chloride cells
+  E_creation  ;; The energy cost for producing new chloride cells.
+  previous-patch ;; stores previous patch
+  stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   ]
 
 Atlantic-own [
@@ -191,15 +213,21 @@ Atlantic-own [
   seaward-migration-time ;; time to travel seaward after completing objective
   migration-destination ;; defines migratory location homing
   at-destination? ;; is fish at migratory destination?
-  osmolarity-level ;; level of salinity fish is acclimated to currently
+  acclimated-salinity ;; level of salinity fish is acclimated to currently
   ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
   chloride-density-min ;; minimum level of choride cells (present during low stress)
   chloride-density-max ;; maximum level of chloride cells (present during high stress)
-  chloride-cell-density  ;; Current chloride cell density
-  chloride-stress-threshold  ;; Threshold for chloride cell density adjustment
-  response-time  ;; Time to respond to stress
-  base-energy-cost  ;; Base energy cost for maintaining chloride cells
-  chloride-cell-rate  ;; Rate of change for chloride cell density
+  chloride-max-proliferation  ;; The max number of chloride cells that can be expressed per time step.
+  chloride-cells-this-tick  ;; The number of chloride cells created (or destroyed) in the current time step.
+  stress_threshold  ;; stress level determining expression of chloride cells
+  acclimation-rate  ;; The rate at which chloride cell density increases over time.
+  C-mid  ;; The chloride cell density at which stress buffering is 50% effective.
+  time-since-last-osmoregulation  ;; The time elapsed since the last chloride cell regulation event.
+  E-osmo  ;; Total energy used for ion regulation (osmoregulation).
+  E-base  ;; Base energy cost for maintaining chloride cells
+  E_creation  ;; The energy cost for producing new chloride cells.
+  previous-patch ;; stores previous patch
+  stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
 ]
 breed [alewives prey] ;; defines alewives as prey
 breed [stripedbass predator] ;; defines striped bass as predator

@@ -1,0 +1,103 @@
+---
+title: "Osmoregulation"
+author: "Vanessa Quintana"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+# NetLogo Osmoregulation Function
+
+## Initialization
+
+### Patch Variables
+
+| Variable Name | Definition |
+|---------------------------------------|---------------------------------|
+| **Salinity** | The salt concentration of a given patch, derived from hydrodynamic model inputs. |
+| **Osmolarity (O_patch)** | The osmotic concentration of a patch, determined by salinity. |
+
+### Agent Variables
+
+| Variable Name | Definition |
+|---------------------------------------|---------------------------------|
+| **osmolarity-level (O_agent)** | The osmolarity level the agent is currently acclimated to. |
+| **ionregulatory-stress (S)** | The level of stress an agent experiences when regulating ion balance due to osmotic difference. |
+| **chloride-density-min (C_min)** | Minimum level of chloride cells, present even in low-stress conditions. |
+| **chloride-density-max (C_max)** | Maximum level of chloride cells at high stress. |
+| **chloride-cell-density (C)** | The current number of chloride cells expressed by the agent. |
+| **chloride-max-proliferation** | The max number of chloride cells that can be expressed per time step. |
+| **chloride-cells-this-tick (C_tick)** | The number of chloride cells created (or destroyed) in the current time step. |
+| **acclimation-rate (α)** | The rate at which chloride cell density increases over time. |
+| **C_mid** | The chloride cell density at which **stress buffering is 50% effective**. |
+| **time-since-last-osmoregulation** | The time elapsed since the last chloride cell regulation event. |
+| **E_agent** | The agent’s total available energy for physiological functions. |
+| **E_osmo** | Total energy used for ion regulation (osmoregulation). |
+| **E_base** | The base energy cost per chloride cell. |
+| **E_creation** | The energy cost for producing new chloride cells. |
+
+## Ion-Regulatory Stress
+
+Ion-regulatory stress is modeled as:
+
+$$
+S = \frac{|O_{agent} - O_{patch}|}{1 + e^{-(C - C_{mid})}} \times 10
+$$
+
+Where: - $O_{agent}$ and $O_{patch}$ represent internal and external osmolarity, respectively.
+- $C$ is the chloride cell density, with $C_{mid}$ defining the midpoint for effective stress buffering.
+
+## Chloride Cell Density
+
+Chloride cell density follows an **exponential acclimation model**:
+
+$$
+C(t) = C_{prev} + (C_{max} - C_{prev}) \times (1 - e^{-\alpha t})
+$$
+
+Where: - $C_{prev}$ is the chloride density at the previous time step.
+- $C_{max}$ is the maximum chloride cell expression under stress.
+- $\alpha$ is the acclimation rate constant.
+- $t$ represents **time since the last osmoregulation event**.
+
+## Conceptual Formula for Chloride Cell Proliferation
+
+Instead of immediate chloride cell proliferation, it is controlled by:
+
+$$
+C = C + \min(\text{proliferation-rate}, C_{max} - C)
+$$
+
+Where: - **Proliferation rate** determines the **maximum allowable increase** per time step.
+- $C_{max} - C$ ensures that chloride density does not exceed its upper bound.
+
+If the **time since last osmoregulation** exceeds an acclimation threshold, then chloride cell density increases at the **allowed rate**, so:
+
+if "**time-since-last-osmoregulation" \> acclimation-rate (α) [**
+
+$$
+C = C + \min(\text{proliferation-rate}, C_{max} - C)
+$$]
+
+## Osmoregulation Energy Cost
+
+Energy required for ion regulation:
+
+$$
+E_{osmo} = (E_{base} \times C) + (E_{creation} \times C_{tick})
+$$
+
+Where: - **E_base** represents the energy cost per chloride cell for maintenance.
+- **C** is the current chloride density.
+- **E_creation** represents the cost of producing new chloride cells.
+- **C_tick** is the number of newly created chloride cells in the current time step.
+
+### Agent Energy Balance
+
+$$
+E_{agent} = E_{agent} - E_{osmo}
+$$
+
+This equation ensures that fish allocate energy efficiently, balancing osmoregulation with other survival functions.
