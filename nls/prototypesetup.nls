@@ -22,7 +22,7 @@ to prototype-parameters
     ;set salinity 10
     set mercury random-float 700  ;; Random mercury concentration
     set methylmercury random-float 65  ;; Random methylmercury concentration
-    set SSC random-float 0.0004  ;; Random suspended sediment concentration
+    set SPM random-float 0.0004  ;; Random suspended sediment concentration
   ] 
 
   setup-migration
@@ -62,10 +62,10 @@ to create-fish [fish-type num-fish]
     ;; Contaminant exposure tracking
     set hg-exposure-duration 0  ;; Time spent in high mercury patches
     set mehg-exposure-duration 0  ;; Time spent in high methylmercury patches
-    set SSC-exposure-duration 0  ;; Time spent in high sediment concentration patches
+    set hg-bioaccumulation-risk 0  ;; Time spent in high sediment concentration patches
+    set mehg-bioaccumulation-risk 0  ;; Time spent in high sediment concentration patches
     set hg-exposure-total 0  ;; Cumulative mercury exposure
     set mehg-exposure-total 0  ;; Cumulative methylmercury exposure
-    set SSC-total 0  ;; Cumulative suspended sediment exposure
 
     ;; Migration tracking variables
     set migration-action "spawning"  ;; Migratory purpose
@@ -109,7 +109,7 @@ to prototype-go
     set salinity update-salinity ticks
     set mercury random-float 700  ;; random value between 0.0 and 700.0
     set methylmercury random-float 65  ;; random value between 0 and 65
-    set SSC random-float 0.0004  ;; random value between 0 and 0.0004
+    set SPM random-float 0.0004  ;; random value between 0 and 0.0004
   ] 
   
 ;; potential behavioral rules

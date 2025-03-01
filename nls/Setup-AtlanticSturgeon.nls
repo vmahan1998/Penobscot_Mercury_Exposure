@@ -18,12 +18,12 @@ to setup-atlantic
  set max-speed 5.0 ;; species limit 
  set energy 100;; energy allowance
  set rest-time atlantic-rest-time;; time in ticks to recoup energy (could be foraging for more energy)
- set hg-exposure-duration 0;; time spent highly contaminated mercury patches
- set mehg-exposure-duration 0;; time spent highly contaminated methylmercury patches
- set SSC-exposure-duration 0;; ;; time spent in patches with high suspended sediment concentrations
- set hg-exposure-total 0;; sum of known mercury contamination levels exposed to
- set mehg-exposure-total 0;; sum of known mercury contamination levels exposed to
- set SSC-total 0;; sum of known sediment concentration levels exposed to
+ set hg-exposure-duration 0  ;; Time spent in high mercury patches
+ set mehg-exposure-duration 0  ;; Time spent in high methylmercury patches
+ set hg-bioaccumulation-risk 0  ;; Time spent in high sediment concentration patches
+ set mehg-bioaccumulation-risk 0  ;; Time spent in high sediment concentration patches
+ set hg-exposure-total 0  ;; Cumulative mercury exposure
+ set mehg-exposure-total 0  ;; Cumulative methylmercury exposure
  set migration-action "foraging";; defines migratory purpose
  set completed-action? false;; has migratory objective been completed?
  set landward-migration-time 0;; time to travel inland and complete objective

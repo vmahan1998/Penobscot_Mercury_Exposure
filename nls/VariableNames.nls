@@ -10,7 +10,7 @@ globals [
   velocity-data ;; velocity file data
   depth-data ;; depth data
   salinity-data ;; salinity data
-  SSC-data ;; Suspended Sediments data
+  SPM-data ;; Suspended Sediments data
   mercury-data ;; mercury contamination data
   tide-phase ;; tracks tidal phase
   mean-daytime-prey-eaten ;; records mean number of daily prey eaten
@@ -27,7 +27,7 @@ patches-own [
   salinity ;; records levels of salinity in patch
   mercury ;; records levels of mercury in patch
   methylmercury ;; records levels of methylmercury in patch
-  SSC ;; records levels of suspended sediment concentration in patch
+  SPM ;; records levels of suspended sediment concentration in patch
   interpolated-patch? ;; was data interpolated for this area
   target-patch? ;; data needs interpolation
   prey-eaten-in-patch ;; records number of prey eaten in patch
@@ -54,10 +54,10 @@ Alewives-own [
   rest-time ;; time time in ticks to recoup energy (could be foraging for more energy)
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
-  SSC-exposure-duration ;; ;; time spent in patches with high suspended sediment concentrations
+  hg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with mercury exposure
+  mehg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
   hg-exposure-total ;; sum of known mercury contamination levels exposed to
   mehg-exposure-total ;; sum of known mercury contamination levels exposed to
-  SSC-total ;; sum of known sediment concentration levels exposed to
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
   migration-destination ;; defines migratory location homing
@@ -113,10 +113,10 @@ StripedBass-own [
   numAlewivesEaten ;; total alewives eaten
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
-  SSC-exposure-duration ;; ;; time spent in patches with high suspended sediment concentrations
+  hg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with mercury exposure
+  mehg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
   hg-exposure-total ;; sum of known mercury contamination levels exposed to
   mehg-exposure-total ;; sum of known mercury contamination levels exposed to
-  SSC-total ;; sum of known sediment concentration levels exposed to
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
   migration-destination ;; defines migratory location homing
@@ -161,10 +161,10 @@ Shortnose-own [
   rest-time ;; time in ticks to recoup energy (could be foraging for more energy)
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
-  SSC-exposure-duration ;; ;; time spent in patches with high suspended sediment concentrations
+  hg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with mercury exposure
+  mehg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
   hg-exposure-total ;; sum of known mercury contamination levels exposed to
   mehg-exposure-total ;; sum of known mercury contamination levels exposed to
-  SSC-total ;; sum of known sediment concentration levels exposed to
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
   landward-migration-time ;; time to travel inland and complete objective
@@ -209,10 +209,10 @@ Atlantic-own [
   rest-time ;; time in ticks to recoup energy (could be foraging for more energy)
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
-  SSC-exposure-duration ;; ;; time spent in patches with high suspended sediment concentrations
+  hg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with mercury exposure
+  mehg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
   hg-exposure-total ;; sum of known mercury contamination levels exposed to
   mehg-exposure-total ;; sum of known mercury contamination levels exposed to
-  SSC-total ;; sum of known sediment concentration levels exposed to
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
   landward-migration-time ;; time to travel inland and complete objective
