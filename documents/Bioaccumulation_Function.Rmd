@@ -9,43 +9,29 @@ output: html_document
 
 ### Patch Variables
 
-+----------------------------------------+--------------------------------------------------------------------------------------------------------------------+
-| Variable Name                          | Definition                                                                                                         |
-+========================================+====================================================================================================================+
-| **Mercury** $Hg_{patch}$               | The mercury concentration of a given patch.                                                                        |
-+----------------------------------------+--------------------------------------------------------------------------------------------------------------------+
-| **Mercury** $MeHg_{patch}$             | The methylmercury concentration of a given patch.                                                                  |
-+----------------------------------------+--------------------------------------------------------------------------------------------------------------------+
+| Variable Name | Definition |
+|----|----|
+| **Mercury** $Hg_{patch}$ | The mercury concentration of a given patch. |
+| **Mercury** $MeHg_{patch}$ | The methylmercury concentration of a given patch. |
 | **Suspended-particulate-matter** $SPM$ | The concentration of suspended particulate matter (SPM) for a given patch, derived from hydrodynamic model inputs. |
-+----------------------------------------+--------------------------------------------------------------------------------------------------------------------+
 
 ### Agent Variables
 
-+---------------------------------------------+-------------------------------------------------------------------------------------------------+
-| Variable Name                               | Definition                                                                                      |
-+=============================================+=================================================================================================+
-| **ionregulatory-stress** $I_{stress}$       | The level of stress an agent experiences when regulating ion balance due to osmotic difference. |
-+---------------------------------------------+-------------------------------------------------------------------------------------------------+
-| **Hg-exposure-duration** $t_{Hg}$           | The amount of time an agent is exposed to mercury above healthy levels.                         |
-+---------------------------------------------+-------------------------------------------------------------------------------------------------+
-| **MeHg-exposure-duration** $t_{MeHg}$       | The amount of time an agent is exposed to methylmercury above healthy levels.                   |
-+---------------------------------------------+-------------------------------------------------------------------------------------------------+
-| **Hg-bioaccumulation-risk** $Hg_{risk}$     | The risk associated for bioaccumulation of mercury                                              |
-+---------------------------------------------+-------------------------------------------------------------------------------------------------+
-| **MeHg-bioaccumulation-risk** $MeHg_{risk}$ | The risk associated for bioaccumulation of methylmercury                                        |
-+---------------------------------------------+-------------------------------------------------------------------------------------------------+
-| **Hg-exposure-total** $Hg_{net}$            | The net sum of mercury exposed to during migration.                                             |
-+---------------------------------------------+-------------------------------------------------------------------------------------------------+
-| **MeHg-exposure-total** $MeHg_{net}$        | The net sum of methylmercury exposed to during migration.                                       |
-+---------------------------------------------+-------------------------------------------------------------------------------------------------+
+| Variable Name | Definition |
+|----|----|
+| **ionregulatory-stress** $I_{stress}$ | The level of stress an agent experiences when regulating ion balance due to osmotic difference. |
+| **Hg-exposure-duration** $t_{Hg}$ | The amount of time an agent is exposed to mercury above healthy levels. |
+| **MeHg-exposure-duration** $t_{MeHg}$ | The amount of time an agent is exposed to methylmercury above healthy levels. |
+| **Hg-bioaccumulation-risk** $Hg_{risk}$ | The risk associated for bioaccumulation of mercury |
+| **MeHg-bioaccumulation-risk** $MeHg_{risk}$ | The risk associated for bioaccumulation of methylmercury |
+| **Hg-exposure-total** $Hg_{net}$ | The net sum of mercury exposed to during migration. |
+| **MeHg-exposure-total** $MeHg_{net}$ | The net sum of methylmercury exposed to during migration. |
 
 ## Initialization
 
-+--------------+-------------------+----------------------------------------------+
-| Variable     | Initialized Value | Justification                                |
-+:============:+:=================:+:============================================:+
-| $I_{stress}$ | 1                 | Acclimated agents have minimal stress levels |
-+--------------+-------------------+----------------------------------------------+
+| Variable | Initialized Value | Justification |
+|:--:|:--:|:--:|
+| $I_{stress}$ | 1 | Acclimated agents have minimal stress levels |
 
 ### Global Variables
 

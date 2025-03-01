@@ -1,3 +1,27 @@
 to swim
- 
+ ; every agent has a current swimming speed and maximum speed
+ ; every agent has energy 
+ ; swimmimg at higher speeds requires more energy
+ ; swimming at low speeds requires less energy
+  ; where fish change heading to face highest water velocity neighbor 
+  ;(if landward-migration? true or [difficulty factor > 5 and seaward-migration? true]) face nearest-neighbor with highest absolute value of velocity
+  
+  ;(if landward-migration? false or [difficulty factor > 5 and seaward-migration? false]) face nearest-neighbor with highest absolute value of velocity
+ ; fish are always swimming
+ ; selective tidal stream transport 
 end
+
+; during landward migration:
+; every tick fish will swim but with the goal of entering system
+   ; energy use and difficulty will stay the same but direction will change
+   ; where fish move parallel to water velocity
+; alternative movement for tidal behavior if fish has behavior
+; if energy is low or stress is high, stage 
+; where staging is finding low velocity patches to wait in
+
+; during seaward migration:
+   ; energy use and difficulty will stay the same but direction will change
+; every tick fish will swim but with the goal of leaving the system
+; alternative movement for tidal behavior if fish has behavior
+; if energy is low or stress is high, stage 
+; where staging is finding low velocity patches to wait in

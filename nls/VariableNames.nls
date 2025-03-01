@@ -15,7 +15,6 @@ globals [
   tide-phase ;; tracks tidal phase
   mean-daytime-prey-eaten ;; records mean number of daily prey eaten
   numAlewivesEaten ;; records number of alewives eaten by Striped Bass
-  salinity-cycle
   ]
 
 patches-own [ 
@@ -32,7 +31,8 @@ patches-own [
   target-patch? ;; data needs interpolation
   prey-eaten-in-patch ;; records number of prey eaten in patch
   spawning-events-in-patch ;; records number of spawning events in patch
-  staging? ;; boolean to track if agent is staging
+  staging-in-patch ;; records sum of number of staging agents in patch
+  tidal-transport-in-patch ;; records sum of number of staging agents in patch
 ]
 
 Alewives-own [
@@ -82,6 +82,9 @@ Alewives-own [
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   Met-max ;; maximum metabilic cost of new choride cell creation
   staging? ;; boolean to track if agent is staging
+  selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
+  landward-migration? ;; boolean to track if agent is migrating landward
+  seaward-migration? ;; boolean to track if agent is migrating seaward
 ]
 
 StripedBass-own [
@@ -141,6 +144,9 @@ StripedBass-own [
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   Met-max ;; maximum metabilic cost of new choride cell creation
   staging? ;; boolean to track if agent is staging
+  selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
+  landward-migration? ;; boolean to track if agent is migrating landward
+  seaward-migration? ;; boolean to track if agent is migrating seaward
 ]
 
 Shortnose-own [
@@ -189,6 +195,9 @@ Shortnose-own [
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   Met-max ;; maximum metabilic cost of new choride cell creation
   staging? ;; boolean to track if agent is staging
+  selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
+  landward-migration? ;; boolean to track if agent is migrating landward
+  seaward-migration? ;; boolean to track if agent is migrating seaward
   ]
 
 Atlantic-own [
@@ -236,6 +245,9 @@ Atlantic-own [
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   Met-max ;; maximum metabilic cost of new choride cell creation
   staging? ;; boolean to track if agent is staging
+  selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
+  landward-migration? ;; boolean to track if agent is migrating landward
+  seaward-migration? ;; boolean to track if agent is migrating seaward
 ]
 breed [alewives prey] ;; defines alewives as prey
 breed [stripedbass predator] ;; defines striped bass as predator

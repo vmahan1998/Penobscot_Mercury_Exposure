@@ -50,7 +50,7 @@ __includes[
   "nls/Prey-on-Alewives.nls"
   "nls/Mercury-Contamination.nls"
   "nls/Osmoregulation.nls"
-  "nls/Calculate-Osmolarity.nls"
+  "nls/Staging.nls"
 ]
 
 to setup
