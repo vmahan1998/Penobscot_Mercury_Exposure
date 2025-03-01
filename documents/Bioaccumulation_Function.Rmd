@@ -1,0 +1,82 @@
+---
+title: "Contamination Dynamics"
+author: "Vanessa Quintana"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Agent-Based Modeling: Bioaccumulation Dynamics Function
+
+### Patch Variables
+
+| Variable Name | Definition |
+|---------------------------------------|---------------------------------|
+| **Mercury** $Hg_{patch}$ | The mercury concentration of a given patch. |
+| **Mercury** $MeHg_{patch}$ | The methylmercury concentration of a given patch. |
+| **Suspended-particulate-matter** $SPM$ | The concentration of suspended particulate matter (SPM) for a given patch, derived from hydrodynamic model inputs. |
+
+### Agent Variables
+
+| Variable Name | Definition |
+|---------------------------------------|---------------------------------|
+| **ionregulatory-stress** $I_{stress}$ | The level of stress an agent experiences when regulating ion balance due to osmotic difference. |
+| **Hg-exposure-duration** $t_{Hg}$ | The amount of time an agent is exposed to methylmercury above healthy levels. |
+| **MeHg-exposure-duration** $t_{MeHg}$ | The amount of time an agent is exposed to methylmercury above healthy levels. |
+| **Hg-bioaccumulation-risk** $Hg_{risk}$ | The risk associated for bioaccumulation of methylmercury |
+| **MeHg-bioaccumulation-risk** $MeHg_{risk}$ | The risk associated for bioaccumulation of methylmercury |
+| **Hg-exposure-total** $Hg_{net}$ | The net sum of mercury exposed to during migration. |
+| **MeHg-exposure-total** $MeHg_{net}$ | The net sum of methylmercury exposed to during migration. |
+
+## Initialization
+
+| Variable | Initialized Value | Justification |
+|:-------------:|:-------------:|:-----------------------------------------:|
+| $I_{stress}$ | 1 | Acclimated agents have minimal stress levels |
+
+## Exposure Duration
+
+Where:
+
+-   $t_{Hg}$
+
+-   $Hg_{patch}$
+
+-   $t_{MeHg}$
+
+-   $MeHg_{patch}$
+
+## Bioaccumulation Risk
+
+$$
+Hg_{risk} = \sum_{t=1}^T Hg_{risk} * (1+I_{stress}) * (1+SPM)
+$$
+
+$$
+MeHg_{risk} = \sum_{t=1}^T MeHg_{risk} * (1+I_{stress}) * (1+SPM)
+$$
+
+Where:
+
+-   $I_{stress}$
+
+-   $SPM$
+
+-   $Hg_{patch}$
+
+-   $Hg_{risk}$
+
+-   $MeHg_{patch}$
+
+-   $MeHg_{risk}$
+
+## Exposure Total
+
+Where:
+
+-   $Hg_{net}$
+
+-   $Hg_{patch}$
+
+-   $MeHg_{net}$
+
+-   $MeHg_{patch}$
