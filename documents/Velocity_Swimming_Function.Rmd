@@ -49,7 +49,7 @@ Where:
 
 The difficulty factor quantifies the additional energetic burden of swimming against different velocity conditions. It scales with the size and swimming capability of the agent.
 
-$$D_f = \left( \frac{|V_{patch}|}{V_{max}} \right)^\beta$$
+$$D_{f} = \left( \frac{|V_{patch}|}{V_{max}*(\frac{M_{agent}}{M_{max}})} \right)^\beta$$
 Where:
 
 -   $M_{agent}$

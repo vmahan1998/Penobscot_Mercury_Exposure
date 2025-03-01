@@ -1,27 +1,91 @@
 to swim
- ; every agent has a current swimming speed and maximum speed
- ; every agent has energy 
- ; swimmimg at higher speeds requires more energy
- ; swimming at low speeds requires less energy
-  ; where fish change heading to face highest water velocity neighbor 
-  ;(if landward-migration? true or [difficulty factor > 5 and seaward-migration? true]) face nearest-neighbor with highest absolute value of velocity
+  if landward-migration? = true [ ;; general goal of moving upstream landward   
+    calculate-difficulty-landward
+    calculate-swimming-speed-landward
+    calculate-swim-energy
+    if energy > 25 [  
+       ;school  ;; Continue schooling as long as energy is above 25
+     ]
+    
+    ;; Enter staging only if energy ≤ 25
+    if energy <= 25 [  
+      set staging? true  ;; Flag agent as staging
+    ]
+    
+    ;; Agents remain in staging until energy reaches 75 & stress = 1
+    if staging? [
+      ;stage  
+      if energy >= 75 and ionregulatory-stress = 1 [  
+        set staging? false  ;; Exit staging once fully recovered
+      ]
+    ]
+  ]
   
-  ;(if landward-migration? false or [difficulty factor > 5 and seaward-migration? false]) face nearest-neighbor with highest absolute value of velocity
- ; fish are always swimming
- ; selective tidal stream transport 
+  if seaward-migration? = true [ ;; general goal of moving downstream seaward
+    calculate-difficulty-seaward
+    calculate-swimming-speed-seaward
+    calculate-swim-energy
+    if energy > 25 [  
+       ;school  ;; Continue schooling as long as energy is above 25
+     ]
+    
+    ;; Enter staging only if energy ≤ 25
+    if energy <= 25 [  
+      set staging? true  ;; Flag agent as staging
+    ]
+    
+    ;; Agents remain in staging until energy reaches 75 & stress = 1
+    if staging? [
+      ;stage  
+      if energy >= 75 and ionregulatory-stress = 1 [  
+        set staging? false  ;; Exit staging once fully recovered
+      ]
+    ]
+  ]
 end
 
-; during landward migration:
-; every tick fish will swim but with the goal of entering system
-   ; energy use and difficulty will stay the same but direction will change
-   ; where fish move parallel to water velocity
-; alternative movement for tidal behavior if fish has behavior
-; if energy is low or stress is high, stage 
-; where staging is finding low velocity patches to wait in
+to calculate-swim-energy
+  let M-max max [size] of breed
+    
+    ;; Define the scaling exponent (negative due to higher relative cost in smaller fish)
+    let beta 0.75  
+    
+    ;; Calculate metabolic cost of chloride cell creation
+    let swim-max 1 - (Met-max + E-base) ;; swim max cost is whatever is left over after osmoregulation 1-.075
+    
+    ; Calculate metabolic cost of locomotion
+    set swim-base swim-max * ((size / M-max) ^ beta)
 
-; during seaward migration:
-   ; energy use and difficulty will stay the same but direction will change
-; every tick fish will swim but with the goal of leaving the system
-; alternative movement for tidal behavior if fish has behavior
-; if energy is low or stress is high, stage 
-; where staging is finding low velocity patches to wait in
+    ;; Calculate difficulty factor (assumed already computed in `difficulty-factor`)
+    let energy-multiplier difficulty-factor  ;; Higher difficulty means higher cost
+
+    ;; Compute swim energy expenditure (E_swim)
+    set E-swim swim-base * (energy-multiplier ^ beta)  ;; Exponential scaling for realism
+
+    ;; Deduct swimming cost from agent's energy
+    set energy max list 0 (energy - E-swim)  ;; Ensure energy does not go below 0
+
+    ;; Debugging output
+    show (word "Swim Energy Cost: " E-swim 
+        " | Difficulty Factor: " difficulty-factor 
+        " | Base Cost: " swim-base 
+        " | Current Energy: " energy)
+end
+
+to migrate-landward
+  ; face towards ??
+  ; move towards land, based on speed
+  calculate-difficulty-landward
+  calculate-swimming-speed-landward
+  calculate-swim-energy
+  ; face towards ??
+  ; move towards sea, based on speed
+end
+
+to migrate-seaward
+  calculate-difficulty-seaward
+  calculate-swimming-speed-seaward
+  calculate-swim-energy
+  ; face towards ??
+  ; move towards sea, based on speed
+end

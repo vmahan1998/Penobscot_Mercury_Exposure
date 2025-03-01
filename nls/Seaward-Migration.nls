@@ -1,3 +1,50 @@
-to migrate-seaward
+to calculate-difficulty-seaward
+  ;; Ensure required parameters exist
+  let M-max max [size] of breed
+  let V-max max-seaward-velocity  ;; Maximum observed seaward velocity
+  let V-min max-landward-velocity ;; Maximum observed landward velocity
+  let beta 0.75  ;; Scaling exponent for difficulty
 
+  ;; Normalize fish size between 0-1 (prevent division by zero)
+  let size-factor max list 0.01 (size / M-max)  ;; Ensure size-factor is never zero
+
+  ;; Scale max swimming speed by fish size (preventing zero values)
+  let adjusted-speed max list 0.01 (max-speed * size-factor)  
+
+  ;; **Normalize velocity within its observed range (V_min to V_max)**
+  let normalized-velocity (velocity - V-min) / (V-max - V-min)
+
+  ;; **Reverse scaling: Difficulty should be highest at V_min (landward max) and lowest at V_max (seaward max)**
+  set difficulty-factor (10 - (normalized-velocity * 9))  
+
+  ;; Ensure difficulty is always within [1,10] range
+  set difficulty-factor max list 1 (min list 10 difficulty-factor)
+
+  ;; Debugging output
+  show (word "Seaward Difficulty Factor: " difficulty-factor 
+        " | Adjusted Speed: " adjusted-speed 
+        " | Size Factor: " size-factor 
+        " | Normalized Velocity: " normalized-velocity 
+        " | Velocity: " velocity)
+end
+
+to calculate-swimming-speed-seaward
+  ;; Scaling factors
+  let k 0.75  ;; Controls how velocity influences swimming ability
+  let energy-factor (energy / 100)  ;; Energy-dependent swimming ability (0-1)
+
+  ;; Incorporate difficulty into speed calculation
+  let velocity-impact (k * velocity / difficulty-factor)  ;; Velocity slows or helps swimming based on difficulty
+  
+  ;; Compute swimming speed with difficulty adjustment
+  set speed (max-speed * energy-factor / difficulty-factor) + velocity-impact
+  
+  ;; Ensure speed is within biologically feasible limits
+  set speed min list max-speed (max list min-speed speed)
+  
+  ;; Debugging output
+  show (word "Swimming Speed: " speed 
+             " | Energy Factor: " energy-factor 
+             " | Velocity Impact: " velocity-impact 
+             " | Difficulty Factor: " difficulty-factor)
 end

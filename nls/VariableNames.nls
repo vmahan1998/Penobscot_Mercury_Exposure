@@ -15,6 +15,8 @@ globals [
   tide-phase ;; tracks tidal phase
   mean-daytime-prey-eaten ;; records mean number of daily prey eaten
   numAlewivesEaten ;; records number of alewives eaten by Striped Bass
+  max-seaward-velocity ;; tracks maximum velocity experienced for the habitat
+  max-landward-velocity ;; tracks maximum velocity experienced for the habitat
   ]
 
 patches-own [ 
@@ -85,6 +87,9 @@ Alewives-own [
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
+  difficulty-factor ;; swimming difficulty
+  E-swim ;; energy cost of swimming
+  swim-base ;; base energy cost of swimming
 ]
 
 StripedBass-own [
@@ -147,6 +152,9 @@ StripedBass-own [
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
+  difficulty-factor ;; swimming difficulty
+  E-swim ;; energy cost of swimming
+  swim-base ;; base energy cost of swimming
 ]
 
 Shortnose-own [
@@ -198,6 +206,9 @@ Shortnose-own [
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
+  difficulty-factor ;; swimming difficulty
+  E-swim ;; energy cost of swimming
+  swim-base ;; base energy cost of swimming
   ]
 
 Atlantic-own [
@@ -248,6 +259,9 @@ Atlantic-own [
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
+  difficulty-factor ;; swimming difficulty
+  E-swim ;; energy cost of swimming
+  swim-base ;; base energy cost of swimming
 ]
 breed [alewives prey] ;; defines alewives as prey
 breed [stripedbass predator] ;; defines striped bass as predator

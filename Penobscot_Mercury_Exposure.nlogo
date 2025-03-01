@@ -351,10 +351,10 @@ model-type
 1
 
 PLOT
-1040
-445
-1250
-601
+1568
+437
+1778
+593
 Energy Dynamics
 ticks
 values
@@ -369,10 +369,10 @@ PENS
 "Agent Energy" 1.0 0 -13840069 true "" "plot mean [energy] of alewives"
 
 PLOT
-1037
-283
-1249
-433
+1565
+275
+1777
+425
 Chloride Cells
 ticks
 Chloride Cell Percentage
@@ -387,10 +387,10 @@ PENS
 "default" 1.0 0 -8630108 true "" "plot mean [chloride-cell-density] of alewives"
 
 PLOT
-1261
-282
-1461
-432
+1789
+274
+1989
+424
 Stress Dynamics
 ticks
 stress
@@ -405,10 +405,10 @@ PENS
 "Ion-Regulatory Stress" 1.0 0 -13840069 true "" "plot mean [ionregulatory-stress] of alewives"
 
 PLOT
-1035
-20
-1459
-275
+1563
+12
+1987
+267
 Salinity
 ticks
 Salinity
@@ -424,10 +424,10 @@ PENS
 "Acclimated-Salinity" 1.0 0 -817084 true "" "plot mean [acclimated-salinity] of turtles"
 
 PLOT
-1262
-445
-1461
-601
+1790
+437
+1989
+593
 Osmoregulation Energy
 ticks
 Energy Consumed
@@ -440,6 +440,62 @@ false
 "" ""
 PENS
 "Osmo_Energy" 1.0 0 -16777216 true "" "plot mean [E-osmo] of turtles"
+
+PLOT
+1033
+12
+1477
+262
+Velocities
+ticks
+velocity
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Swimming Speed" 1.0 0 -955883 true "" "plot mean [speed] of turtles"
+"velocity" 1.0 0 -16777216 true "" "plot mean [velocity] of patches"
+"pen-2" 1.0 0 -7500403 true "" "plot 0"
+
+PLOT
+1034
+272
+1251
+422
+Swimming Energy
+ticks
+Energy
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Energy" 1.0 0 -5825686 true "" "plot mean [E-swim] of turtles"
+
+PLOT
+1263
+271
+1477
+421
+Swimming Difficulty
+ticks
+difficulty
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot mean [difficulty-factor] of turtles"
 
 @#$#@#$#@
 ## WHAT IS IT?

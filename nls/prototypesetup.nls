@@ -7,7 +7,7 @@ end
 to prototype-parameters
   ask patches [ 
     set pcolor blue
-    set velocity random-float 3 - 1.5  ;; Random velocity between -1.5 and 1.5
+    set velocity update-prototype-velocity ticks  ;; Random velocity between -1.5 and 1.5
     if velocity > 0 [
       ;set pcolor blue
     ] 
@@ -53,7 +53,7 @@ to create-fish [fish-type num-fish]
     ]
 
     ;; Initialize movement-related variables
-    set min-speed 0.2  ;; Species speed limit (minimum)
+    set min-speed 0.1  ;; Species speed limit (minimum)
     set max-speed 5.0  ;; Species speed limit (maximum)
     set energy 100  ;; Initial energy level
     set fleeing? false  ;; Is the fish fleeing from a predator?
@@ -91,13 +91,16 @@ to create-fish [fish-type num-fish]
     set stable-time 0;; 
     set Met-max 0.035 ;; max energy cost per chloride cell created 3.5% in teleosts
     set staging? false ;; boolean for staging behavior
+    set landward-migration? true ;;
+    set seaward-migration? false ;;
+    set swim-base 0.075 ;; base energy cost of swimming
   ]
 end
 
 to prototype-go
 ;; update the data
   ask patches [ 
-    set velocity random-float 3 - 1.5  ;; random value between -1.5 and 1.5
+    set velocity update-prototype-velocity ticks ;; random value between -1.5 and 1.5
     if velocity > 0 [
       ;set pcolor blue
     ] 
@@ -114,24 +117,8 @@ to prototype-go
   
 ;; potential behavioral rules
    ask alewives with [age = "adult"] [
-     osmoregulate  ;; Always regulate osmoregulation
-    
-     if energy > 25 [  
-       school  ;; Continue schooling as long as energy is above 25
-     ]
-    
-    ;; Enter staging only if energy ≤ 25
-    if energy <= 25 [  
-      set staging? true  ;; Flag agent as staging
-    ]
-    
-    ;; Agents remain in staging until energy reaches 75 & stress = 1
-    if staging? [
-      stage  
-      if energy >= 75 and ionregulatory-stress = 1 [  
-        set staging? false  ;; Exit staging once fully recovered
-      ]
-    ]
+    osmoregulate ;; always osmoregulate
+    swim ;; always swim, school, and stage (built in)
   ]
 
   ask stripedbass with [age = "adult"] [
@@ -161,5 +148,20 @@ to-report update-salinity [current-tick]
   ]
   if cycle-tick >= 300 [ ;; Next 300 ticks: Increase salinity
     report min-salinity + ((cycle-tick - 300) * ((max-salinity - min-salinity) / 300))
+  ]
+end
+
+to-report update-prototype-velocity [current-tick]
+  let min-salinity -1.5  ;; Lower bound of salinity
+  let max-salinity 1.5  ;; Upper bound of salinity
+  set max-seaward-velocity 1.5
+  set max-landward-velocity -1.5
+  let cycle-tick (current-tick mod 200)  ;; Resets every 600 ticks
+
+  if cycle-tick < 100 [ ;; First 300 ticks: Decrease salinity
+    report max-salinity - (cycle-tick * ((max-salinity - min-salinity) / 100))
+  ]
+  if cycle-tick >= 100 [ ;; Next 300 ticks: Increase salinity
+    report min-salinity + ((cycle-tick - 100) * ((max-salinity - min-salinity) / 100))
   ]
 end
