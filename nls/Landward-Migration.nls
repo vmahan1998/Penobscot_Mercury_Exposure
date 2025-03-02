@@ -3,13 +3,6 @@ to calculate-difficulty-landward
   let M-max max [size] of breed
   let V-max max-seaward-velocity  ;; Maximum observed seaward velocity
   let V-min max-landward-velocity ;; Maximum observed landward velocity
-  let beta 0.75  ;; Scaling exponent for difficulty
-
-  ;; Normalize fish size between 0-1 (prevent division by zero)
-  let size-factor max list 0.01 (size / M-max)  ;; Ensure size-factor is never zero
-
-  ;; Scale max swimming speed by fish size (preventing zero values)
-  let adjusted-speed max list 0.01 (max-speed * size-factor)  
 
   ;; **Normalize velocity within its observed range (V_min to V_max)**
   let normalized-velocity (velocity - V-min) / (V-max - V-min)
@@ -22,9 +15,6 @@ to calculate-difficulty-landward
 
   ;; Debugging output
   show (word "Landward Difficulty Factor: " difficulty-factor 
-        " | Adjusted Speed: " adjusted-speed 
-        " | Size Factor: " size-factor 
-        " | Normalized Velocity: " normalized-velocity 
         " | Velocity: " velocity)
 end
 
@@ -64,74 +54,5 @@ to calculate-swimming-speed-landward
 end
 
 to migrate-landward
-  
-  ;; Identify the best landward patch (avoiding recent patches)
-  let target-patch max-one-of (patches in-radius 2 with [
-    pycor > [pycor] of myself and velocity < 0 
-    and not member? self [previous-patches] of myself
-  ]) [velocity]
-  school  ;; Maintain schooling behavior
-  
-  ;; If a strong landward patch exists, move toward it
-  if target-patch != nobody [
-    face target-patch
-    fd speed
-    track-path-memory target-patch
-    set trapped? false  ;; Reset trapped status if moving successfully
-    set stagnation-counter 0  ;; Reset stagnation counter upon successful movement
-    show (word "Moving Landward | Speed: " speed " | Target Velocity: " [velocity] of target-patch)
-    stop
-  ]
-
-  ;; Step 3: If no valid landward patch, attempt to escape "pocket" by finding the best water patch nearby
-  let escape-patch max-one-of (patches in-radius 2 with [
-    patch-terrain = "water" and not member? self [previous-patches] of myself
-  ]) [velocity]
-
-  if escape-patch != nobody [
-    face escape-patch
-    fd speed
-    track-path-memory escape-patch
-    set trapped? false  ;; Reset trapped status if escaping
-    set stagnation-counter 0  ;; Reset stagnation counter
-    show "Escaping Dead Zone"
-    stop
-  ]
-
-  ;; Step 4: If still stuck, attempt random movement to a neighboring water patch
-  let random-escape-patch one-of neighbors with [patch-terrain = "water"]
-  if random-escape-patch != nobody [
-    face random-escape-patch
-    fd min-speed  ;; Move slowly to avoid wasting energy
-    track-path-memory random-escape-patch
-    set trapped? false  ;; Reset trapped status if moving
-    set stagnation-counter 0  ;; Reset stagnation counter
-    show "Random Escape Attempt"
-    stop
-  ]
-
-  ;; Step 5: If stagnation persists, conserve energy & pause migration
-  if stagnation-counter > 4 [
-    set trapped? true
-    show "Trapped: Conserving Energy Until Escape"
-    stop
-  ]
-  
-  ;; Update stagnation counter: Check if the agent is stuck in place
-  if patch-here = previous-patch [
-    set stagnation-counter stagnation-counter + 1
-  ] 
-  if patch-here != previous-patch [
-    set stagnation-counter 0  ;; Reset if fish has moved
-  ]
-  
-  set previous-patch patch-here  ;; Track last location
-end
-
-to track-path-memory [current-patch]
-  ;; Add patch to path memory, maintaining a fixed memory size
-  set previous-patches lput current-patch previous-patches
-  if length previous-patches > 10 [  ;; Limit path memory to last 10 locations
-    set previous-patches but-first previous-patches
-  ]
+ 
 end

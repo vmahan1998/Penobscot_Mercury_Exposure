@@ -36,7 +36,7 @@ __includes[
   "nls/Reporters.nls"
   "nls/Landward-Migration.nls"
   "nls/Seaward-Migration.nls"
-  "nls/Migrate.nls"
+  "nls/Selective-Tidal-Stream-Transport.nls"
   "nls/Swim.nls"
   "nls/flee-stripedbass.nls"
   "nls/Eat.nls"
@@ -351,10 +351,10 @@ model-type
 1
 
 PLOT
-1568
-437
-1778
-593
+1034
+428
+1250
+584
 Energy Dynamics
 ticks
 values
@@ -496,6 +496,25 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot mean [difficulty-factor] of turtles"
+
+PLOT
+1263
+429
+1478
+585
+Behaviors
+ticks
+behavior type
+0.0
+10.0
+0.0
+1.0
+true
+true
+"" ""
+PENS
+"STST" 1.0 0 -13791810 true "" "plot (count turtles with [selective-tidal-transport?]) / count turtles"
+"Staging" 1.0 0 -5825686 true "" "plot (count turtles with [staging?]) / count turtles"
 
 @#$#@#$#@
 ## WHAT IS IT?

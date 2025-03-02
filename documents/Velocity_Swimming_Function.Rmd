@@ -10,13 +10,13 @@ output: html_document
 ### Patch Variables
 
 | Variable Name | Definition |
-|:----------------------------------:|:----------------------------------:|
+|:--:|:--:|
 | **Velocity** $V_{patch}$ | The along-channel velocity of a given patch, derived from hydrodynamic model inputs, where negative values are in the landward direction and positive values are in the seaward direction. |
 
 ### Agent Variables
 
 | Variable Name | Definition |
-|:----------------------------------:|:----------------------------------:|
+|:--:|:--:|
 | **swimming-speed** $V_{agent}$ | The current swimming speed of the agent. |
 | **maximum-speed** $V_{max}$ | The maximum sustained speed of the agent. |
 | **difficulty-factor** $D_{f}$ | The level of difficulty an agent experiences when swimming. |
@@ -49,8 +49,7 @@ Where:
 
 The difficulty factor quantifies the additional energetic burden of swimming against different velocity conditions. It scales with the size and swimming capability of the agent.
 
-$$D_{f} = \left( \frac{|V_{patch}|}{V_{max}*(\frac{M_{agent}}{M_{max}})} \right)^\beta$$
-Where:
+$$D_{f} = \left( \frac{|V_{patch}|}{V_{max}*(\frac{M_{agent}}{M_{max}})} \right)^\beta$$ Where:
 
 -   $M_{agent}$
 
@@ -68,7 +67,7 @@ Where:
 
 -   When $V_{patch} > 0$, difficulty increases because the fish is actively swimming against the current.
 
--    When $V_{patch} < 0$, difficulty is reduced as fish drift with the current.
+-   When $V_{patch} < 0$, difficulty is reduced as fish drift with the current.
 
 ## Energy Expenditure
 

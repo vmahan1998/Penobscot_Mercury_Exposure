@@ -1,0 +1,43 @@
+to selective-tidal-stream-transport-landward
+  let V-patch [velocity] of patch-here  ;; Current velocity at the agent's location
+  let S-swim speed  ;; Agent's swimming speed
+
+  ;; If swimming speed is insufficient to outswim the current, enter STST
+  if abs V-patch > S-swim and S-swim <= min-speed [
+    set selective-tidal-transport? true
+    show "Switching to Selective Tidal Stream Transport"
+    
+    ;; Movement during STST: drift with the current
+    set heading 180  ;; Move seaward (assuming 0° is upstream)
+    fd abs V-patch   ;; Move at current speed
+  ]
+  ;; Otherwise, continue normal swimming
+  if S-swim > min-speed [
+    set selective-tidal-transport? false
+    calculate-swim-energy
+    ;migrate-landward
+    ;fd speed  ;; Normal landwar movement
+  ]
+end
+
+to selective-tidal-stream-transport-seaward
+  let V-patch [velocity] of patch-here  ;; Current velocity at the agent's location
+  let S-swim speed  ;; Agent's swimming speed
+
+  ;; If swimming speed is insufficient to outswim the current, enter STST
+  if abs V-patch > S-swim and S-swim <= min-speed [
+    set selective-tidal-transport? true
+    show "Switching to Selective Tidal Stream Transport"
+    
+    ;; Movement during STST: drift with the current
+    set heading 180  ;; Move seaward (assuming 0° is upstream)
+    fd abs V-patch   ;; Move at current speed
+  ]
+  ;; Otherwise, continue normal swimming
+  if S-swim > min-speed [
+    set selective-tidal-transport? false
+    calculate-swim-energy
+    ;migrate-seaward
+    ;fd speed  ;; Normal seaward movement
+  ]
+end

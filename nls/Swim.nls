@@ -1,11 +1,11 @@
 to swim
+  if energy > 0 [
   if landward-migration? = true [ ;; general goal of moving upstream landward   
     calculate-difficulty-landward
     calculate-swimming-speed-landward
-    calculate-swim-energy
     if energy > 25 [  
-       ;school  ;; Continue schooling as long as energy is above 25
-      migrate-landward
+      ;migrate-landward
+      selective-tidal-stream-transport-landward
      ]
     
     ;; Enter staging only if energy ≤ 25
@@ -21,12 +21,12 @@ to swim
       ]
     ]
   ]
-  
+ 
   if seaward-migration? = true [ ;; general goal of moving downstream seaward
     calculate-difficulty-seaward
     calculate-swimming-speed-seaward
-    calculate-swim-energy
-    if energy > 25 [  
+    if energy > 25 [ 
+       selective-tidal-stream-transport-seaward
        ;school  ;; Continue schooling as long as energy is above 25
      ]
     
@@ -37,37 +37,39 @@ to swim
     
     ;; Agents remain in staging until energy reaches 75 & stress = 1
     if staging? [
-      ;stage  
+      stage  
       if energy >= 75 and ionregulatory-stress = 1 [  
         set staging? false  ;; Exit staging once fully recovered
       ]
     ]
   ]
+  ]
+  
 end
 
 to calculate-swim-energy
   let M-max max [size] of breed
+  
+  ;; Define the scaling exponent (negative due to higher relative cost in smaller fish)
+  let beta 0.75  
     
-    ;; Define the scaling exponent (negative due to higher relative cost in smaller fish)
-    let beta 0.75  
+  ;; Calculate metabolic cost of chloride cell creation
+  let swim-max 1 - (Met-max + E-base) ;; swim max cost is whatever is left over after osmoregulation 1-.075
     
-    ;; Calculate metabolic cost of chloride cell creation
-    let swim-max 1 - (Met-max + E-base) ;; swim max cost is whatever is left over after osmoregulation 1-.075
-    
-    ; Calculate metabolic cost of locomotion
-    set swim-base swim-max * ((size / M-max) ^ beta)
+  ;; Calculate metabolic cost of locomotion
+  set swim-base swim-max * ((size / M-max) ^ beta)
 
-    ;; Calculate difficulty factor (assumed already computed in `difficulty-factor`)
-    let energy-multiplier difficulty-factor  ;; Higher difficulty means higher cost
+  ;; Calculate difficulty factor (assumed already computed in `difficulty-factor`)
+  let energy-multiplier difficulty-factor  ;; Higher difficulty means higher cost
 
-    ;; Compute swim energy expenditure (E_swim)
-    set E-swim swim-base * (energy-multiplier ^ beta)  ;; Exponential scaling for realism
+  ;; Compute swim energy expenditure (E_swim)
+  set E-swim swim-base * (energy-multiplier ^ beta)  ;; Exponential scaling for realism
 
-    ;; Deduct swimming cost from agent's energy
-    set energy max list 0 (energy - E-swim)  ;; Ensure energy does not go below 0
+  ;; Deduct swimming cost from agent's energy
+  set energy max list 0 (energy - E-swim)  ;; Ensure energy does not go below 0
 
-    ;; Debugging output
-    show (word "Swim Energy Cost: " E-swim 
+  ;; Debugging output
+  show (word "Swim Energy Cost: " E-swim 
         " | Difficulty Factor: " difficulty-factor 
         " | Base Cost: " swim-base 
         " | Current Energy: " energy)

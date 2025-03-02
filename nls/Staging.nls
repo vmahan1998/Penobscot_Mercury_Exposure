@@ -1,19 +1,41 @@
-to stage  ;; based on schooling procedure
+to stage  ;; based on schooling procedure but with energy creation
   find-schoolmates
-  if any? schoolmates
-    [
-      let target-patch one-of neighbors with [patch-terrain = "water"] ; and low velocity
-      if target-patch != nobody [
-      find-nearest-neighbor
-      ;if distance nearest-neighbor = 0.00000 [ die ] ;; bug patch- removes duplicates to fix crash due to same point netlogo error
-      ifelse distance nearest-neighbor < minimum-separation ;; see BOIDS paper for schooling basics (separate, align, cohere)
-      [ separate ]
-      [ cohere
-        align ]
-      adjust-speed  ;; adjust speed to stay in a school, can be though of as part of "cohere"
-;      
-      move-to target-patch
-      set energy energy + 2
+
+  ;; Ensure schoolmates exist before proceeding
+  if any? schoolmates [
+    
+    ;; Find the best patch (nearest with lowest absolute velocity & water terrain)
+    let target-patch min-one-of (neighbors with [patch-terrain = "water"]) [abs velocity]
+
+    ;; If no suitable patch is found, move randomly within water terrain
+    if target-patch = nobody [
+      set target-patch one-of neighbors with [patch-terrain = "water"]
     ]
+
+    ;; Only move if a valid target patch was found
+    if target-patch != nobody [
+      
+      ;; Find the nearest schoolmate to maintain cohesion
+      find-nearest-neighbor
+      
+      ;; Avoid duplicate positions that may cause NetLogo errors
+      ;if distance nearest-neighbor = 0.00000 [ die ] ;; Uncomment if duplicate errors occur
+      
+      ;; Schooling behavior: maintain formation
+      ifelse distance nearest-neighbor < minimum-separation
+      [ separate ]  ;; Avoid crowding
+      [ 
+        cohere  ;; Move toward schoolmates
+        align   ;; Align direction
+      ]
+      
+      adjust-speed  ;; Adjust speed to maintain schooling behavior
+
+      ;; Move to the target patch (either lowest velocity or fallback patch)
+      move-to target-patch
+    ]
+
+    ;; Regain energy while staging
+    set energy energy + 2
   ]
 end

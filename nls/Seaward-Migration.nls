@@ -1,15 +1,7 @@
 to calculate-difficulty-seaward
   ;; Ensure required parameters exist
-  let M-max max [size] of breed
   let V-max max-seaward-velocity  ;; Maximum observed seaward velocity
   let V-min max-landward-velocity ;; Maximum observed landward velocity
-  let beta 0.75  ;; Scaling exponent for difficulty
-
-  ;; Normalize fish size between 0-1 (prevent division by zero)
-  let size-factor max list 0.01 (size / M-max)  ;; Ensure size-factor is never zero
-
-  ;; Scale max swimming speed by fish size (preventing zero values)
-  let adjusted-speed max list 0.01 (max-speed * size-factor)  
 
   ;; **Normalize velocity within its observed range (V_min to V_max)**
   let normalized-velocity (velocity - V-min) / (V-max - V-min)
@@ -22,8 +14,6 @@ to calculate-difficulty-seaward
 
   ;; Debugging output
   show (word "Seaward Difficulty Factor: " difficulty-factor 
-        " | Adjusted Speed: " adjusted-speed 
-        " | Size Factor: " size-factor 
         " | Normalized Velocity: " normalized-velocity 
         " | Velocity: " velocity)
 end
