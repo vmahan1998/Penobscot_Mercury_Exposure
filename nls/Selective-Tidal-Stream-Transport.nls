@@ -2,21 +2,38 @@ to selective-tidal-stream-transport-landward
   let V-patch [velocity] of patch-here  ;; Current velocity at the agent's location
   let S-swim speed  ;; Agent's swimming speed
 
-  ;; If swimming speed is insufficient to outswim the current, enter STST
+  ;; Check if fish should remain in STST (cooldown period)
+  if selective-tidal-transport? and (ticks - STST-start-tick < 4) [
+    ;; Continue drifting in STST
+    set speed abs V-patch
+    fd abs V-patch
+    set E-swim swim-base
+    set energy energy - E-swim
+    set tidal-transport-in-patch tidal-transport-in-patch + 1;; records sum of number of staging agents in patch
+    stop  ;; Prevent other behaviors from triggering
+  ]
+
+  ;; If swimming speed is insufficient to counteract velocity, enter STST
   if abs V-patch > S-swim and S-swim <= min-speed [
     set selective-tidal-transport? true
+    set STST-start-tick ticks  ;; Store tick count to track STST duration
     show "Switching to Selective Tidal Stream Transport"
     
-    ;; Movement during STST: drift with the current
-    set heading 180  ;; Move seaward (assuming 0° is upstream)
-    fd abs V-patch   ;; Move at current speed
+    ;; Movement during STST: drift with the current (move in velocity direction)
+    set heading towards one-of neighbors with [patch-terrain = "water"]
+    set speed abs V-patch
+    fd abs V-patch  ;; Move at the velocity of the current
+    set E-swim swim-base
+    set energy energy - E-swim
+    set tidal-transport-in-patch tidal-transport-in-patch + 1;; records sum of number of staging agents in patch
+    stop  ;; Prevent normal swimming
   ]
-  ;; Otherwise, continue normal swimming
-  if S-swim > min-speed [
+
+  ;; Otherwise, continue normal swimming if STST is off
+  if S-swim > min-speed or (ticks - STST-start-tick >= 4) [
     set selective-tidal-transport? false
     calculate-swim-energy
-    ;migrate-landward
-    ;fd speed  ;; Normal landwar movement
+    migrate-landward
   ]
 end
 
@@ -24,20 +41,32 @@ to selective-tidal-stream-transport-seaward
   let V-patch [velocity] of patch-here  ;; Current velocity at the agent's location
   let S-swim speed  ;; Agent's swimming speed
 
-  ;; If swimming speed is insufficient to outswim the current, enter STST
+  ;; If swimming speed is insufficient to counteract velocity, enter STST
   if abs V-patch > S-swim and S-swim <= min-speed [
     set selective-tidal-transport? true
+    set STST-start-tick ticks  ;; Store tick count to track STST duration
     show "Switching to Selective Tidal Stream Transport"
     
-    ;; Movement during STST: drift with the current
-    set heading 180  ;; Move seaward (assuming 0° is upstream)
-    fd abs V-patch   ;; Move at current speed
+    ;; Movement during STST: drift with the current (move in velocity direction)
+    set heading towards one-of neighbors with [patch-terrain = "water"]
+    set speed abs V-patch
+    fd abs V-patch  ;; Move at the velocity of the current
+    set E-swim swim-base
+    set energy energy - E-swim
+    set tidal-transport-in-patch tidal-transport-in-patch + 1;; records sum of number of staging agents in patch
+    stop  ;; Prevent normal swimming
   ]
-  ;; Otherwise, continue normal swimming
+
+  ;; Otherwise, continue normal swimming if STST is off
   if S-swim > min-speed [
     set selective-tidal-transport? false
     calculate-swim-energy
-    ;migrate-seaward
-    ;fd speed  ;; Normal seaward movement
+    migrate-seaward
+  ]
+end
+
+to color-tidal-trapping-patches
+  if tidal-transport-in-patch > 0 [
+    set pcolor yellow
   ]
 end

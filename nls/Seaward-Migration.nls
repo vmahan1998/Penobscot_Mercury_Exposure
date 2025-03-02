@@ -52,3 +52,15 @@ to calculate-swimming-speed-seaward
   ;; Debugging output
   show (word "Swimming Speed: " speed " | Energy Factor: " energy-factor " | Velocity Impact: " velocity-impact)
 end
+
+
+to migrate-seaward
+;  calculate-difficulty-seaward
+;  calculate-swimming-speed-seaward
+;  calculate-swim-energy
+;  ; face towards ??
+;  ; move towards sea, based on speed
+ ;; Movement during STST: drift with the current
+set heading 180  ;; Move seaward (assuming 0° is upstream)
+fd speed   ;; Move at current speed
+end

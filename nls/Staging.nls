@@ -36,6 +36,14 @@ to stage  ;; based on schooling procedure but with energy creation
     ]
 
     ;; Regain energy while staging
-    set energy energy + 2
+    let energy-recovery (1 + random-float 1)  ;; Small variation in recovery
+    set energy energy + energy-recovery
+    set staging-in-patch staging-in-patch + 1;; records sum of number of staging agents in patch
+  ]
+end
+
+to color-staging-patches
+  if staging-in-patch > 0 [
+    set pcolor green
   ]
 end

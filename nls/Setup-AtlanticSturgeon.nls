@@ -20,8 +20,8 @@ to setup-atlantic
  set rest-time atlantic-rest-time;; time in ticks to recoup energy (could be foraging for more energy)
  set hg-exposure-duration 0  ;; Time spent in high mercury patches
  set mehg-exposure-duration 0  ;; Time spent in high methylmercury patches
- set hg-bioaccumulation-risk 0  ;; Time spent in high sediment concentration patches
- set mehg-bioaccumulation-risk 0  ;; Time spent in high sediment concentration patches
+ set hg-uptake-risk 0  ;; Time spent in high sediment concentration patches
+ set mehg-uptake-risk 0  ;; Time spent in high sediment concentration patches
  set hg-exposure-total 0  ;; Cumulative mercury exposure
  set mehg-exposure-total 0  ;; Cumulative methylmercury exposure
  set migration-action "foraging";; defines migratory purpose

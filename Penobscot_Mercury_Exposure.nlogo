@@ -49,6 +49,7 @@ __includes[
   "nls/Count-prey-eaten.nls"
   "nls/Prey-on-Alewives.nls"
   "nls/Mercury-Contamination.nls"
+  "nls/Methylmercury-Contamination.nls"
   "nls/Osmoregulation.nls"
   "nls/Staging.nls"
 ]
@@ -214,7 +215,7 @@ initial-alewives
 initial-alewives
 0
 10000
-10.0
+1.0
 1
 1
 fish
@@ -319,7 +320,7 @@ initial-atlantic
 initial-atlantic
 0
 1000
-10.0
+11.0
 1
 1
 NIL
@@ -351,10 +352,10 @@ model-type
 1
 
 PLOT
-1034
-428
-1250
-584
+1562
+435
+1778
+591
 Energy Dynamics
 ticks
 values
@@ -442,37 +443,37 @@ PENS
 "Osmo_Energy" 1.0 0 -16777216 true "" "plot mean [E-osmo] of turtles"
 
 PLOT
-1033
-12
-1477
-262
+1561
+607
+1989
+857
 Velocities
 ticks
 velocity
 0.0
 10.0
 0.0
-10.0
+1.5
 true
 true
 "" ""
 PENS
 "Swimming Speed" 1.0 0 -955883 true "" "plot mean [speed] of turtles"
 "velocity" 1.0 0 -16777216 true "" "plot mean [velocity] of patches"
-"pen-2" 1.0 0 -7500403 true "" "plot 0"
+"Zero-0" 1.0 0 -7500403 true "" "plot 0"
 
 PLOT
-1034
-272
-1251
-422
+1561
+866
+1778
+1016
 Swimming Energy
 ticks
 Energy
 0.0
 10.0
 0.0
-10.0
+1.0
 true
 false
 "" ""
@@ -480,10 +481,10 @@ PENS
 "Energy" 1.0 0 -5825686 true "" "plot mean [E-swim] of turtles"
 
 PLOT
-1263
-271
-1477
-421
+1787
+866
+1989
+1016
 Swimming Difficulty
 ticks
 difficulty
@@ -498,10 +499,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot mean [difficulty-factor] of turtles"
 
 PLOT
-1263
-429
-1478
-585
+1775
+1024
+1990
+1180
 Behaviors
 ticks
 behavior type
@@ -515,6 +516,123 @@ true
 PENS
 "STST" 1.0 0 -13791810 true "" "plot (count turtles with [selective-tidal-transport?]) / count turtles"
 "Staging" 1.0 0 -5825686 true "" "plot (count turtles with [staging?]) / count turtles"
+
+PLOT
+1029
+12
+1471
+264
+Level of Net Contamination Exposure 
+ticks
+mercury
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"mercury" 1.0 0 -10141563 true "" "plot mean [mehg-exposure-total-normalized] of turtles"
+"methylmercury" 1.0 0 -13840069 true "" "plot mean [hg-exposure-total-normalized] of turtles"
+
+PLOT
+1029
+271
+1473
+522
+Duration of Exposure to Harmful Contamination Levels
+ticks
+duration (ticks)
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"mercury" 1.0 0 -8630108 true "" "plot mean [hg-exposure-duration] of turtles"
+"methylmercury" 1.0 0 -13840069 true "" "plot mean [mehg-exposure-duration] of turtles"
+
+PLOT
+1030
+529
+1475
+807
+Contamination Uptake Risk
+ticks
+uptake risk
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"mercury" 1.0 0 -8630108 true "" "plot mean [hg-uptake-risk] of turtles"
+"methylmercury" 1.0 0 -13840069 true "" "plot mean [mehg-uptake-risk] of turtles"
+
+SLIDER
+216
+669
+389
+704
+align-coefficient
+align-coefficient
+0
+100
+53.0
+1
+1
+%
+HORIZONTAL
+
+SLIDER
+216
+715
+389
+750
+cohere-coefficient
+cohere-coefficient
+0
+100
+50.0
+1
+1
+%
+HORIZONTAL
+
+SLIDER
+218
+759
+391
+794
+separate-coefficient
+separate-coefficient
+0
+100
+50.0
+1
+1
+%
+HORIZONTAL
+
+SLIDER
+190
+802
+395
+837
+minimum-separation
+minimum-separation
+0
+1
+0.01
+.01
+1
+patches
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?

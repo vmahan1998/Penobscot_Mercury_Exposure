@@ -17,6 +17,13 @@ globals [
   numAlewivesEaten ;; records number of alewives eaten by Striped Bass
   max-seaward-velocity ;; tracks maximum velocity experienced for the habitat
   max-landward-velocity ;; tracks maximum velocity experienced for the habitat
+  max-Hg ;; max contamination observed
+  max-MeHg ;; max contamination observed
+  min-Hg ;; min contamination observed
+  min-MeHg ;; min contamination observed
+  Hg-threshold ;; Safe threshold for mercury exposure
+  MeHg-threshold ;; Safe threshold for methylmercury exposure
+  staging-start-tick ;; time the agent is staging
   ]
 
 patches-own [ 
@@ -56,10 +63,12 @@ Alewives-own [
   rest-time ;; time time in ticks to recoup energy (could be foraging for more energy)
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
-  hg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with mercury exposure
-  mehg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
+  hg-uptake-risk ;; ;; bioaccumulation risk associated with mercury exposure
+  mehg-uptake-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
   hg-exposure-total ;; sum of known mercury contamination levels exposed to
   mehg-exposure-total ;; sum of known mercury contamination levels exposed to
+  mehg-exposure-total-normalized ;; normalized sum of known methylmercury contamination levels exposed to
+  hg-exposure-total-normalized ;; normalized sum of knownmercury contamination levels exposed to
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
   migration-destination ;; defines migratory location homing
@@ -94,6 +103,7 @@ Alewives-own [
   previous-patches  ;; List of recently visited patches (path memory)
   stagnation-counter  ;; Tracks how long the agent has been in the same spot
   trapped?  ;; Flag indicating if the fish is stuck
+  STST-start-tick ;; Selective tidal transport transition
 ]
 
 StripedBass-own [
@@ -125,10 +135,12 @@ StripedBass-own [
   numAlewivesEaten ;; total alewives eaten
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
-  hg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with mercury exposure
-  mehg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
+  hg-uptake-risk ;; ;; bioaccumulation risk associated with mercury exposure
+  mehg-uptake-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
   hg-exposure-total ;; sum of known mercury contamination levels exposed to
-  mehg-exposure-total ;; sum of known mercury contamination levels exposed to
+  mehg-exposure-total ;; sum of known methylmercury contamination levels exposed to
+  mehg-exposure-total-normalized ;; normalized sum of known methylmercury contamination levels exposed to
+  hg-exposure-total-normalized ;; normalized sum of knownmercury contamination levels exposed to
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
   migration-destination ;; defines migratory location homing
@@ -163,6 +175,7 @@ StripedBass-own [
   previous-patches  ;; List of recently visited patches (path memory)
   stagnation-counter  ;; Tracks how long the agent has been in the same spot
   trapped?  ;; Flag indicating if the fish is stuck
+  STST-start-tick ;; Selective tidal transport transition
 ]
 
 Shortnose-own [
@@ -183,10 +196,12 @@ Shortnose-own [
   rest-time ;; time in ticks to recoup energy (could be foraging for more energy)
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
-  hg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with mercury exposure
-  mehg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
+  hg-uptake-risk ;; ;; bioaccumulation risk associated with mercury exposure
+  mehg-uptake-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
   hg-exposure-total ;; sum of known mercury contamination levels exposed to
   mehg-exposure-total ;; sum of known mercury contamination levels exposed to
+  mehg-exposure-total-normalized ;; normalized sum of known methylmercury contamination levels exposed to
+  hg-exposure-total-normalized ;; normalized sum of knownmercury contamination levels exposed to
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
   landward-migration-time ;; time to travel inland and complete objective
@@ -221,6 +236,7 @@ Shortnose-own [
   previous-patches  ;; List of recently visited patches (path memory)
   stagnation-counter  ;; Tracks how long the agent has been in the same spot
   trapped?  ;; Flag indicating if the fish is stuck
+  STST-start-tick ;; Selective tidal transport transition
   ]
 
 Atlantic-own [
@@ -241,10 +257,12 @@ Atlantic-own [
   rest-time ;; time in ticks to recoup energy (could be foraging for more energy)
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
-  hg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with mercury exposure
-  mehg-bioaccumulation-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
+  hg-uptake-risk ;; ;; bioaccumulation risk associated with mercury exposure
+  mehg-uptake-risk ;; ;; bioaccumulation risk associated with methylmercury exposure
   hg-exposure-total ;; sum of known mercury contamination levels exposed to
   mehg-exposure-total ;; sum of known mercury contamination levels exposed to
+  mehg-exposure-total-normalized ;; normalized sum of known methylmercury contamination levels exposed to
+  hg-exposure-total-normalized ;; normalized sum of knownmercury contamination levels exposed to
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
   landward-migration-time ;; time to travel inland and complete objective
@@ -278,6 +296,7 @@ Atlantic-own [
   previous-patches  ;; List of recently visited patches (path memory)
   stagnation-counter  ;; Tracks how long the agent has been in the same spot
   trapped?  ;; Flag indicating if the fish is stuck
+  STST-start-tick ;; Selective tidal transport transition
 ]
 breed [alewives prey] ;; defines alewives as prey
 breed [stripedbass predator] ;; defines striped bass as predator

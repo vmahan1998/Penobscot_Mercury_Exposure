@@ -1,3 +1,24 @@
-to mercury-contamination ;; only predators use
-  rt (random 30) - 15
+to mercury-contamination
+  ;; Get local patch values
+  let Hg-current [mercury] of patch-here
+  let SPM-current [SPM] of patch-here
+
+  ;; Normalize Hg concentration (0-1 scale)
+  let Hg-normalized (Hg-current - min-Hg) / (max-Hg - min-Hg)
+
+  ;; Ensure value stays in range [0,1]
+  if Hg-normalized > 1 [ set Hg-normalized 1 ]
+  if Hg-normalized < 0 [ set Hg-normalized 0 ]
+  
+  ;; If mercury levels exceed threshold, increase exposure duration
+  if Hg-current > Hg-threshold [
+    set hg-exposure-duration hg-exposure-duration + 1  ;; Track exposure time
+  ]
+
+  ;; Bioaccumulation risk scales with normalized contamination, stress, and SPM
+  set hg-uptake-risk hg-uptake-risk + (Hg-normalized * (1 + ionregulatory-stress) * (1 + SPM-current))
+  
+  ;; Track cumulative Hg exposure
+  set hg-exposure-total hg-exposure-total + Hg-current
+  set hg-exposure-total-normalized hg-exposure-total-normalized + Hg-normalized ;; normalized exposure to compare against mercury
 end

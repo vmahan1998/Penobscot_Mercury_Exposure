@@ -1,0 +1,24 @@
+to methylmercury-contamination
+  ;; Get local patch values
+  let MeHg-current [methylmercury] of patch-here
+  let SPM-current [SPM] of patch-here
+
+  ;; Normalize MeHg concentration (0-1 scale)
+  let MeHg-normalized (MeHg-current - min-MeHg) / (max-MeHg - min-MeHg)
+
+  ;; Ensure value stays in range [0,1]
+  if MeHg-normalized > 1 [ set MeHg-normalized 1 ]
+  if MeHg-normalized < 0 [ set MeHg-normalized 0 ]
+  
+  ;; If methylmercury levels exceed threshold, increase exposure duration
+  if MeHg-current > MeHg-threshold [
+    set mehg-exposure-duration mehg-exposure-duration + 1  ;; Track exposure time
+  ]
+
+  ;; Bioaccumulation risk scales with normalized contamination, stress, and SPM
+  set mehg-uptake-risk mehg-uptake-risk + (MeHg-normalized * (1 + ionregulatory-stress) * (1 + SPM-current))
+  
+  ;; Track cumulative MeHg exposure
+  set mehg-exposure-total mehg-exposure-total + MeHg-current ;; total exposure 
+  set mehg-exposure-total-normalized mehg-exposure-total-normalized + MeHg-normalized ;; normalized exposure to compare against mercury
+end

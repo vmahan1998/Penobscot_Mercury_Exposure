@@ -1,15 +1,14 @@
 to swim
-  if energy > 0 [
   if landward-migration? = true [ ;; general goal of moving upstream landward   
     calculate-difficulty-landward
     calculate-swimming-speed-landward
-    if energy > 25 [  
+    if energy > 25 and not staging? [  
       ;migrate-landward
       selective-tidal-stream-transport-landward
      ]
     
     ;; Enter staging only if energy ≤ 25
-    if energy <= 25 [  
+    if energy <= 25 or ionregulatory-stress > 5 [  
       set staging? true  ;; Flag agent as staging
     ]
     
@@ -25,13 +24,13 @@ to swim
   if seaward-migration? = true [ ;; general goal of moving downstream seaward
     calculate-difficulty-seaward
     calculate-swimming-speed-seaward
-    if energy > 25 [ 
+    if energy > 25 and not staging? [ 
        selective-tidal-stream-transport-seaward
        ;school  ;; Continue schooling as long as energy is above 25
      ]
     
     ;; Enter staging only if energy ≤ 25
-    if energy <= 25 [  
+    if energy <= 25 or ionregulatory-stress > 5 [  
       set staging? true  ;; Flag agent as staging
     ]
     
@@ -43,18 +42,14 @@ to swim
       ]
     ]
   ]
-  ]
-  
 end
 
 to calculate-swim-energy
   let M-max max [size] of breed
-  
-  ;; Define the scaling exponent (negative due to higher relative cost in smaller fish)
-  let beta 0.75  
+  let beta 0.75 
     
   ;; Calculate metabolic cost of chloride cell creation
-  let swim-max 1 - (Met-max + E-base) ;; swim max cost is whatever is left over after osmoregulation 1-.075
+  let swim-max 0.5 ;; swim max cost is whatever is left over after osmoregulation 1-.075
     
   ;; Calculate metabolic cost of locomotion
   set swim-base swim-max * ((size / M-max) ^ beta)
@@ -74,21 +69,3 @@ to calculate-swim-energy
         " | Base Cost: " swim-base 
         " | Current Energy: " energy)
 end
-
-;to migrate-landward
-;  ; face towards ??
-;  ; move towards land, based on speed
-;  calculate-difficulty-landward
-;  calculate-swimming-speed-landward
-;  calculate-swim-energy
-;  ; face towards ??
-;  ; move towards sea, based on speed
-;end
-;
-;to migrate-seaward
-;  calculate-difficulty-seaward
-;  calculate-swimming-speed-seaward
-;  calculate-swim-energy
-;  ; face towards ??
-;  ; move towards sea, based on speed
-;end

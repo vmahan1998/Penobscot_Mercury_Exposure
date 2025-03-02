@@ -52,4 +52,6 @@ to create-mehg
       ;set interpolated-patch? true
     ]
   ]
+  set max-MeHg max [methylmercury] of patches
+  set min-MeHg min [methylmercury] of patches
 end

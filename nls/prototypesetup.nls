@@ -1,6 +1,8 @@
 to prototype-setup
   resize-world 0 200 0 350
   set-patch-size 3
+  set Hg-threshold 150 ; ng/g Adjust based on NOAA data
+  set MeHg-threshold 20 ; ng/g Adjust based on NOAA data
   reset-ticks
 end
 
@@ -23,6 +25,11 @@ to prototype-parameters
     set mercury random-float 700  ;; Random mercury concentration
     set methylmercury random-float 65  ;; Random methylmercury concentration
     set SPM random-float 0.0004  ;; Random suspended sediment concentration
+    
+    set max-Hg 700
+    set min-Hg 0 
+    set max-MeHg 65
+    set min-MeHg 0
   ] 
 
   setup-migration
@@ -54,7 +61,7 @@ to create-fish [fish-type num-fish]
 
     ;; Initialize movement-related variables
     set min-speed 0.1  ;; Species speed limit (minimum)
-    set max-speed 5.0  ;; Species speed limit (maximum)
+    set max-speed 3.0  ;; Species speed limit (maximum)
     set speed min-speed
     set prev-speed min-speed
     set energy 100  ;; Initial energy level
@@ -64,8 +71,8 @@ to create-fish [fish-type num-fish]
     ;; Contaminant exposure tracking
     set hg-exposure-duration 0  ;; Time spent in high mercury patches
     set mehg-exposure-duration 0  ;; Time spent in high methylmercury patches
-    set hg-bioaccumulation-risk 0  ;; Time spent in high sediment concentration patches
-    set mehg-bioaccumulation-risk 0  ;; Time spent in high sediment concentration patches
+    set hg-uptake-risk 0  ;; Time spent in high sediment concentration patches
+    set mehg-uptake-risk 0  ;; Time spent in high sediment concentration patches
     set hg-exposure-total 0  ;; Cumulative mercury exposure
     set mehg-exposure-total 0  ;; Cumulative methylmercury exposure
 
@@ -96,7 +103,13 @@ to create-fish [fish-type num-fish]
     set selective-tidal-transport? false;; boolean to track if agent is experiencing selective tidal transport
     set landward-migration? true ;;
     set seaward-migration? false ;;
-    set swim-base 0.075 ;; base energy cost of swimming
+    set swim-base 0.25 ;; base energy cost of swimming
+    
+    let M-max max [size] of breed
+    ;; Calculate metabolic cost of chloride cell creation
+    let swim-max 0.5 ;; swim max cost is whatever is left over after osmoregulation 1-.075
+    ;; Calculate metabolic cost of locomotion
+    set swim-base swim-max * ((size / M-max) ^ 0.75)
   ]
 end
 
@@ -104,23 +117,17 @@ to prototype-go
 ;; update the data
   ask patches [ 
     set velocity update-prototype-velocity ticks ;; random value between -1.5 and 1.5
-    if velocity > 0 [
-      ;set pcolor blue
-    ] 
-    if velocity <= 0 [
-      ;set pcolor red
-    ]
     set patch-terrain "water"
     set depth random-float 5  ;; random value between 0 and 5 meters
     set salinity update-salinity ticks
-    set mercury random-float 700  ;; random value between 0.0 and 700.0
-    set methylmercury random-float 65  ;; random value between 0 and 65
     set SPM random-float 0.0004  ;; random value between 0 and 0.0004
   ] 
   
 ;; potential behavioral rules
    ask alewives with [age = "adult"] [
-    ;osmoregulate ;; always osmoregulate
+    mercury-contamination ;; track mercury contamination
+    methylmercury-contamination ;; track methylmercury contamination
+    osmoregulate ;; always osmoregulate
     swim ;; always swim, school, and stage (built in)
   ]
 
@@ -139,6 +146,10 @@ to prototype-go
     ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
     ;spawning ; potential spawning encounters
   ]
+  ask patches [
+  color-staging-patches
+  color-tidal-trapping-patches
+  ]
 end
 
 to-report update-salinity [current-tick]
@@ -155,16 +166,16 @@ to-report update-salinity [current-tick]
 end
 
 to-report update-prototype-velocity [current-tick]
-  let min-salinity -1.5  ;; Lower bound of salinity
-  let max-salinity 1.5  ;; Upper bound of salinity
+  let min-velocity -1.5  ;; Lower bound of salinity
+  let max-velocity 1.5  ;; Upper bound of salinity
   set max-seaward-velocity 1.5
   set max-landward-velocity -1.5
   let cycle-tick (current-tick mod 200)  ;; Resets every 600 ticks
 
   if cycle-tick < 100 [ ;; First 300 ticks: Decrease salinity
-    report max-salinity - (cycle-tick * ((max-salinity - min-salinity) / 100))
+    report max-velocity - (cycle-tick * ((max-velocity - min-velocity) / 100))
   ]
   if cycle-tick >= 100 [ ;; Next 300 ticks: Increase salinity
-    report min-salinity + ((cycle-tick - 100) * ((max-salinity - min-salinity) / 100))
+    report min-velocity + ((cycle-tick - 100) * ((max-velocity - min-velocity) / 100))
   ]
 end
