@@ -10,7 +10,7 @@ to stage  ;; based on schooling procedure
       [ separate ]
       [ cohere
         align ]
-      adjust-alewife-speed  ;; adjust speed to stay in a school, can be though of as part of "cohere"
+      adjust-speed  ;; adjust speed to stay in a school, can be though of as part of "cohere"
 ;      
       move-to target-patch
       set energy energy + 2

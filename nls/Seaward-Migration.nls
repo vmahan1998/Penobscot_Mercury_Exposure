@@ -32,19 +32,33 @@ to calculate-swimming-speed-seaward
   ;; Scaling factors
   let k 0.75  ;; Controls how velocity influences swimming ability
   let energy-factor (energy / 100)  ;; Energy-dependent swimming ability (0-1)
+  
+  ;; Compute desired speed (without capping)
+  let velocity-impact (k * velocity)  ;; Velocity directly influences speed
+  let desired-speed (max-speed * energy-factor / difficulty-factor) + velocity-impact
 
-  ;; Incorporate difficulty into speed calculation
-  let velocity-impact (k * velocity / difficulty-factor)  ;; Velocity slows or helps swimming based on difficulty
-  
-  ;; Compute swimming speed with difficulty adjustment
-  set speed (max-speed * energy-factor / difficulty-factor) + velocity-impact
-  
-  ;; Ensure speed is within biologically feasible limits
-  set speed min list max-speed (max list min-speed speed)
-  
+  ;; Ensure speed is within valid bounds
+  set desired-speed min list max-speed (max list min-speed desired-speed)
+
+  ;; Cap rate of change (max acceleration per tick)
+  let max-speed-change 0.2  ;; Maximum allowed change per tick
+
+  ;; Apply capped rate of change
+  if abs(desired-speed - prev-speed) > max-speed-change [
+    if desired-speed > prev-speed [
+      set speed prev-speed + max-speed-change  ;; Gradual increase
+    ]
+    if desired-speed < prev-speed [
+      set speed prev-speed - max-speed-change  ;; Gradual decrease
+    ]
+  ] 
+  if abs(desired-speed - prev-speed) <= max-speed-change [
+    set speed desired-speed  ;; If within limits, set normally
+  ]
+
+  ;; Store previous speed for next tick
+  set prev-speed speed
+
   ;; Debugging output
-  show (word "Swimming Speed: " speed 
-             " | Energy Factor: " energy-factor 
-             " | Velocity Impact: " velocity-impact 
-             " | Difficulty Factor: " difficulty-factor)
+  show (word "Swimming Speed: " speed " | Energy Factor: " energy-factor " | Velocity Impact: " velocity-impact)
 end

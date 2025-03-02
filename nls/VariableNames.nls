@@ -87,9 +87,13 @@ Alewives-own [
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
+  prev-speed ;; previous speed
   difficulty-factor ;; swimming difficulty
   E-swim ;; energy cost of swimming
   swim-base ;; base energy cost of swimming
+  previous-patches  ;; List of recently visited patches (path memory)
+  stagnation-counter  ;; Tracks how long the agent has been in the same spot
+  trapped?  ;; Flag indicating if the fish is stuck
 ]
 
 StripedBass-own [
@@ -152,9 +156,13 @@ StripedBass-own [
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
+  prev-speed ;; previous speed
   difficulty-factor ;; swimming difficulty
   E-swim ;; energy cost of swimming
   swim-base ;; base energy cost of swimming
+  previous-patches  ;; List of recently visited patches (path memory)
+  stagnation-counter  ;; Tracks how long the agent has been in the same spot
+  trapped?  ;; Flag indicating if the fish is stuck
 ]
 
 Shortnose-own [
@@ -206,9 +214,13 @@ Shortnose-own [
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
+  prev-speed ;; previous speed
   difficulty-factor ;; swimming difficulty
   E-swim ;; energy cost of swimming
   swim-base ;; base energy cost of swimming
+  previous-patches  ;; List of recently visited patches (path memory)
+  stagnation-counter  ;; Tracks how long the agent has been in the same spot
+  trapped?  ;; Flag indicating if the fish is stuck
   ]
 
 Atlantic-own [
@@ -259,9 +271,13 @@ Atlantic-own [
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
+  prev-speed ;; previous speed
   difficulty-factor ;; swimming difficulty
   E-swim ;; energy cost of swimming
   swim-base ;; base energy cost of swimming
+  previous-patches  ;; List of recently visited patches (path memory)
+  stagnation-counter  ;; Tracks how long the agent has been in the same spot
+  trapped?  ;; Flag indicating if the fish is stuck
 ]
 breed [alewives prey] ;; defines alewives as prey
 breed [stripedbass predator] ;; defines striped bass as predator

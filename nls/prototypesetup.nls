@@ -55,6 +55,8 @@ to create-fish [fish-type num-fish]
     ;; Initialize movement-related variables
     set min-speed 0.1  ;; Species speed limit (minimum)
     set max-speed 5.0  ;; Species speed limit (maximum)
+    set speed min-speed
+    set prev-speed min-speed
     set energy 100  ;; Initial energy level
     set fleeing? false  ;; Is the fish fleeing from a predator?
     set rest-time alewife-rest-time  ;; Rest time to recover energy
@@ -94,6 +96,8 @@ to create-fish [fish-type num-fish]
     set landward-migration? true ;;
     set seaward-migration? false ;;
     set swim-base 0.075 ;; base energy cost of swimming
+    
+    track-path-memory patch-here
   ]
 end
 
@@ -117,7 +121,7 @@ to prototype-go
   
 ;; potential behavioral rules
    ask alewives with [age = "adult"] [
-    osmoregulate ;; always osmoregulate
+    ;osmoregulate ;; always osmoregulate
     swim ;; always swim, school, and stage (built in)
   ]
 

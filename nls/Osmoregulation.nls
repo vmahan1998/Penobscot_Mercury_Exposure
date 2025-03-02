@@ -17,10 +17,7 @@ end
 ;; Step 1: Calculate Ion-Regulatory Stress
 to calculate-ionregulatory-stress
     ;; Get previous salinity (safe check)
-    let previous-salinity 35
-    if previous-patch != nobody [
-      set previous-salinity [salinity] of previous-patch
-    ]
+    let previous-salinity [salinity] of previous-patch
 
     ;; Get current patch salinity
     let patch-salinity [salinity] of patch-here

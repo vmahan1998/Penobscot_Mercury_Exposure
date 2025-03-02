@@ -5,6 +5,7 @@ to swim
     calculate-swim-energy
     if energy > 25 [  
        ;school  ;; Continue schooling as long as energy is above 25
+      migrate-landward
      ]
     
     ;; Enter staging only if energy ≤ 25
@@ -14,7 +15,7 @@ to swim
     
     ;; Agents remain in staging until energy reaches 75 & stress = 1
     if staging? [
-      ;stage  
+      stage  
       if energy >= 75 and ionregulatory-stress = 1 [  
         set staging? false  ;; Exit staging once fully recovered
       ]
@@ -72,20 +73,20 @@ to calculate-swim-energy
         " | Current Energy: " energy)
 end
 
-to migrate-landward
-  ; face towards ??
-  ; move towards land, based on speed
-  calculate-difficulty-landward
-  calculate-swimming-speed-landward
-  calculate-swim-energy
-  ; face towards ??
-  ; move towards sea, based on speed
-end
-
-to migrate-seaward
-  calculate-difficulty-seaward
-  calculate-swimming-speed-seaward
-  calculate-swim-energy
-  ; face towards ??
-  ; move towards sea, based on speed
-end
+;to migrate-landward
+;  ; face towards ??
+;  ; move towards land, based on speed
+;  calculate-difficulty-landward
+;  calculate-swimming-speed-landward
+;  calculate-swim-energy
+;  ; face towards ??
+;  ; move towards sea, based on speed
+;end
+;
+;to migrate-seaward
+;  calculate-difficulty-seaward
+;  calculate-swimming-speed-seaward
+;  calculate-swim-energy
+;  ; face towards ??
+;  ; move towards sea, based on speed
+;end
