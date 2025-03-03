@@ -50,4 +50,7 @@ to create-hg
       ;set interpolated-patch? true
     ]
   ]
+  
+  set max-Hg max [mercury] of patches
+  set min-Hg min [mercury] of patches
 end
