@@ -7,7 +7,7 @@ output: html_document
 
 # Seaward Migration Behavior
 
-This section documents the logic and equations underlying seaward (downstream) migration. The modeled behavior accounts for the physical challenge of swimming against riverine flows and with tidal flows by incorporating agent-level state variables such as difficulty, energy, and stress.
+This section documents the logic and equations underlying seaward (downstream) migration. The modeled behavior accounts for the physical challenge of swimming with riverine flows and against tidal flows. Empirically this is very similar to the Landward Migration behavior, with a positive scaling factor instead of negative.
 
 ### Patch Variables
 
@@ -29,11 +29,12 @@ This section documents the logic and equations underlying seaward (downstream) m
 
 ## Initialization
 
-| Col1 | Col2 | Col3 |
-|------|------|------|
-|      |      |      |
-|      |      |      |
-|      |      |      |
+| Variable                       | Initialized Value | Justification |
+|--------------------------------|:-----------------:|:-------------:|
+| **swimming-speed** $V_{agent}$ |                   |               |
+| **maximum-speed** $V_{max}$    |                   |               |
+| **energy** $E_{agent}$         |                   |               |
+|                                |                   |               |
 
 ## Swimming Speed
 
@@ -55,16 +56,16 @@ $$ V_{agent} = \frac{V_{max} * E_{agent}}{100} - (k \cdot |V_{patch}|) $$
 
 The difficulty factor quantifies the additional energetic burden of swimming against different velocity conditions. In this case, difficulty is calculated using a normalized velocity-based proxy that linearly scales difficulty from 1-10 between observed flow extremes.
 
-$$D_{f} = 1 + 9 \cdot \left(\frac{V_{patch} - V_{min}}{V_{max} - V_{min}}\right)$$
+$$D_{f} = 1 + 9 \cdot \left(\frac{\left( \frac{|V_{patch}|}{V_{max} \cdot \left(\frac{M_{agent}}{M_{max}}\right)} \right)^k - V_{min}}{V_{max} - V_{min}}\right)$$
 
 #### Where:
 
+-   $M_{agent}$ is the size of the agent.
+-   $M_{max}$ is the maximum size within the agent's population.
+-   $V_{max}$ is the maximum swimming speed capability of the agent.
 -   $V_{max}$ is the maximum depth-averaged water velocity observed within the simulation.
-
 -   $V_{min}$ is the minimum depth-averaged water velocity observed within the simulation.
-
 -   $V_{patch}$ is the depth-averaged water velocity for the agent's current patch.
-
 -   $D_{f}$ is the swimming difficulty factor.
 
 #### Biological Justification:
@@ -74,19 +75,6 @@ $$D_{f} = 1 + 9 \cdot \left(\frac{V_{patch} - V_{min}}{V_{max} - V_{min}}\right)
 -   When $V_{patch} < 0$, difficulty increases because the fish is actively swimming against the current.
 
 -   When $V_{patch} > 0$, difficulty is minimal as fish drift with the current.
-
-#### Theoretical Foundation:
-
-$$ D_{f} = \left( \frac{|V_{patch}|}{V_{max} \cdot \left(\frac{M_{agent}}{M_{max}}\right)} \right)^k $$
-
-**Where:**
-
--   $M_{agent}$ is the size of the agent.
--   $M_{max}$ is the maximum size within the agent's population.
--   $V_{max}$ is the maximum swimming speed capability of the agent.
--   $V_{patch}$ is the depth-averaged water velocity for the agent's current patch.
--   $D_{f}$ is the swimming difficulty factor.
--   $k$ is the scaling exponent for difficulty
 
 ## Swimming Movement
 
@@ -99,7 +87,7 @@ $$ \vec{Y}_{t+1} = \vec{Y}_t + V_{agent} \cdot \hat{u} $$
 -   $\vec{Y}_t$ is the agent’s current spatial position.
 -   $\vec{Y}_{t+1}$ is the agent’s updated spatial position after one time step.
 -   $V_{agent}$ is the swimming speed calculated from energy and difficulty.
--   $\hat{u}$ is the unit vector in the landward direction (0° heading, upstream).
+-   $\hat{u}$ is the unit vector in the seaward direction (180° heading, upstream).
 
 ## Energy Expenditure
 

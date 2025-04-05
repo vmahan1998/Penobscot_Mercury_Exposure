@@ -1,14 +1,20 @@
 to calculate-difficulty-landward
   ;; Ensure required parameters exist
   let M-max max [size] of breed
+  
+  let M-agent size                ;; Current agent size
   let V-max max-seaward-velocity  ;; Maximum observed seaward velocity
   let V-min max-landward-velocity ;; Maximum observed landward velocity
+  let k 0.75                      ;; Scaling exponent
 
   ;; **Normalize velocity within its observed range (V_min to V_max)**
-  let normalized-velocity (velocity - V-min) / (V-max - V-min)
+  ;;let normalized-velocity (velocity - V-min) / (V-max - V-min)
+  
+  ;; Theoretical difficulty calculation
+  let Df-raw (abs(velocity) / (max-speed * (M-agent / M-max))) ^ k
 
-  ;; Scale difficulty so it maps correctly from 1 (landward max) to 10 (seaward max)
-  set difficulty-factor (1 + (normalized-velocity * 9))  
+  ;; Normalize difficulty to scale 1–10 based on velocity bounds
+  set difficulty-factor (1 + 9 * ((Df-raw - V-min) / (V-max - V-min)))  
 
   ;; Ensure difficulty is always within [1,10] range
   set difficulty-factor max list 1 (min list 10 difficulty-factor)

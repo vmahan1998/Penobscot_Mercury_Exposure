@@ -162,7 +162,7 @@ to calculate-E-creation
     let beta -0.75  
     
     ;; Calculate metabolic cost of chloride cell creation
-    set E_creation Met-max * ((size / M-max) ^ beta)
+    set E-creation Met-max * ((size / M-max) ^ beta)
     
     ;; Debugging output
     show (word "E_creation: " E-creation " | Size: " size " | Max Size: " M-max)

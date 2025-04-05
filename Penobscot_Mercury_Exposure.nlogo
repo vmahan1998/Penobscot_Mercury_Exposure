@@ -200,7 +200,7 @@ initial-stripedbass
 initial-stripedbass
 0
 1000
-10.0
+0.0
 1
 1
 fish
@@ -230,7 +230,7 @@ initial-shortnose
 initial-shortnose
 0
 1000
-10.0
+0.0
 1
 1
 fish
@@ -265,7 +265,7 @@ alewife-rest-time
 alewife-rest-time
 0
 1000
-52.0
+57.0
 1
 1
 tick (1 tick = 5 minutes)
@@ -280,7 +280,7 @@ stripedbass-rest-time
 stripedbass-rest-time
 0
 1000
-157.0
+168.0
 1
 1
 tick (1 tick = 5 minutes)
@@ -295,7 +295,7 @@ shortnose-rest-time
 shortnose-rest-time
 0
 1000
-57.0
+60.0
 1
 1
 tick (1 tick = 5 minutes)
@@ -320,7 +320,7 @@ initial-atlantic
 initial-atlantic
 0
 1000
-11.0
+0.0
 1
 1
 NIL
@@ -335,7 +335,7 @@ atlantic-rest-time
 atlantic-rest-time
 0
 1000
-60.0
+174.0
 1
 1
 tick (1 tick = 5 minutes)
@@ -349,20 +349,13 @@ CHOOSER
 model-type
 model-type
 "penobscot" "prototype"
-0
+1
 
 PLOT
-<<<<<<< HEAD
-1614
-872
-1830
-1028
-=======
 1471
 437
 1687
 593
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Energy Dynamics
 ticks
 values
@@ -377,17 +370,10 @@ PENS
 "Agent Energy" 1.0 0 -13840069 true "" "plot mean [energy] of alewives"
 
 PLOT
-<<<<<<< HEAD
-1580
-275
-1792
-425
-=======
 1474
 277
 1686
 427
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Chloride Cells
 ticks
 Chloride Cell Percentage
@@ -402,17 +388,10 @@ PENS
 "default" 1.0 0 -8630108 true "" "plot mean [chloride-cell-density] of alewives"
 
 PLOT
-<<<<<<< HEAD
-1804
-274
-2004
-424
-=======
 1697
 277
 1897
 427
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Stress Dynamics
 ticks
 stress
@@ -427,17 +406,10 @@ PENS
 "Ion-Regulatory Stress" 1.0 0 -13840069 true "" "plot mean [ionregulatory-stress] of alewives"
 
 PLOT
-<<<<<<< HEAD
-1578
-12
-2002
-267
-=======
 1472
 15
 1896
 270
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Salinity
 ticks
 Salinity
@@ -453,17 +425,10 @@ PENS
 "Acclimated-Salinity" 1.0 0 -817084 true "" "plot mean [acclimated-salinity] of turtles"
 
 PLOT
-<<<<<<< HEAD
-1800
-432
-1999
-588
-=======
 1700
 439
 1899
 595
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Osmoregulation Energy
 ticks
 Energy Consumed
@@ -478,17 +443,10 @@ PENS
 "Osmo_Energy" 1.0 0 -16777216 true "" "plot mean [E-osmo] of turtles"
 
 PLOT
-<<<<<<< HEAD
-1616
-444
-2044
-694
-=======
 1030
 14
 1458
 264
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Velocities
 ticks
 velocity
@@ -505,17 +463,10 @@ PENS
 "Zero-0" 1.0 0 -7500403 true "" "plot 0"
 
 PLOT
-<<<<<<< HEAD
-1616
-703
-1833
-853
-=======
 1030
 273
 1247
 423
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Swimming Energy
 ticks
 Energy
@@ -530,17 +481,10 @@ PENS
 "Energy" 1.0 0 -5825686 true "" "plot mean [E-swim] of turtles"
 
 PLOT
-<<<<<<< HEAD
-1843
-703
-2045
-853
-=======
 1255
 273
 1457
 423
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Swimming Difficulty
 ticks
 difficulty
@@ -555,17 +499,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot mean [difficulty-factor] of turtles"
 
 PLOT
-<<<<<<< HEAD
-1844
-875
-2059
-1031
-=======
 1243
 431
 1458
 587
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Behaviors
 ticks
 behavior type
@@ -581,17 +518,10 @@ PENS
 "Staging" 1.0 0 -5825686 true "" "plot (count turtles with [staging?]) / count turtles"
 
 PLOT
-<<<<<<< HEAD
-1034
-13
-1476
-265
-=======
 1027
 607
 1469
 859
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Level of Net Contamination Exposure 
 ticks
 mercury
@@ -607,17 +537,10 @@ PENS
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [hg-exposure-total-normalized] of turtles"
 
 PLOT
-<<<<<<< HEAD
-1034
-272
-1478
-523
-=======
 2020
 280
 2464
 531
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Duration of Exposure to Harmful Contamination Levels
 ticks
 duration (ticks)
@@ -633,17 +556,10 @@ PENS
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [mehg-exposure-duration] of turtles"
 
 PLOT
-<<<<<<< HEAD
-1035
-529
-1480
-807
-=======
 1477
 604
 1922
 882
->>>>>>> c23e214161e140da65d32faadb4c0d3d5ec22f8f
 Contamination Uptake Risk
 ticks
 uptake risk
@@ -667,7 +583,7 @@ align-coefficient
 align-coefficient
 0
 100
-53.0
+54.0
 1
 1
 %
@@ -682,7 +598,7 @@ cohere-coefficient
 cohere-coefficient
 0
 100
-50.0
+69.0
 1
 1
 %

@@ -5,6 +5,47 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-# Agent-Based Modeling: Staging Behavior Function
+# Staging Behavior
 
-agent continue to migrate when stress is low and energy is high
+Staging is a behavioral state that allows agents to temporarily halt migration and recover energy or acclimate to dynamic estuary conditions (i.e., temperature, salinity) before continuing upstream (landward) or downstream (seaward) movement. It is triggered when agents experience low energy or high physiological stress and is resolved when recovery thresholds are met.
+
+### Patch Variables
+
+| Variable Name | Definition |
+|:----------------------------------:|:----------------------------------:|
+| **Velocity** $V_{patch}$ | The along-channel velocity of a given patch, derived from hydrodynamic model inputs, where positive values are in the landward direction and negative values are in the seaward direction. |
+| **staging-in-patch** | Count of staging agents within a patch (for habitat quality analysis). |
+
+### Agent Variables
+
+| Variable Name | Definition |
+|:----------------------------------:|:----------------------------------:|
+| **energy** $E_{agent}$ | The total energy the agent currently possesses. |
+| **ionregulatory-stress** $I_{stress}$ | Osmotic stress level based on environmental mismatch. |
+| **staging?** | Boolean flag indicating whether the agent is currently staging. |
+
+## Initialization
+
+| Variable                              | Initialized Value | Justification |
+|---------------------------------------|:-----------------:|:-------------:|
+| **swimming-speed** $V_{agent}$        |                   |               |
+| **maximum-speed** $V_{max}$           |                   |               |
+| **energy** $E_{agent}$                |                   |               |
+| **ionregulatory Stress** $I_{stress}$ |                   |               |
+
+## Trigger Conditions for Staging
+
+Agents will enter the staging state under either of the following conditions:
+
+-   $E_{agent} \leq 25$
+-   $I_{stress} > 5$
+
+These thresholds are designed to prevent migration collapse due to exhaustion or high osmotic stress.
+
+## Stop Conditions for Staging
+
+Agent will remain in the staging state until both of the following conditions are met:
+
+-    $E_{agent} \geq 75$
+
+-    $I_{stress} = 1$

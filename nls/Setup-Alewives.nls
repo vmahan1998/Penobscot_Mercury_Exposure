@@ -44,6 +44,8 @@ to setup-alewives
  set E-osmo 0  ;; Initial osmoregulatory energy usage (scales based on chloride cell demands)
  set E-base 0.05  ;; Base energy cost per chloride cell for maintenance
  set E-creation 0.02  ;; Energy cost per new chloride cell created
+ set staging? false
+ set selective-tidal-transport? false
     
  ;;assign gender to fish
  ifelse random-float 1 < 0.5 [

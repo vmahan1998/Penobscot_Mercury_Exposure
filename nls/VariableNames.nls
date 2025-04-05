@@ -160,7 +160,7 @@ StripedBass-own [
   time-since-last-osmoregulation  ;; The time elapsed since the last chloride cell regulation event.
   E-osmo  ;; Total energy used for ion regulation (osmoregulation).
   E-base  ;; Base energy cost for maintaining chloride cells
-  E_creation  ;; The energy cost for producing new chloride cells.
+  E-creation  ;; The energy cost for producing new chloride cells.
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   Met-max ;; maximum metabilic cost of new choride cell creation
@@ -221,7 +221,7 @@ Shortnose-own [
   time-since-last-osmoregulation  ;; The time elapsed since the last chloride cell regulation event.
   E-osmo  ;; Total energy used for ion regulation (osmoregulation).
   E-base  ;; Base energy cost for maintaining chloride cells
-  E_creation  ;; The energy cost for producing new chloride cells.
+  E-creation  ;; The energy cost for producing new chloride cells.
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   Met-max ;; maximum metabilic cost of new choride cell creation
@@ -272,6 +272,7 @@ Atlantic-own [
   acclimated-salinity ;; level of salinity fish is acclimated to currently
   ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
   chloride-density-min ;; minimum level of choride cells (present during low stress)
+  chloride-cell-density ;; level of chloride cells expressed
   chloride-density-max ;; maximum level of chloride cells (present during high stress)
   chloride-max-proliferation  ;; The max number of chloride cells that can be expressed per time step.
   chloride-cells-this-tick  ;; The number of chloride cells created (or destroyed) in the current time step.
@@ -281,7 +282,7 @@ Atlantic-own [
   time-since-last-osmoregulation  ;; The time elapsed since the last chloride cell regulation event.
   E-osmo  ;; Total energy used for ion regulation (osmoregulation).
   E-base  ;; Base energy cost for maintaining chloride cells
-  E_creation  ;; The energy cost for producing new chloride cells.
+  E-creation  ;; The energy cost for producing new chloride cells.
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   Met-max ;; maximum metabilic cost of new choride cell creation

@@ -1,10 +1,16 @@
 to update-velocity
-  let header first velocity-data
-  let rows but-first velocity-data
-  set max-seaward-velocity max velocity-data
-  set max-landward-velocity min velocity-data
+  ;let header first velocity-data
+  ;let rows but-first velocity-data
+  let rows velocity-data
+  
   ; Calculate the correct column based on day and hour, starting from day 254 and column 3
   let velocity-column ((day - starting-date) * 24 + hour + 3)  ; Adjust for the start day and column
+  
+  ;; Extract velocity values from the correct column only
+  let all-velocities filter is-number? map [row -> item velocity-column row] rows
+  
+  set max-seaward-velocity max all-velocities
+  set max-landward-velocity min all-velocities
   
   foreach rows [
     row ->

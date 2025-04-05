@@ -7,6 +7,13 @@ output: html_document
 
 # Mercury Contamination Bioaccumulation Function
 
+### Global Variables
+
+| Variable | Initialized Value | Justification |
+|:----------------------:|:----------------------:|:----------------------:|
+| **MeHg-Threshold** $MeHg_{threshold}$ | 15 ug/kg | 10% of mercury concentration (Gaudet et al., 1995) |
+| **Hg-Threshold** $Hg_{threshold}$ | 150 ug/kg |  (Gaudet et al., 1995) ((NOAA) National Oceanic and Atmospheric Administration, 1990) |
+
 ### Patch Variables
 
 | Variable Name | Definition |
@@ -32,13 +39,6 @@ output: html_document
 | Variable | Initialized Value | Justification |
 |:--:|:--:|:--:|
 | $I_{stress}$ | 1 | Acclimated agents have minimal stress levels |
-
-### Global Variables
-
-| Variable | Initialized Value | Justification |
-|:----------------------------------:|:----------------------------------:|:---------------------------------:|
-| **MeHg-Threshold** $MeHg_{threshold}$ | 15 ug/kg | 10% of mercury concentration (Gaudet et al., 1995) |
-| **Hg-Threshold** $Hg_{threshold}$ | 150 ug/kg |  (Gaudet et al., 1995) ((NOAA) National Oceanic and Atmospheric Administration, 1990) |
 
 ## Exposure Duration
 

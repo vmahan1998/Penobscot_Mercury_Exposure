@@ -125,9 +125,9 @@ to prototype-go
   
 ;; potential behavioral rules
    ask alewives with [age = "adult"] [
-    mercury-contamination ;; track mercury contamination
-    methylmercury-contamination ;; track methylmercury contamination
-    osmoregulate ;; always osmoregulate
+    ;mercury-contamination ;; track mercury contamination
+    ;methylmercury-contamination ;; track methylmercury contamination
+    ;osmoregulate ;; always osmoregulate
     swim ;; always swim, school, and stage (built in)
   ]
 
@@ -147,8 +147,8 @@ to prototype-go
     ;spawning ; potential spawning encounters
   ]
   ask patches [
-  color-staging-patches
-  color-tidal-trapping-patches
+  ;color-staging-patches
+  ;color-tidal-trapping-patches
   ]
 end
 
