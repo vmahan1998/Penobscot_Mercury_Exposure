@@ -349,13 +349,13 @@ CHOOSER
 model-type
 model-type
 "penobscot" "prototype"
-1
+0
 
 PLOT
-1562
-435
-1778
-591
+1614
+872
+1830
+1028
 Energy Dynamics
 ticks
 values
@@ -370,9 +370,9 @@ PENS
 "Agent Energy" 1.0 0 -13840069 true "" "plot mean [energy] of alewives"
 
 PLOT
-1565
+1580
 275
-1777
+1792
 425
 Chloride Cells
 ticks
@@ -388,9 +388,9 @@ PENS
 "default" 1.0 0 -8630108 true "" "plot mean [chloride-cell-density] of alewives"
 
 PLOT
-1789
+1804
 274
-1989
+2004
 424
 Stress Dynamics
 ticks
@@ -406,9 +406,9 @@ PENS
 "Ion-Regulatory Stress" 1.0 0 -13840069 true "" "plot mean [ionregulatory-stress] of alewives"
 
 PLOT
-1563
+1578
 12
-1987
+2002
 267
 Salinity
 ticks
@@ -425,10 +425,10 @@ PENS
 "Acclimated-Salinity" 1.0 0 -817084 true "" "plot mean [acclimated-salinity] of turtles"
 
 PLOT
-1790
-437
-1989
-593
+1800
+432
+1999
+588
 Osmoregulation Energy
 ticks
 Energy Consumed
@@ -443,10 +443,10 @@ PENS
 "Osmo_Energy" 1.0 0 -16777216 true "" "plot mean [E-osmo] of turtles"
 
 PLOT
-1561
-607
-1989
-857
+1616
+444
+2044
+694
 Velocities
 ticks
 velocity
@@ -463,10 +463,10 @@ PENS
 "Zero-0" 1.0 0 -7500403 true "" "plot 0"
 
 PLOT
-1561
-866
-1778
-1016
+1616
+703
+1833
+853
 Swimming Energy
 ticks
 Energy
@@ -481,10 +481,10 @@ PENS
 "Energy" 1.0 0 -5825686 true "" "plot mean [E-swim] of turtles"
 
 PLOT
-1787
-866
-1989
-1016
+1843
+703
+2045
+853
 Swimming Difficulty
 ticks
 difficulty
@@ -499,10 +499,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot mean [difficulty-factor] of turtles"
 
 PLOT
-1775
-1024
-1990
-1180
+1844
+875
+2059
+1031
 Behaviors
 ticks
 behavior type
@@ -518,10 +518,10 @@ PENS
 "Staging" 1.0 0 -5825686 true "" "plot (count turtles with [staging?]) / count turtles"
 
 PLOT
-1029
-12
-1471
-264
+1034
+13
+1476
+265
 Level of Net Contamination Exposure 
 ticks
 mercury
@@ -537,10 +537,10 @@ PENS
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [hg-exposure-total-normalized] of turtles"
 
 PLOT
-1029
-271
-1473
-522
+1034
+272
+1478
+523
 Duration of Exposure to Harmful Contamination Levels
 ticks
 duration (ticks)
@@ -556,9 +556,9 @@ PENS
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [mehg-exposure-duration] of turtles"
 
 PLOT
-1030
+1035
 529
-1475
+1480
 807
 Contamination Uptake Risk
 ticks
@@ -578,7 +578,7 @@ SLIDER
 216
 669
 389
-704
+702
 align-coefficient
 align-coefficient
 0
@@ -593,7 +593,7 @@ SLIDER
 216
 715
 389
-750
+748
 cohere-coefficient
 cohere-coefficient
 0
@@ -608,7 +608,7 @@ SLIDER
 218
 759
 391
-794
+792
 separate-coefficient
 separate-coefficient
 0
@@ -623,7 +623,7 @@ SLIDER
 190
 802
 395
-837
+835
 minimum-separation
 minimum-separation
 0

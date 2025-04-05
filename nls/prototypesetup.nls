@@ -1,8 +1,8 @@
 to prototype-setup
   resize-world 0 200 0 350
   set-patch-size 3
-  set Hg-threshold 150 ; ng/g Adjust based on NOAA data
-  set MeHg-threshold 20 ; ng/g Adjust based on NOAA data
+  set Hg-threshold 150 ; ng/kg (National Oceanic and Atmospheric Administration (NOAA), 1990) Adjust based on NOAA data
+  set MeHg-threshold 15 ; ng/kg Adjust based on NOAA data
   reset-ticks
 end
 

@@ -54,14 +54,6 @@ to calculate-swimming-speed-landward
 end
 
 to migrate-landward
-;  ; face towards ??
-;  ; move towards land, based on speed
-;  calculate-difficulty-landward
-;  calculate-swimming-speed-landward
-;  calculate-swim-energy
-;  ; face towards ??
-;  ; move towards sea, based on speed
-;; Movement during STST: drift with the current
     set heading 0  ;; Move landward (assuming 0° is upstream)
     fd speed   ;; Move at current speed
 end

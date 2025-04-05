@@ -5,23 +5,23 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
-# Agent-Based Modeling: Bioaccumulation Dynamics Function
+# Mercury Contamination Bioaccumulation Function
 
 ### Patch Variables
 
 | Variable Name | Definition |
-|----|----|
-| **Mercury** $Hg_{patch}$ | The mercury concentration of a given patch. |
-| **Mercury** $MeHg_{patch}$ | The methylmercury concentration of a given patch. |
-| **Suspended-particulate-matter** $SPM$ | The concentration of suspended particulate matter (SPM) for a given patch, derived from hydrodynamic model inputs. |
+|------------------------------------|------------------------------------|
+| **Mercury** $Hg_{patch}$ | The mercury concentration of a patch. |
+| **Mercury** $MeHg_{patch}$ | The methylmercury concentration of a patch. |
+| **Suspended-particulate-matter** $SPM_{t}$ | The concentration of suspended particulate matter (SPM) for a given patch, derived from hydrodynamic model inputs, which change temporally. |
 
 ### Agent Variables
 
 | Variable Name | Definition |
-|----|----|
+|------------------------------------|------------------------------------|
 | **ionregulatory-stress** $I_{stress}$ | The level of stress an agent experiences when regulating ion balance due to osmotic difference. |
-| **Hg-exposure-duration** $t_{Hg}$ | The amount of time an agent is exposed to mercury above healthy levels. |
-| **MeHg-exposure-duration** $t_{MeHg}$ | The amount of time an agent is exposed to methylmercury above healthy levels. |
+| **Hg-exposure-duration** $Hg_{t}$ | The amount of time an agent is exposed to mercury above healthy levels. |
+| **MeHg-exposure-duration** $MeHg_{t}$ | The amount of time an agent is exposed to methylmercury above healthy levels. |
 | **Hg-uptake-risk** $Hg_{risk}$ | The risk associated for uptake of mercury |
 | **MeHg-uptake-risk** $MeHg_{risk}$ | The risk associated for uptake of methylmercury |
 | **Hg-exposure-total** $Hg_{net}$ | The net sum of mercury exposed to during migration. |
@@ -35,62 +35,68 @@ output: html_document
 
 ### Global Variables
 
-+--------------------+------------------+---------------+
-| Variable           | Initalized Value | Justification |
-+:==================:+:================:+:=============:+
-| MeHg-Threshold     |                  |               |
-|                    |                  |               |
-| $MeHg_{threshold}$ |                  |               |
-+--------------------+------------------+---------------+
-| Hg-Threshold       |                  |               |
-|                    |                  |               |
-| $Hg_{threshold}$   |                  |               |
-+--------------------+------------------+---------------+
+| Variable | Initialized Value | Justification |
+|:----------------------------------:|:----------------------------------:|:---------------------------------:|
+| **MeHg-Threshold** $MeHg_{threshold}$ | 15 ug/kg | 10% of mercury concentration (Gaudet et al., 1995) |
+| **Hg-Threshold** $Hg_{threshold}$ | 150 ug/kg |  (Gaudet et al., 1995) ((NOAA) National Oceanic and Atmospheric Administration, 1990) |
 
 ## Exposure Duration
 
-Where:
+The cumulative number of time steps an agent is exposed to mercury and methylmercury above specified environmental thresholds:
 
--   $t_{Hg}$
+$$
+Hg_{t} = Hg_{t} + 1 \quad \text{if } Hg_{patch} > Hg_{threshold}
+$$
 
--   $Hg_{patch}$
+$$
+MeHg_{t} = MeHg_{t} + 1 \quad \text{if } MeHg_{patch} > MeHg_{threshold}
+$$
 
--   $t_{MeHg}$
+#### Where:
 
--   $MeHg_{patch}$
+-   $Hg_{t}$ is the total number of time steps exposed to mercury above threshold.\
+-   $Hg_{patch}$ is the mercury concentration at the current patch location.\
+-   $Hg_{threshold}$ is the defined mercury toxicity threshold.\
+-   $MeHg_{t}$ is the total number of time steps exposed to methylmercury above threshold.\
+-   $MeHg_{patch}$ is the methylmercury concentration at the current patch location.\
+-   $MeHg_{threshold}$ is the defined methylmercury toxicity threshold.
 
 ## Bioaccumulation Risk
 
-$$
-Hg_{risk} = \sum_{t=1}^T Hg_{risk} * (1+I_{stress}) * (1+SPM)
-$$
+Estimate the bioaccumulation risk associated with mercury and methylmercury., where risk increases with contaminant concentration, ion-regulatory stress, and suspended particulate matter (SPM):
 
 $$
-MeHg_{risk} = \sum_{t=1}^T MeHg_{risk} * (1+I_{stress}) * (1+SPM)
+Hg_{risk} = \sum_{t=1}^T Hg_{risk} * (1+I_{stress}) * (1+SPM_{t})
 $$
 
-Where:
+$$
+MeHg_{risk} = \sum_{t=1}^T MeHg_{risk} * (1+I_{stress}) * (1+SPM_{t})
+$$
 
--   $I_{stress}$
+#### Where:
 
--   $SPM$
-
--   $Hg_{patch}$
-
--   $Hg_{risk}$
-
--   $MeHg_{patch}$
-
--   $MeHg_{risk}$
+-   $Hg_{risk}$ is the instantaneous mercury uptake risk.\
+-   $MeHg_{risk}$ is the instantaneous methylmercury uptake risk.\
+-   $Hg_{normalized}$ is the normalized Hg concentration (scaled 0–1) at each time step.\
+-   $MeHg_{normalized}$ is the normalized MeHg concentration (scaled 0–1).\
+-   $I_{stress}$ is the ion-regulatory stress level of the agent.\
+-   $SPM_{t}$ is the suspended particulate matter concentration at the patch for that time step.
 
 ## Exposure Total
 
-Where:
+Track the cumulative amount of mercury and methylmercury that an agent has been exposed to throughout its migration:
 
--   $Hg_{net}$
+$$
+Hg_{net} = \sum_{t=1}^{T} Hg_{patch} 
+$$
 
--   $Hg_{patch}$
+$$
+MeHg_{net} = \sum_{t=1}^{T} MeHg_{patch}
+$$
 
--   $MeHg_{net}$
+#### Where:
 
--   $MeHg_{patch}$
+-   $Hg_{net}$ is the cumulative mercury exposure in ng/g\
+-   $MeHg_{net}$ is the cumulative methylmercury exposure in ng/g\
+-   $Hg_{patch}$ is the mercury concentration for the agent's current patch \
+-   $MeHg_{patch}$ is the methylmercury concentration for the agent's current patch
