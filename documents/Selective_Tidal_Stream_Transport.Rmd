@@ -1,8 +1,0 @@
----
-title: "Selective Tidal Transport Behavior"
-author: "Vanessa Quintana"
-date: "`r Sys.Date()`"
-output: html_document
----
-
-# Selective Tidal Stream Transport

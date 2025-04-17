@@ -3,7 +3,7 @@ to selective-tidal-stream-transport-landward
   let S-swim speed  ;; Agent's swimming speed
 
   ;; Check if fish should remain in STST (cooldown period)
-  if selective-tidal-transport? and (ticks - STST-start-tick < 4) [
+  if selective-tidal-transport? and (ticks - STST-start-tick < 1) [
     ;; Continue drifting in STST
     set speed abs V-patch
     fd abs V-patch
@@ -30,7 +30,7 @@ to selective-tidal-stream-transport-landward
   ]
 
   ;; Otherwise, continue normal swimming if STST is off
-  if S-swim > min-speed or (ticks - STST-start-tick >= 4) [
+  if S-swim > min-speed or (ticks - STST-start-tick >= 1) [
     set selective-tidal-transport? false
     calculate-swim-energy
     migrate-landward

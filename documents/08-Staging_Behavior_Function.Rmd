@@ -1,0 +1,171 @@
+# Staging Behavior
+
+## Overview
+
+Staging is a behavioral state that allows agents to temporarily halt migration and recover energy or acclimate to dynamic estuary conditions (i.e., temperature, salinity) before continuing upstream (landward) or downstream (seaward) movement. It is triggered when agents experience low energy or high physiological stress and is resolved when recovery thresholds are met.
+
+## Purpose
+
+To simulate the biologically necessary pause in migratory activity used for energy recovery and physiological acclimation, particularly under stressful conditions.
+
+## Entities, State Variables, and Scales
+
+### Patch Variables
+
+| Variable Name | Definition |
+|:--:|:--:|
+| **Velocity** $V_{patch}$ | The along-channel velocity of a given patch, derived from hydrodynamic model inputs, where positive values are in the landward direction and negative values are in the seaward direction. |
+| **staging-in-patch** | Count of staging agents within a patch (for habitat quality analysis). |
+
+### Agent Variables
+
+| Variable Name | Definition |
+|:--:|:--:|
+| **size** $M_{agent}$ | The size of an agent. |
+| **M-max** $M_{max}$ | Maximum size found within the agent's population. |
+| **age** $A_{agent}$ | The age of an agent. |
+| **A-max** $A_{max}$ | Maximum age found within the agent's population. |
+| **energy** $E_{agent}$ | The total energy the agent currently possesses. |
+| **stress** $S$ | Stress level based on environmental mismatch. |
+| **staging?** $stage_{?}$ | Boolean flag indicating whether the agent is currently staging. |
+
+## Process Overview and Scheduling
+
+1.  Evaluate energy and stress levels.
+
+2.  If energy is ≤ 25% or stress \> 5, agent enters staging behavior.
+
+3.  During staging, agents stop migrating, form schools, seek calm water, and regain energy.
+
+4.  If energy ≥ 75% and stress = 1, staging ends and active migration resumes.
+
+## Design Concepts
+
+**Basic Principles:** Staging is based on physiological ecology principles recognizing the need for energetic and osmoregulatory recovery before continued migration.
+
+**Emergence:** Collective staging areas and patterns emerge from local environmental conditions and individual agent needs.
+
+**Adaptation:** Agents adaptively stop migrating when unable to continue due to exhaustion or stress, shifting to a recovery behavior.
+
+**Sensing:** Agents assess their internal energy and stress state.
+
+**Stochasticity:** Recovery rate includes random variation to simulate individual differences.
+
+**Collectives:** Agents may cluster spatially during staging but do not form persistent groups.
+
+**Observation:** Number of staging agents and energy dynamics can be recorded for habitat analysis.
+
+## Initialization
+
++------------------------+-----------------------------------+---------------------------------------------------------------------------------------------+
+| Variable               | Initialized Value                 | Justification                                                                               |
++:======================:+:=================================:+:===========================================================================================:+
+| **size** $M_{agent}$   | user-defined and species-specific | Representative body length of a migrating agent.                                            |
++------------------------+-----------------------------------+---------------------------------------------------------------------------------------------+
+| **M-max** $M_{max}$    | user-defined and species-specific | Based on the maximum body length in the agent's population.                                 |
++------------------------+-----------------------------------+---------------------------------------------------------------------------------------------+
+| **age** $A_{agent}$    | user-defined and species-specific | Representative age length of a migrating agent.                                             |
++------------------------+-----------------------------------+---------------------------------------------------------------------------------------------+
+| **A-max** $A_{max}$    | user-defined and species-specific | Based on the maximum age in the agent's population.                                         |
++------------------------+-----------------------------------+---------------------------------------------------------------------------------------------+
+| **energy** $E_{agent}$ | $100 \%$                          | Agent starts migration at 100% relative energy capacity.                                    |
++------------------------+-----------------------------------+---------------------------------------------------------------------------------------------+
+| **Stress** $S$         | 1                                 | Acclimated agents have minimal stress levels.                                               |
++------------------------+-----------------------------------+---------------------------------------------------------------------------------------------+
+| $k$                    | 0.75                              | Energetic scaling component that follows Kleiber’s Law.                                     |
++------------------------+-----------------------------------+---------------------------------------------------------------------------------------------+
+| $\alpha$               | -0.3 to 0.5 (user-defined)        | This value can be calibrated based on your biological assumptions:\                         |
+|                        |                                   | • $\alpha < 0$: Younger fish recover faster (higher turnover, rapid metabolism)\            |
+|                        |                                   | • $\alpha > 0$: Older fish recover faster (more energy reserves, lower stress sensitivity)\ |
+|                        |                                   | • $\alpha = 0$: Age has no effect on recovery (neutral assumption)                          |
++------------------------+-----------------------------------+---------------------------------------------------------------------------------------------+
+
+## Submodels
+
+### Trigger Conditions for Staging
+
+Agents will enter the staging state under either of the following conditions:
+
+$$
+E_{agent} \leq 25 \%
+$$
+
+$$
+S > 5
+$$
+
+Where:
+
+-   $E_{agent}$ is the current energy available to the agent.
+
+-   $S$ is the current stress level of the agent.
+
+These thresholds are designed to prevent migration collapse due to exhaustion or high osmotic stress.
+
+### Behavior During Staging
+
+During staging, agents move to the nearest water patch with the lowest absolute velocity to reduce energetic costs. If no such patch is found, a random neighboring water patch is selected.
+
+Position is updated as:
+
+$$
+\vec{Y}_{t+1} = \vec{Y}_{target}
+$$
+
+Energy recovery occurs at a variable rate:
+
+$$
+E_{agent} = E_{agent} + \left((1 + \epsilon) \cdot \left( \frac{M_{agent}}{M_{max}} \right)^k \cdot \left( \frac{A_{agent}}{A_{max}} \right)^\alpha \right) \quad \text{where } \epsilon \sim U(0,1),\ k \leq 1
+$$
+
+Patch records presence of staging agents:
+
+$$
+\text{staging-in-patch} = \text{staging-in-patch} + 1
+$$
+
+Where:
+
+-   $\vec{Y}_{t+1}$ is the position after drifting.
+
+-   $\vec{Y}_{target}$ is the agent’s target spatial position.
+
+-   $V_{patch}$ is the along-channel velocity at the agent's current patch.
+
+-   $M_{agent}$ is the size of the agent.
+
+-   $M_{max}$ is the maximum size within the agent's population.
+
+-   $A_{agent}$: the age of the agent.
+
+-   $A_{max}$: the maximum age within the population.
+
+-   $E_{swim}$ is the total energy cost during passive movement.
+
+-   $k$ is the scaling exponent, reflecting nonlinear energy recovery.
+
+-   $\alpha$: an age-scaling exponent
+
+**Suggestion**:\
+
+• $\alpha = -0.25$ if modeling faster recovery in younger fish.\
+
+• $\alpha = 0.25$ if modeling increased efficiency in older/larger individuals.
+
+### Stop Conditions for Staging
+
+Agent will remain in the staging state until both of the following conditions are met:
+
+$$
+E_{agent} \geq 75 \%
+$$
+
+$$
+S = 1
+$$
+
+Where:
+
+-   $E_{agent}$ is the current energy available to the agent.
+
+-   $S$ is the current stress level of the agent.

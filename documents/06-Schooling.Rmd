@@ -1,0 +1,73 @@
+# Schooling Behavior
+
+## Overview
+
+## Purpose
+
+## Entities, State Variables, and Scales
+
+### Patch Variables
+
+| Variable Name | Definition |
+|---------------|------------|
+|               |            |
+
+### Agent Variables
+
+| Variable Name | Definition |
+|---------------|------------|
+|               |            |
+|               |            |
+|               |            |
+|               |            |
+|               |            |
+|               |            |
+|               |            |
+|               |            |
+|               |            |
+
+## Process Overview and Scheduling
+
+1.  
+
+2.  
+
+3.  
+
+4.  
+
+## Design Concepts
+
+**Basic Principles:**
+
+**Emergence:**
+
+**Adaptation**:
+
+**Objectives:**
+
+**Learning:**
+
+**Prediction:**
+
+**Sensing**:
+
+**Interaction**:
+
+**Stochasticity**:
+
+**Collectives:**
+
+**Observation:**
+
+## Initialization
+
+| Variable | Initialized Value | Justification |
+|:--------:|:-----------------:|:-------------:|
+|          |                   |               |
+|          |                   |               |
+|          |                   |               |
+|          |                   |               |
+|          |                   |               |
+
+## Submodels

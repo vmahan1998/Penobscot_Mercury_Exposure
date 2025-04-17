@@ -1,0 +1,156 @@
+# Landward Migration Behavior
+
+## Overview
+
+This function simulates landward (upstream) migratory behavior of fish navigating riverine and estuarine systems. Agents face resistance from environmental water velocity and incur energetic costs that scale with flow conditions and their size.
+
+## Purpose
+
+To model how migratory fish respond to varying riverine and tidal velocities by calculating effective swimming speed, difficulty of movement, and the energetic cost associated with upstream migration.
+
+## Entities, State Variables, and Scales
+
+### Global Variables
+
+| Variable | Initialized Value | Justification |
+|:----------------------:|:----------------------:|:----------------------:|
+| **minimum-velocity** $V_{min}$ | Calculated from $V_{patch}$ over the simulation period. | Minimum river velocity based on hydrodynamic observations. |
+| **maximum-velocity** $V_{max}$ | Calculated from $V_{patch}$ over the simulation period. | Maximum river velocity based on hydrodynamic observations. |
+
+### Patch Variables
+
+| Variable Name | Definition |
+|:----------------------------------:|:----------------------------------:|
+| **Velocity** $V_{patch}$ | The along-channel velocity of a given patch, derived from hydrodynamic model inputs, where positive values are in the landward direction and negative values are in the seaward direction. |
+
+### Agent Variables
+
+| Variable Name | Definition |
+|:----------------------------------:|:----------------------------------:|
+| **size** $M_{agent}$ | The size of an agent. |
+| **M-max** $M_{max}$ | Maximum size found within the agent's population. |
+| **swimming-speed** $V_{agent}$ | The current swimming speed of the agent. |
+| **maximum-speed** $swim_{max}$ | The maximum sustained speed of the agent. |
+| **difficulty-factor** $D_{f}$ | The level of difficulty an agent experiences when swimming. |
+| **energy** $E_{agent}$ | The total energy an agent has. |
+| **swimming-energy-cost** $Swim_{base}$ | The base energy cost of swimming. |
+| **net-swimming-cost** $E_{swim}$ | The total energy expenditure for swimming. |
+| **heading** $\hat{u}$ | The direction agent is facing or "headed towards" |
+| **Y-position** $\vec{Y}_t$ | This is the agent's position in the Y plane |
+
+## Process Overview and Scheduling
+
+1.  Determine effective swimming speed based on flow velocity and agent energy.
+
+2.  Compute swimming difficulty factor using normalized velocity.
+
+3.  Calculate movement direction and update position.
+
+4.  Deduct swimming energy cost from agent's energy pool.
+
+## Design Concepts
+
+**Basic Principles:** This model builds on hydrodynamic constraints and energetic theory. It assumes that swimming against current imposes increased metabolic demands and that movement is energetically limited by individual traits.
+
+**Emergence:** Movement trajectories ($\hat{u}$) and energy ($E_{agent}$) depletion emerge from the interaction between local flow conditions, fish traits, and directional behavior.
+
+**Objectives:** Agents aim to migrate upstream. While they do not explicitly optimize, their movement is shaped by their capacity to overcome current velocity $V_{patch}$).
+
+**Sensing:** Agents detect the local water velocity ($V_{patch}$) and use it to update their speed ($V_{agent}$) and effort ($D_{f}$).
+
+**Observation:** Agent positions ($\vec{Y}_t$ )and energy states can be tracked per time step to analyze migration success and efficiency.
+
+## Initialization
+
+| Variable | Initialized Value | Justification |
+|:----------------------:|:----------------------:|:----------------------:|
+| $V_{patch}$ | user-defined for data input | This input can be user-defined realistic data values or known spatial data. |
+| $M_{agent}$ | user-defined and species-specific | Representative body length of a migrating agent. |
+| $M_{max}$ | user-defined and species-specific | Based on the maximum body length in the agent's population. |
+| $V_{agent}$ | $\frac{V_{max}}{2}$ | Fish begin migration with a moderate swimming speed relative to their maximum capacity. |
+| $swim_{max}$ | $1.5-3 \frac{body lengths}{sec}$ | Typical value for sustained swimming speed in small pelagic fish (refer to Videler, 1993). |
+| $E_{agent}$ | 100% | Agent starts migration at 100% relative energy capacity. |
+| $swim_{base}$ | $0.02 \cdot \frac{M_{agent}}{M_{max}}^{k}$ | Scales locomotion cost nonlinearly with size; can be calibrated. |
+| $k$ | 0.75 | Energetic scaling component that follows Kleiber’s Law. |
+| $\hat{u}$ | $0^\circ$ | Unit vector in the upstream direction |
+
+## Submodels
+
+### Swimming Speed
+
+Agents calculate swimming speed based on their available energy and hydrodynamic resistance:
+
+$$ V_{agent} = \frac{swim_{max} * E_{agent}}{100} - (-k \cdot |V_{patch}|) $$
+
+**Where:**
+
+-   $swim_{max}$ is the maximum sustained swimming speed of the agent.
+
+-   $V_{patch}$ is the environmental velocity at the agent's current patch.
+
+-   $V_{agent}$ is the effective swimming speed of the agent.
+
+-   $E_{agent}$ is the agent's available energy percentage (0-100%).
+
+-   $k$ is a scaling factor that determines how velocity influences swimming effort.
+
+### **Swimming Difficulty**
+
+The difficulty factor quantifies the additional energetic burden of swimming against different velocity conditions. In this case, difficulty is calculated using a normalized velocity-based proxy that scales difficulty from 1-10 between observed flow extremes.
+
+$$D_{f} = 1 + 9 \cdot \left(\frac{\left( \frac{|V_{patch}|}{swim_{max} \cdot \left(\frac{M_{agent}}{M_{max}}\right)} \right)^k - V_{min}}{V_{max} - V_{min}}\right)$$
+
+Where:
+
+-   $M_{agent}$ is the size of the agent.
+-   $M_{max}$ is the maximum size within the agent's population.
+-   $swim_{max}$ is the maximum swimming speed capability of the agent.
+-   $V_{max}$ is the maximum depth-averaged water velocity observed within the simulation.
+-   $V_{min}$ is the minimum depth-averaged water velocity observed within the simulation.
+-   $V_{patch}$ is the depth-averaged water velocity for the agent's current patch.
+-   $D_{f}$ is the swimming difficulty factor.
+
+**Biological Justification:**
+
+When $V_{patch} \approx 0$, difficulty is moderate.
+
+When $V_{patch} < 0$, difficulty increases because the fish is actively swimming against the current.
+
+When $V_{patch} > 0$, difficulty is minimal as fish drift with the current.
+
+### Swimming Movement
+
+During landward migration, agents orient upstream and move forward based on their calculated swimming speed:
+
+$$ \vec{Y}_{t+1} = \vec{Y}_t + V_{agent} \cdot \hat{u} $$
+
+Where:
+
+-   $\vec{Y}_t$ is the agent’s current spatial position.
+-   $\vec{Y}_{t+1}$ is the agent’s updated spatial position after one time step.
+-   $V_{agent}$ is the swimming speed calculated from energy and difficulty.
+-   $\hat{u}$ is the unit vector in the landward direction.
+
+### Swimming Energy
+
+Swimming energy cost is determined by the base cost of locomotion scaled by a difficulty factor raised to a scaling factor. This allows energy expenditure to increase non-linearly as flow resistance increases.
+
+$$ E_{swim} = Swim_{base} \cdot D_f^{k} $$
+
+Where:
+
+-   $E_{swim}$ is the energy cost of swimming.
+-   $Swim_{base}$ is the base swimming cost based on agent size.
+-   $D_f$ is the swimming difficulty factor.
+-   $k$ is the scaling factor, reflecting nonlinear energy demand.
+
+### Energy Balance
+
+Agents balance energy to swim with total energy allowance:
+
+$$ E_{agent} = E_{agent} - E_{swim} $$
+
+Where:
+
+-   $E_{agent}$ is the current energy available to the agent.
+-   $E_{swim}$ is the energy cost of swimming in this time step.

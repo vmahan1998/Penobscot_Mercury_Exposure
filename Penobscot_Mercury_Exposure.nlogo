@@ -537,10 +537,10 @@ PENS
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [hg-exposure-total-normalized] of turtles"
 
 PLOT
-2020
-280
-2464
-531
+1906
+16
+2350
+267
 Duration of Exposure to Harmful Contamination Levels
 ticks
 duration (ticks)
