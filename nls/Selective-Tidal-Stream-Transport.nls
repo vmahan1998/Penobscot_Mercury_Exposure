@@ -10,11 +10,11 @@ to selective-tidal-stream-transport-landward
     set E-swim swim-base
     set energy energy - E-swim
     set tidal-transport-in-patch tidal-transport-in-patch + 1;; records sum of number of staging agents in patch
-    stop  ;; Prevent other behaviors from triggering
+    ;stop  ;; Prevent other behaviors from triggering
   ]
 
   ;; If swimming speed is insufficient to counteract velocity, enter STST
-  if abs V-patch > S-swim and S-swim <= min-speed [
+  if abs V-patch > S-swim and S-swim <= min-speed [ ;isolates when fish are experiencing the mose difficulty which leads to swimmining at minimum speeds
     set selective-tidal-transport? true
     set STST-start-tick ticks  ;; Store tick count to track STST duration
     show "Switching to Selective Tidal Stream Transport"
@@ -26,7 +26,7 @@ to selective-tidal-stream-transport-landward
     set E-swim swim-base
     set energy energy - E-swim
     set tidal-transport-in-patch tidal-transport-in-patch + 1;; records sum of number of staging agents in patch
-    stop  ;; Prevent normal swimming
+    ;stop  ;; Prevent normal swimming
   ]
 
   ;; Otherwise, continue normal swimming if STST is off

@@ -11,6 +11,7 @@ globals [
   depth-data ;; depth data
   salinity-data ;; salinity data
   SPM-data ;; Suspended Sediments data
+  mean-SPM ;; mean SPM in the system
   mercury-data ;; mercury contamination data
   tide-phase ;; tracks tidal phase
   mean-daytime-prey-eaten ;; records mean number of daily prey eaten
@@ -33,6 +34,7 @@ patches-own [
   velocity ;; records values of depth-averaged velocity in patch
   depth ;; records water level of patch
   salinity ;; records levels of salinity in patch
+  temperature ;; records the levels of temeprature in patch
   mercury ;; records levels of mercury in patch
   methylmercury ;; records levels of methylmercury in patch
   SPM ;; records levels of suspended sediment concentration in patch
@@ -42,10 +44,13 @@ patches-own [
   spawning-events-in-patch ;; records number of spawning events in patch
   staging-in-patch ;; records sum of number of staging agents in patch
   tidal-transport-in-patch ;; records sum of number of staging agents in patch
+  forage-quality ;; foraging quality
+  forage-in-patch ;; number of agents foraging in patch
 ]
 
 Alewives-own [
   age ;; set age of fish
+  age-num ;; numerical age of fish
   sex ;; defines sex of fish
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
@@ -84,6 +89,9 @@ Alewives-own [
   chloride-cells-this-tick  ;; The number of chloride cells created (or destroyed) in the current time step.
   stress_threshold  ;; stress level determining expression of chloride cells
   acclimation-rate  ;; The rate at which chloride cell density increases over time.
+  optimal-temperature   ;; preferred temp (°C)
+  optimal-depth         ;; preferred depth (m)
+  optimal-velocity      ;; preferred flow (m/s)
   C-mid  ;; The chloride cell density at which stress buffering is 50% effective.
   time-since-last-osmoregulation  ;; The time elapsed since the last chloride cell regulation event.
   E-osmo  ;; Total energy used for ion regulation (osmoregulation).
@@ -94,6 +102,7 @@ Alewives-own [
   Met-max ;; maximum metabilic cost of new choride cell creation
   staging? ;; boolean to track if agent is staging
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
+  foraging? ;; boolean to track if agent is foraging
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
   prev-speed ;; previous speed
@@ -108,6 +117,7 @@ Alewives-own [
 
 StripedBass-own [
   age ;; set age of fish
+  age-num ;; numerical age of fish
   sex ;; defines sex of fish
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
@@ -148,6 +158,9 @@ StripedBass-own [
   landward-migration-time ;; time to travel inland and complete objective
   seaward-migration-time ;; time to travel seaward after completing objective
   acclimated-salinity ;; level of salinity fish is acclimated to currently
+  optimal-temperature   ;; preferred temp (°C)
+  optimal-depth         ;; preferred depth (m)
+  optimal-velocity      ;; preferred flow (m/s)
   ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
   chloride-density-min ;; minimum level of choride cells (present during low stress)
   chloride-density-max ;; maximum level of chloride cells (present during high stress)
@@ -180,6 +193,7 @@ StripedBass-own [
 
 Shortnose-own [
   age ;; set age of fish
+  age-num ;; numerical age of fish
   sex ;; defines sex of fish
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
@@ -209,6 +223,9 @@ Shortnose-own [
   migration-destination ;; defines migratory location homing
   at-destination? ;; is fish at migratory destination?
   acclimated-salinity ;; level of salinity fish is acclimated to currently
+  optimal-temperature   ;; preferred temp (°C)
+  optimal-depth         ;; preferred depth (m)
+  optimal-velocity      ;; preferred flow (m/s)
   ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
   chloride-density-min ;; minimum level of choride cells (present during low stress)
   chloride-density-max ;; maximum level of chloride cells (present during high stress)
@@ -227,6 +244,7 @@ Shortnose-own [
   Met-max ;; maximum metabilic cost of new choride cell creation
   staging? ;; boolean to track if agent is staging
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
+  foraging? ;; boolean to track if agent is foraging
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
   prev-speed ;; previous speed
@@ -241,6 +259,7 @@ Shortnose-own [
 
 Atlantic-own [
   age ;; set age of fish
+  age-num ;; numerical age of fish
   sex ;; defines sex of fish
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
@@ -288,6 +307,7 @@ Atlantic-own [
   Met-max ;; maximum metabilic cost of new choride cell creation
   staging? ;; boolean to track if agent is staging
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
+  foraging? ;; boolean to track if agent is foraging
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
   prev-speed ;; previous speed

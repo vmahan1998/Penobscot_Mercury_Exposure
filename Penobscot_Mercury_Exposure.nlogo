@@ -52,6 +52,7 @@ __includes[
   "nls/Methylmercury-Contamination.nls"
   "nls/Osmoregulation.nls"
   "nls/Staging.nls"
+  "nls/Foraging.nls"
 ]
 
 to setup
@@ -71,6 +72,8 @@ to setup
   ;; Set environment parameters based on model type
   if model-type = "penobscot" [penobscot-parameters]
   if model-type = "prototype" [prototype-parameters]
+
+  update-SPM-mean
 
   ;; Agent setup
   set-default-shape turtles "fish"
@@ -185,7 +188,7 @@ starting-date
 starting-date
 0
 266
-254.0
+253.0
 1
 1
 day of the year
@@ -320,7 +323,7 @@ initial-atlantic
 initial-atlantic
 0
 1000
-0.0
+20.0
 1
 1
 NIL
@@ -335,7 +338,7 @@ atlantic-rest-time
 atlantic-rest-time
 0
 1000
-174.0
+205.0
 1
 1
 tick (1 tick = 5 minutes)
@@ -633,6 +636,24 @@ minimum-separation
 1
 patches
 HORIZONTAL
+
+PLOT
+1032
+433
+1232
+587
+Foraging
+ticks
+Foraging?
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot mean [foraging?] of turtles"
 
 @#$#@#$#@
 ## WHAT IS IT?

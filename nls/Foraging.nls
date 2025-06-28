@@ -1,0 +1,43 @@
+to forage
+  if (staging? and energy < 75 and breed != stripedbass) [
+    set foraging? true
+    let best-spot max-one-of neighbors [ forage-quality ]
+    if best-spot != nobody [
+      face best-spot
+      move-to best-spot
+    ]
+    let gain ([forage-quality] of patch-here) * random-float 1.5
+    set energy energy + gain
+    show (word "Energy gained: " gain)
+    if energy > 100 [ set energy 100 ]
+  ]
+end
+
+to update-forage-quality
+
+  ;; Only update forage-quality in the *neighborhood* of foragers
+  ask turtles with [staging? and energy < 75 and breed != stripedbass] [
+    ask patches in-radius 2 [
+      let sal_opt (1 - abs(salinity - [acclimated-salinity] of myself) / 10)
+      let temp_opt (1 - abs(temperature - [optimal-temperature] of myself) / 10)
+      let vel_opt (1 - abs(velocity - [optimal-velocity] of myself))
+      let depth_opt (1 - abs(depth - [optimal-depth] of myself) / 2.5)
+      let spm_penalty ifelse-value mean-SPM != 0 [
+        max list 0 (1 - ((SPM - mean-SPM) / mean-SPM))
+      ] [
+        0  ; or any default penalty if mean-SPM is zero
+      ]
+
+      let raw_score (sal_opt * 0.3 + temp_opt * 0.2 + vel_opt * 0.2 + depth_opt * 0.2 + spm_penalty * 0.1)
+      set forage-quality max list 0 (min list 1 raw_score)
+
+      ; Visualization (optional)
+      if forage-in-patch > 0 [ set pcolor orange ]
+    ]
+  ]
+end
+
+
+to update-SPM-mean
+  set mean-SPM mean [SPM] of patches
+end

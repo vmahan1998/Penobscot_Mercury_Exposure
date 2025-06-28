@@ -121,14 +121,17 @@ to prototype-go
     set depth random-float 5  ;; random value between 0 and 5 meters
     set salinity update-salinity ticks
     set SPM random-float 0.0004  ;; random value between 0 and 0.0004
-  ] 
+    update-forage-quality
+  ]
   
 ;; potential behavioral rules
    ask alewives with [age = "adult"] [
-    mercury-contamination ;; track mercury contamination
-    methylmercury-contamination ;; track methylmercury contamination
-    osmoregulate ;; always osmoregulate
+    ;mercury-contamination ;; track mercury contamination
+    ;methylmercury-contamination ;; track methylmercury contamination
+    ;osmoregulate ;; always osmoregulate
     swim ;; always swim, school, and stage (built in)
+    forage
+    
   ]
 
   ask stripedbass with [age = "adult"] [

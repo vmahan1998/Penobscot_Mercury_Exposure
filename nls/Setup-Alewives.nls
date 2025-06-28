@@ -10,12 +10,16 @@ to setup-alewives
  set cohere-coefficient 50
  set separate-coefficient 50
  set minimum-separation 0.3
- set size 1
  set color black
  set age "adult"
- set speed 3
- set min-speed 0.2 ;; species limit
- set max-speed 5.0 ;; species limit 
+ set age-num 3 + random 4
+ set size age + random-normal 0 0.3
+ set optimal-temperature 17 - ((age - 3) * 0.4) + random-normal 0 0.3
+ set optimal-velocity 0.25 + ((size - 3) * 0.05) + random-normal 0 0.03
+ set optimal-depth 1.5 + ((size - 3) * 0.7) + random-normal 0 0.2
+ set min-speed 0.1 ;; species limit
+ set max-speed (1.5 + random-float 1.5) * size ;; Assign max-speed as 1.5–3.0 × body length (size)
+ set speed max-speed / 2
  set energy 100;; energy allowance
  set fleeing? false;; boolean of whether or not prey is fleeing from predator
  set rest-time alewife-rest-time;; time time in ticks to recoup energy (could be foraging for more energy)
@@ -32,6 +36,7 @@ to setup-alewives
  set landward-migration-time 0;; time to travel inland and complete objective
  set seaward-migration-time 0;; time to travel seaward after completing objective
  set acclimated-salinity 35 ;; level of salinity fish is acclimated to currently 
+ 
  set ionregulatory-stress 1 ;; level of stress used for osmoregulation (chloride cell proliferation)
  set chloride-density-min 10 ;; minimum level of choride cells (present during low stress)
  set chloride-density-max 100 ;; maximum level of chloride cells (present during high stress)
