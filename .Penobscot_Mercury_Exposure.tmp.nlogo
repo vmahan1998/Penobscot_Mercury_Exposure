@@ -323,7 +323,7 @@ initial-atlantic
 initial-atlantic
 0
 1000
-0.0
+25.0
 1
 1
 NIL

@@ -44,8 +44,7 @@ patches-own [
   spawning-events-in-patch ;; records number of spawning events in patch
   staging-in-patch ;; records sum of number of staging agents in patch
   tidal-transport-in-patch ;; records sum of number of staging agents in patch
-  forage-quality ;; foraging quality
-  forage-in-patch ;; number of agents foraging in patch
+  forage-visits ;; number of agents foraging in patch
 ]
 
 Alewives-own [

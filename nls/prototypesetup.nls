@@ -30,6 +30,8 @@ to prototype-parameters
     set min-Hg 0 
     set max-MeHg 65
     set min-MeHg 0
+    
+    set forage-visits 0
   ] 
 
   setup-migration
@@ -48,7 +50,6 @@ to create-fish [fish-type num-fish]
     set shape "fish"
     set age "adult"
     set color one-of [blue green cyan]  ;; Assign colors per species if needed
-    set size random-float 5  ;; Adjust for better visualization
     move-to one-of patches  ;; Place randomly in the environment
     set previous-patch patch-here
     
@@ -60,9 +61,14 @@ to create-fish [fish-type num-fish]
     ]
 
     ;; Initialize movement-related variables
-    set min-speed 0.1  ;; Species speed limit (minimum)
-    set max-speed 3.0  ;; Species speed limit (maximum)
-    set speed min-speed
+    set age-num 3 + random 4
+    set size age-num + random-normal 0 0.3
+    set optimal-temperature 17 - ((size - 3) * 0.4) + random-normal 0 0.3
+    set optimal-velocity 0.25 + ((size - 3) * 0.05) + random-normal 0 0.03
+    set optimal-depth 1.5 + ((size - 3) * 0.7) + random-normal 0 0.2
+    set min-speed 0.1 ;; species limit
+    set max-speed (1.5 + random-float 1.5) * size ;; Assign max-speed as 1.5–3.0 × body length (size)
+    set speed max-speed / 2
     set prev-speed min-speed
     set energy 100  ;; Initial energy level
     set fleeing? false  ;; Is the fish fleeing from a predator?
@@ -111,6 +117,9 @@ to create-fish [fish-type num-fish]
     ;; Calculate metabolic cost of locomotion
     set swim-base swim-max * ((size / M-max) ^ 0.75)
   ]
+  
+  ask fish-type [ set foraging? false ] ;; boolean to track if agent is foraging
+
 end
 
 to prototype-go
@@ -121,14 +130,14 @@ to prototype-go
     set depth random-float 5  ;; random value between 0 and 5 meters
     set salinity update-salinity ticks
     set SPM random-float 0.0004  ;; random value between 0 and 0.0004
-    update-forage-quality
+
   ]
   
 ;; potential behavioral rules
    ask alewives with [age = "adult"] [
-    ;mercury-contamination ;; track mercury contamination
-    ;methylmercury-contamination ;; track methylmercury contamination
-    ;osmoregulate ;; always osmoregulate
+    mercury-contamination ;; track mercury contamination
+    methylmercury-contamination ;; track methylmercury contamination
+    osmoregulate ;; always osmoregulate
     swim ;; always swim, school, and stage (built in)
     forage
     
@@ -152,6 +161,7 @@ to prototype-go
   ask patches [
   ;color-staging-patches
   ;color-tidal-trapping-patches
+  color-foraging-patches
   ]
 end
 

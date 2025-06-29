@@ -13,7 +13,7 @@ to setup-alewives
  set color black
  set age "adult"
  set age-num 3 + random 4
- set size age + random-normal 0 0.3
+ set size age-num + random-normal 0 0.3
  set optimal-temperature 17 - ((age - 3) * 0.4) + random-normal 0 0.3
  set optimal-velocity 0.25 + ((size - 3) * 0.05) + random-normal 0 0.03
  set optimal-depth 1.5 + ((size - 3) * 0.7) + random-normal 0 0.2
@@ -51,6 +51,7 @@ to setup-alewives
  set E-creation 0.02  ;; Energy cost per new chloride cell created
  set staging? false
  set selective-tidal-transport? false
+ set foraging? false
     
  ;;assign gender to fish
  ifelse random-float 1 < 0.5 [
