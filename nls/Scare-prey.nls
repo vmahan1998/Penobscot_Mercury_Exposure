@@ -6,4 +6,6 @@ to scare-prey ;; predator procedure
   left 90
   scare-down ;; prey underneath will flee down
   right 180
+  scare-up ;; prey underneath will flee down
+  right 0
 end

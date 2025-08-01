@@ -44,8 +44,16 @@ patches-own [
   spawning-events-in-patch ;; records number of spawning events in patch
   staging-in-patch ;; records sum of number of staging agents in patch
   tidal-transport-in-patch ;; records sum of number of staging agents in patch
-  forage-visits ;; number of agents foraging in patch
+  forage-visits ;; number of time a patch has been visited for foraging
+  forager-count ;; number of fish foraging in a patch
+  forage-species ;; fish species foraging in the patch
+  velocity-series ;; time series of velocity
+  depth-series  ;; time series of depth
+  cost-to-home ;; least cost to homing patch
+  cost-to-sea ;; least cost back to sea
 ]
+
+turtles-own [ trail ]
 
 Alewives-own [
   age ;; set age of fish
@@ -54,7 +62,8 @@ Alewives-own [
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
   speed ;; patches/tick
-  home-patch ;; defines home patch of sea habitat
+  home-patch ;; defines home patch of estuary habitat
+  migration-patch ;; defines leaving patch of sea habitat
   schoolmates ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
   minimum-separation ;; minimum separation distance in patches for schooling
@@ -80,6 +89,7 @@ Alewives-own [
   landward-migration-time ;; time to travel inland and complete objective
   seaward-migration-time ;; time to travel seaward after completing objective
   acclimated-salinity ;; level of salinity fish is acclimated to currently
+  thermal-stress ;; level of temperature stress used for thermoregulation
   ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
   chloride-density-min ;; minimum level of choride cells (present during low stress)
   chloride-density-max ;; maximum level of chloride cells (present during high stress)
@@ -121,7 +131,8 @@ StripedBass-own [
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
   speed ;; patches/tick
-  home-patch ;; defines home patch of sea habitat
+  home-patch ;; defines home patch of estuary habitat
+  migration-patch ;; defines leaving patch of sea habitat
   schoolmates  ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
   minimum-separation ;; minimum separation distance in patches for schooling
@@ -197,7 +208,8 @@ Shortnose-own [
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
   speed ;; patches/tick
-  home-patch ;; defines home patch of sea habitat
+  home-patch ;; defines home patch of estuary habitat
+  migration-patch ;; defines leaving patch of sea habitat
   schoolmates  ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
   minimum-separation ;; minimum separation distance in patches for schooling
@@ -263,7 +275,8 @@ Atlantic-own [
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
   speed ;; patches/tick
-  home-patch ;; defines home patch of sea habitat
+  home-patch ;; defines home patch of estuary habitat
+  migration-patch ;; defines leaving patch of sea habitat
   schoolmates  ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
   minimum-separation ;; minimum separation distance in patches for schooling

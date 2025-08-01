@@ -2,11 +2,11 @@ to velocity-color
  ;; update map colors 
    ask patches with [location = "Penobscot"] [
     set pcolor blue
-    if velocity > 0 [ ;; downstream current
+    if velocity > 0 [ ;; Seaward current
         set pcolor blue 
       ]
-      if velocity <= 0 [ ;; upstream current
-        set pcolor red
+      if velocity <= 0 [ ;; Landward current
+        set pcolor blue
       ]
   ]
   

@@ -44,6 +44,6 @@ end
 
 to color-staging-patches
   if staging-in-patch > 0 [
-    set pcolor green
+    set pcolor yellow
   ]
 end

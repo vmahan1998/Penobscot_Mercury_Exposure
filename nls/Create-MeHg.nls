@@ -1,6 +1,7 @@
 to create-mehg
   let header first mercury-data
   let rows but-first mercury-data
+
   foreach rows [
     row ->
     let x item 0 row
@@ -14,7 +15,6 @@ to create-mehg
     ]
   ]
   
-  
   ;; Interpolate mercury for water patches in Penobscot
   ask patches with [patch-terrain = "water" and location = "Penobscot" and methylmercury = 0] [
     let radius 2
@@ -22,36 +22,109 @@ to create-mehg
       methylmercury != 0
     ]
     
-    ;; Expand the radius until enough valid neighbors are found
+    ;; Expand radius until enough neighbors are found
     while [count potential-neighbors < 5 and radius <= 15] [
       set radius radius + 1
       set potential-neighbors patches in-radius radius with [
         methylmercury != 0
       ]
     ]
-    ; show (word "Potential neighbors: " count potential-neighbors)
     
-    ;; Sort potential neighbors by distance to the current patch
+    ;; Sort by distance
     let sorted-neighbors sort-on [distance myself] potential-neighbors
     
-    ;; Select the closest 5 neighbors
-    let valid-neighbors n-of 3 sorted-neighbors
+    ;; Predefine the agentset
+    let valid-neighbors-set no-patches
     
-    ;; Convert the list of valid neighbors to an agentset
-    let valid-neighbors-set patch-set valid-neighbors
+    ;; Assign neighbors
+    if length sorted-neighbors >= 3 [
+      let valid-neighbors n-of 3 sorted-neighbors
+      set valid-neighbors-set patch-set valid-neighbors
+    ]
+    if length sorted-neighbors < 3 [
+      set valid-neighbors-set patch-set sorted-neighbors
+    ]
     
-    ;; Check if the agentset is not empty
+    ;; Interpolate if available
     if any? valid-neighbors-set [
-      ;; Calculate interpolated mercury value using the agentset
       let avg-methylmercury mean [methylmercury] of valid-neighbors-set
-      
-      ;; Assign interpolated mercury value
       set methylmercury avg-methylmercury
-      ;set pcolor yellow
-      ;; Mark patch as interpolated
-      ;set interpolated-patch? true
     ]
   ]
   set max-MeHg max [methylmercury] of patches
   set min-MeHg min [methylmercury] of patches
+
+  ;; Define Green → Yellow → Red color gradient
+  let grywrd-gradient [[0 255 0] [255 255 0] [255 0 0]]  ;; Green → Yellow → Red
+  
+  ask patches with [patch-terrain = "water" and location = "Penobscot"] [
+    let rgb-color palette:scale-gradient grywrd-gradient methylmercury min-MeHg max-MeHg
+    set pcolor rgb (item 0 rgb-color) (item 1 rgb-color) (item 2 rgb-color)
+  ]
+end
+
+to draw-mehg-legend
+  let n 150  ;; height of the legend
+  let legend-width 8
+  let legend-height n
+
+  ;; Position in bottom right
+  let legend-x-start max-pxcor - (legend-width - 1)
+  let legend-y-start min-pycor + 10
+  let legend-y-end legend-y-start + legend-height - 1
+
+  ;; MeHg gradient: Green–Yellow–Red
+  let gradient [[0 255 0] [255 255 0] [255 0 0]]
+
+  ;; X position for tick labels (2 columns to the left of the bar)
+  let label-x legend-x-start - 8
+
+  ;; Remove old turtles if you rerun the legend
+  ask turtles with [breed = turtles] [ die ]
+
+  ;; Draw the legend bar
+  (foreach n-values n [ i -> i ] [
+    i ->
+    let y legend-y-start + i
+    let val min-MeHg + (i / (n - 1)) * (max-MeHg - min-MeHg)
+    let rgb-color palette:scale-gradient gradient val min-MeHg max-MeHg
+
+    ;; Fill color bar
+    (foreach n-values legend-width [ j -> j ] [
+      j ->
+      let x legend-x-start + j
+      ask patch x y [
+        set pcolor rgb (item 0 rgb-color) (item 1 rgb-color) (item 2 rgb-color)
+      ]
+    ])
+
+    ;; Add turtle labels to the left
+    if i = 0 [
+      create-turtle-label (word "Low " precision val 2) label-x y
+    ]
+    if i = floor (n / 2) [
+      create-turtle-label (word precision val 2) label-x y
+    ]
+    if i = n - 1 [
+      create-turtle-label (word "High " precision val 2) label-x y
+    ]
+  ])
+
+  ;; Add title with extra spacing above the bar
+  let title-y legend-y-end + 6
+  let title-x legend-x-start + floor (legend-width / 2)
+  create-turtle-label "MeHg (ng/g)" title-x title-y
+end
+
+to create-turtle-label [txt x y]
+  crt 1 [
+    setxy x y
+    set shape "default"
+    set label txt
+    set label-color black
+    set color green
+    set size 10  ;; Increase this value to make label appear larger
+    set pen-mode "up"
+    ;set hidden? true  ;; hide turtle but show label
+  ]
 end

@@ -1,10 +1,12 @@
 to swim
-  if landward-migration? = true [ ;; general goal of moving upstream landward   
+  if landward-migration? = true [ ;; general goal of moving upstream landward 
+    calculate-cost-to-home home-patch
     calculate-difficulty-landward
     calculate-swimming-speed-landward
     if energy > 25 and not staging? [  
-      ;migrate-landward
+      migrate-landward
       selective-tidal-stream-transport-landward
+      ;school  ;; Built into migration function
      ]
     
     ;; Enter staging only if energy ≤ 25
@@ -22,11 +24,13 @@ to swim
   ]
  
   if seaward-migration? = true [ ;; general goal of moving downstream seaward
+    calculate-cost-to-sea migration-patch
     calculate-difficulty-seaward
     calculate-swimming-speed-seaward
     if energy > 25 and not staging? [ 
+      migrate-seaward
        selective-tidal-stream-transport-seaward
-       ;school  ;; Continue schooling as long as energy is above 25
+      ;school  ;; Built into migration function
      ]
     
     ;; Enter staging only if energy ≤ 25

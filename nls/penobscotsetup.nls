@@ -1,0 +1,111 @@
+to setup-penobscot-migration
+  setup-alewives
+  setup-stripedbass
+  setup-shortnose
+  setup-atlantic
+  set Hg-threshold 150 ; ng/kg (National Oceanic and Atmospheric Administration (NOAA), 1990) Adjust based on NOAA data
+  set MeHg-threshold 15 ; ng/kg Adjust based on NOAA data
+  initialize-velocity-extremes-from-series
+  draw-mehg-legend
+  reset-ticks
+end
+
+to initialize-velocity-extremes-from-series
+  ;; Only consider water patches with valid velocity series
+  let valid-water-patches patches with [
+    patch-terrain = "water" and is-list? velocity-series and length velocity-series > 0
+  ]
+  let all-mins []
+  let all-maxs []
+
+  ;; Collect min and max for each patch using foreach
+  foreach sort valid-water-patches [
+    p ->
+    let vs [velocity-series] of p
+    set all-mins lput min vs all-mins
+    set all-maxs lput max vs all-maxs
+  ]
+
+  ;; Filter and compute system-wide extremes
+  let seaward-values filter [v -> v < 0] all-mins
+  let landward-values filter [v -> v > 0] all-maxs
+
+  ifelse length seaward-values > 0 [
+    set max-seaward-velocity min seaward-values
+  ] [
+    set max-seaward-velocity -0.001
+  ]
+
+  ifelse length landward-values > 0 [
+    set max-landward-velocity max landward-values
+  ] [
+    set max-landward-velocity 0.001
+  ]
+
+  show (word "System-wide Seaward V-max (most negative): " max-seaward-velocity)
+  show (word "System-wide Landward V-min (most positive): " max-landward-velocity)
+end
+
+to update-patch-velocity-and-depth
+  ask patches with [patch-terrain = "water"] [
+    ifelse ticks < length velocity-series [
+      set velocity item ticks velocity-series
+      set depth item ticks depth-series
+    ][
+      set velocity 0  ;; or last known
+      set depth 0
+    ]
+  
+  ]
+end
+
+to penobscot-go
+  ;; update the data
+  update-patch-velocity-and-depth
+  ask patches [ 
+   set cost-to-home 1e6
+   set cost-to-sea 1e6
+   ;set spm random-float 0.0004  ;; random value between 0 and 0.0004
+   ;update-temperature
+   ;update-salinity
+   ;update-SPM
+   ;color-staging-patches
+   ;color-tidal-trapping-patches
+   ;color-foraging-patches
+  ]
+  
+;; potential behavioral rules
+   ask alewives with [age = "adult"] [
+    mercury-contamination ;; track mercury contamination
+    methylmercury-contamination ;; track methylmercury contamination
+    ;osmoregulate ;; always osmoregulate
+    swim ;; always swim, school, and stage (built in)
+    ;forage
+    
+  ]
+
+  ask stripedbass with [age = "adult"] [
+    ;school ;align, cohere, separate, separation minimum, schoolmates
+    ;migrate ;time, tidal-phase, depth preference
+    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+
+
+  ]
+
+  ask shortnose with [age = "adult"] [
+    ;school ;align, cohere, separate, separation minimum, schoolmates,
+    ;migrate ;time, tidal-phase, depth preference
+    ;forgage ;; energy, foraging time?, foraging source?, swim speed
+    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+    ;spawning ; potential spawning encounters
+  ]
+  
+  ask turtles [
+  foreach trail [
+    p -> ask p [ set pcolor yellow ]
+  ]
+]
+end
+
+
+

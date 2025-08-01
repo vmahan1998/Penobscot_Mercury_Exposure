@@ -14,81 +14,162 @@ to setup-GIS
   gis:set-world-envelope gis:envelope-of dataset
   
   ask patches gis:intersecting view1 [ ;upper penobscot
-    ;set pcolor blue
+    set pcolor blue
     set patchtype "upper estuary"
     set location "Penobscot"
     set patch-terrain "water"
   ]
   
   ask patches gis:intersecting view2 [ ;middle penobscot
-    ;set pcolor blue
+    set pcolor blue
     set patchtype "middle estuary"
     set location "Penobscot"
     set patch-terrain "water"
   ]
   
   ask patches gis:intersecting view3 [ ;lower penobscot
-    ;set pcolor blue
+    set pcolor blue
     set patchtype "lower estuary"
     set location "Penobscot"
     set patch-terrain "water"
   ]
   
   ask patches gis:intersecting view4 [ ;sea
-    ;set pcolor blue
+    set pcolor blue
     set patchtype "sea"
     set location "Penobscot"
     set patch-terrain "water"
   ]
   
   ask patches with [patch-terrain != "water"] [
-    ;set pcolor green
+    set pcolor green
     ;set patch-terrain "land"
   ]
-
 end
+
+to setup-patch-timeseries
+  let velocity-rows but-first velocity-data
+  let depth-rows but-first depth-data
+  
+  ;; Velocity time series
+  foreach velocity-rows [
+    row ->
+    let x item 0 row
+    let y item 1 row
+    let series sublist row 2 length row
+    ask patch x y [
+      set velocity-series series
+      set velocity item 0 series  ;; ✅ Initialize to first timestep
+    ]
+  ]
+  
+  ;; Depth time series
+  foreach depth-rows [
+    row ->
+    let x item 0 row
+    let y item 1 row
+    let series sublist row 2 length row
+    ask patch x y [
+      set depth-series series
+      set depth item 0 series  ;; ✅ Initialize to first timestep
+    ]
+  ]
+end
+
 
 to penobscot-parameters
   set velocity-data csv:from-file "inputs/velocity_px_py.csv"
+  print (word "Velocity data loaded: " length velocity-data)
   set depth-data csv:from-file "inputs/depth_px_py.csv"
+  print (word "Depth data loaded: " length depth-data)
   set mercury-data csv:from-file "inputs/mercury_contamination_px_py.csv"
-   ;; hydrodynamic model data here (salinity & sediment)
-  create-velocity ;; Initialize Velocity
-  create-depth ;; Initialize Depth
+  ;; hydrodynamic model data here (salinity, temperature, and sediment)
+  setup-patch-timeseries ;; creates list of time series
+  interpolate-missing-time-series ;;replaces identify-missing-patches
   create-Hg ;; Initialize mercury
   create-MeHg ;; Initialize methylmercury
-  identify-missing-patches ;; Identify patches needing interpolation
+  ;identify-missing-patches ;; Identify patches needing interpolation
 end
 
-to penobscot-go
-  update-velocity ;; Call modeled hourly depth-averaged Velocity
-  update-depth ;; Call modeled hourly water-level
-  if minute = 0 [ ;; interpolate patches every hour
-    fill-missing-patches
+to interpolate-missing-time-series
+  ;; Interpolate or copy velocity-series
+  ask patches with [patch-terrain = "water" and not is-list? velocity-series] [
+    let interpolated average-series-from-neighbors "velocity-series"
+    ifelse is-list? interpolated and length interpolated > 0 [
+      set velocity-series interpolated
+      set velocity item 0 velocity-series
+    ][
+      ;; fallback: copy nearest valid series
+      let nearest one-of patches with [
+        is-list? velocity-series and length velocity-series > 0
+      ] with-min [distance myself]
+
+      ifelse nearest != nobody [
+        set velocity-series [velocity-series] of nearest
+        set velocity item 0 velocity-series
+        show (word "(patch " pxcor ", " pycor "): copied velocity from patch " [pxcor] of nearest ", " [pycor] of nearest)
+      ][
+        show (word "(patch " pxcor ", " pycor "): FAILED to interpolate or copy velocity")
+        set velocity-series []
+        set velocity 0
+      ]
+    ]
   ]
 
-  ;; potential behavioral rules
-  ask alewives with [age = "adult"] [
-    ;school ;align, cohere, separate, separation minimum, schoolmates
-    ;migrate ;time, tidal-phase,  depth preference
-    ;flee-predators ;distance to nearest predator, energy, swim speed
-    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
-    ;spawning ; potential spawning encounters
+  ;; Interpolate or copy depth-series
+  ask patches with [patch-terrain = "water" and not is-list? depth-series] [
+    let interpolated average-series-from-neighbors "depth-series"
+    ifelse is-list? interpolated and length interpolated > 0 [
+      set depth-series interpolated
+      set depth item 0 depth-series
+    ][
+      ;; fallback: copy nearest valid series
+      let nearest one-of patches with [
+        is-list? depth-series and length depth-series > 0
+      ] with-min [distance myself]
+
+      ifelse nearest != nobody [
+        set depth-series [depth-series] of nearest
+        set depth item 0 depth-series
+        show (word "(patch " pxcor ", " pycor "): copied depth from patch " [pxcor] of nearest ", " [pycor] of nearest)
+      ][
+        show (word "(patch " pxcor ", " pycor "): FAILED to interpolate or copy depth")
+        set depth-series []
+        set depth 0
+        set pcolor yellow
+      ]
+    ]
+  ]
+end
+
+to-report average-series-from-neighbors [varname]
+  let radius 4
+  let raw-neighbors patches in-radius radius
+
+  ;; Expand until enough neighbors have valid lists
+  let series-list []
+  while [length series-list < 3 and radius <= 10] [
+    set raw-neighbors patches in-radius radius
+    set series-list [runresult varname] of raw-neighbors with [
+      is-list? runresult varname and length runresult varname > 0
+    ]
+    set radius radius + 1
   ]
 
-  ask stripedbass with [age = "adult"] [
-    ;school ;align, cohere, separate, separation minimum, schoolmates
-    ;migrate ;time, tidal-phase, depth preference
-    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+  ;; Only proceed if we have valid lists
+  if not empty? series-list [
+    let series-length length item 0 series-list
+    let averaged []
 
+    foreach n-values series-length [ i -> i ] [
+      i ->
+      let values map [s -> item i s] series-list
+      set averaged lput (mean values) averaged
+    ]
 
+    report averaged
   ]
 
-  ask shortnose with [age = "adult"] [
-    ;school ;align, cohere, separate, separation minimum, schoolmates,
-    ;migrate ;time, tidal-phase, depth preference
-    ;forgage ;; energy, foraging time?, foraging source?, swim speed
-    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
-    ;spawning ; potential spawning encounters
-  ]
+  ;; Otherwise, return an empty list
+  report []
 end

@@ -1,7 +1,7 @@
 to setup-alewives
  create-alewives initial-alewives ; create striped bass
   [
-    let migration-patch one-of patches with [patchtype = "sea"]
+    set migration-patch one-of patches with [patchtype = "sea"]
     if migration-patch != nobody [
       move-to migration-patch
     ]
@@ -13,8 +13,8 @@ to setup-alewives
  set color black
  set age "adult"
  set age-num 3 + random 4
- set size age-num + random-normal 0 0.3
- set optimal-temperature 17 - ((age - 3) * 0.4) + random-normal 0 0.3
+ set size age-num + random-normal 0.05 0.3
+ set optimal-temperature 17 - ((age-num - 3) * 0.4) + random-normal 0 0.3
  set optimal-velocity 0.25 + ((size - 3) * 0.05) + random-normal 0 0.03
  set optimal-depth 1.5 + ((size - 3) * 0.7) + random-normal 0 0.2
  set min-speed 0.1 ;; species limit
@@ -36,7 +36,7 @@ to setup-alewives
  set landward-migration-time 0;; time to travel inland and complete objective
  set seaward-migration-time 0;; time to travel seaward after completing objective
  set acclimated-salinity 35 ;; level of salinity fish is acclimated to currently 
- 
+ set thermal-stress 1 ;; starts at minimal stress
  set ionregulatory-stress 1 ;; level of stress used for osmoregulation (chloride cell proliferation)
  set chloride-density-min 10 ;; minimum level of choride cells (present during low stress)
  set chloride-density-max 100 ;; maximum level of chloride cells (present during high stress)
@@ -52,6 +52,10 @@ to setup-alewives
  set staging? false
  set selective-tidal-transport? false
  set foraging? false
+ set landward-migration? true
+ set seaward-migration? false   
+ set home-patch patch 198 347
+ set trail []  
     
  ;;assign gender to fish
  ifelse random-float 1 < 0.5 [

@@ -1,7 +1,7 @@
 to setup-shortnose
  create-shortnose initial-shortnose ; create striped bass
   [
-    let migration-patch one-of patches with [patchtype = "sea"]
+    set migration-patch one-of patches with [patchtype = "sea"]
     if migration-patch != nobody [
       move-to migration-patch
     ]

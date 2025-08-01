@@ -55,6 +55,61 @@ end
 
 
 to migrate-seaward
-set heading 180  ;; Move seaward (assuming 0° is upstream)
-fd speed   ;; Move at current speed
+  ;; STEP 1: Schooling logic
+  find-schoolmates
+  
+  if any? schoolmates [
+    find-nearest-neighbor
+
+    ifelse distance nearest-neighbor < minimum-separation [
+      separate
+    ][
+      cohere
+      align
+    ]
+
+    adjust-speed
+  ]
+
+  ;; STEP 2: Environmental cue – move toward fast downstream velocity
+  let candidates patches in-radius 2 with [patch-terrain = "water"]
+  ifelse any? candidates [
+    let best-patch min-one-of candidates [cost-to-sea]
+    face best-patch
+    fd speed
+  ] [
+    set heading 1800
+    fd speed
+  ]
+  
+  ;; STEP 3
+  set energy max list 0 (energy - swim-base)  ;; Reduce energy cost of swimming
+end
+
+to calculate-cost-to-sea [sea-patch]
+  ask sea-patch [
+    set cost-to-sea 0
+  ]
+
+  ;; Start with a list containing the home patch
+  let frontier (list sea-patch)
+
+  while [not empty? frontier] [
+    let current first frontier
+    set frontier but-first frontier
+
+    ask current [
+      let current-cost cost-to-sea
+
+      ask neighbors4 with [patch-terrain = "water"] [
+        let travel-cost compute-travel-cost current self
+        let new-cost current-cost + travel-cost
+
+        if new-cost < cost-to-sea [
+          set cost-to-home new-cost
+          set frontier lput self frontier
+        ]
+      ]
+    ]
+  ]
 end

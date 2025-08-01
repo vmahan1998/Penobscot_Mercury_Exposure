@@ -32,6 +32,8 @@ to prototype-parameters
     set min-MeHg 0
     
     set forage-visits 0
+    set forage-species []
+    
   ] 
 
   setup-migration
@@ -109,6 +111,7 @@ to create-fish [fish-type num-fish]
     set selective-tidal-transport? false;; boolean to track if agent is experiencing selective tidal transport
     set landward-migration? true ;;
     set seaward-migration? false ;;
+    set foraging? false
     set swim-base 0.25 ;; base energy cost of swimming
     
     let M-max max [size] of breed
@@ -117,8 +120,6 @@ to create-fish [fish-type num-fish]
     ;; Calculate metabolic cost of locomotion
     set swim-base swim-max * ((size / M-max) ^ 0.75)
   ]
-  
-  ask fish-type [ set foraging? false ] ;; boolean to track if agent is foraging
 
 end
 

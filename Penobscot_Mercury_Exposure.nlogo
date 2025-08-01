@@ -1,4 +1,4 @@
-extensions [csv gis]
+extensions [csv gis palette]
 ;;NOTE; Counter taken from Canvas and provided by Todd Swannack
 
 __includes[
@@ -6,6 +6,7 @@ __includes[
   "nls/VariableNames.nls"
   "nls/Create-map.nls"
   "nls/prototypesetup.nls"
+  "nls/penobscotsetup.nls"
   "nls/Create-velocity.nls"
   "nls/Update-velocity.nls"
   "nls/Create-depth.nls"
@@ -42,6 +43,7 @@ __includes[
   "nls/Eat.nls"
   "nls/Chase-nearest-alewife.nls"
   "nls/Scare-down.nls"
+  "nls/Scare-up.nls"
   "nls/Scare-left.nls"
   "nls/Scare-right.nls"
   "nls/Scare-prey.nls"
@@ -82,12 +84,7 @@ to setup
   if model-type = "prototype" [setup-migration]
 
   ;; Initialize species-specific fish
-  if model-type = "penobscot" [
-    setup-alewives
-    setup-stripedbass
-    setup-shortnose
-    setup-atlantic
-  ]
+  if model-type = "penobscot" [setup-penobscot-migration]
 
   reset-ticks ;; Reset the tick counter
 end
@@ -218,7 +215,7 @@ initial-alewives
 initial-alewives
 0
 10000
-10.0
+0.0
 1
 1
 fish
@@ -268,7 +265,7 @@ alewife-rest-time
 alewife-rest-time
 0
 1000
-57.0
+59.0
 1
 1
 tick (1 tick = 5 minutes)
@@ -283,7 +280,7 @@ stripedbass-rest-time
 stripedbass-rest-time
 0
 1000
-168.0
+0.0
 1
 1
 tick (1 tick = 5 minutes)
@@ -298,7 +295,7 @@ shortnose-rest-time
 shortnose-rest-time
 0
 1000
-60.0
+0.0
 1
 1
 tick (1 tick = 5 minutes)
@@ -352,13 +349,13 @@ CHOOSER
 model-type
 model-type
 "penobscot" "prototype"
-1
+0
 
 PLOT
-1471
-437
-1687
-593
+1032
+282
+1456
+540
 Energy Dynamics
 ticks
 values
@@ -373,10 +370,10 @@ PENS
 "Agent Energy" 1.0 0 -13840069 true "" "plot mean [energy] of alewives"
 
 PLOT
-1474
-277
-1686
-427
+1468
+282
+1894
+540
 Chloride Cells
 ticks
 Chloride Cell Percentage
@@ -391,10 +388,10 @@ PENS
 "default" 1.0 0 -8630108 true "" "plot mean [chloride-cell-density] of alewives"
 
 PLOT
-1697
-277
-1897
-427
+1470
+546
+1892
+802
 Stress Dynamics
 ticks
 stress
@@ -409,10 +406,10 @@ PENS
 "Ion-Regulatory Stress" 1.0 0 -13840069 true "" "plot mean [ionregulatory-stress] of alewives"
 
 PLOT
-1472
-15
-1896
-270
+1470
+20
+1894
+275
 Salinity
 ticks
 Salinity
@@ -428,10 +425,10 @@ PENS
 "Acclimated-Salinity" 1.0 0 -817084 true "" "plot mean [acclimated-salinity] of turtles"
 
 PLOT
-1700
-439
-1899
-595
+1474
+808
+1894
+1064
 Osmoregulation Energy
 ticks
 Energy Consumed
@@ -446,10 +443,10 @@ PENS
 "Osmo_Energy" 1.0 0 -16777216 true "" "plot mean [E-osmo] of turtles"
 
 PLOT
-1030
-14
-1458
-264
+1032
+22
+1460
+272
 Velocities
 ticks
 velocity
@@ -466,10 +463,10 @@ PENS
 "Zero-0" 1.0 0 -7500403 true "" "plot 0"
 
 PLOT
-1030
-273
-1247
-423
+1032
+810
+1468
+1064
 Swimming Energy
 ticks
 Energy
@@ -484,10 +481,10 @@ PENS
 "Energy" 1.0 0 -5825686 true "" "plot mean [E-swim] of turtles"
 
 PLOT
-1255
-273
-1457
-423
+1030
+548
+1464
+804
 Swimming Difficulty
 ticks
 difficulty
@@ -502,10 +499,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot mean [difficulty-factor] of turtles"
 
 PLOT
-1243
-431
-1458
-587
+1904
+806
+2352
+1062
 Behaviors
 ticks
 behavior type
@@ -522,10 +519,10 @@ PENS
 "Foraging" 1.0 0 -15302303 true "" "plot (count turtles with [breed != stripedbass and foraging?]) / count turtles with [breed != stripedbass]"
 
 PLOT
-1027
-607
-1469
-859
+1906
+278
+2348
+538
 Level of Net Contamination Exposure 
 ticks
 mercury
@@ -541,10 +538,10 @@ PENS
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [hg-exposure-total-normalized] of turtles"
 
 PLOT
-1906
-16
-2350
-267
+1904
+20
+2348
+271
 Duration of Exposure to Harmful Contamination Levels
 ticks
 duration (ticks)
@@ -560,10 +557,10 @@ PENS
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [mehg-exposure-duration] of turtles"
 
 PLOT
-1477
-604
-1922
-882
+1904
+544
+2350
+800
 Contamination Uptake Risk
 ticks
 uptake risk
@@ -587,7 +584,7 @@ align-coefficient
 align-coefficient
 0
 100
-54.0
+50.0
 1
 1
 %
@@ -602,7 +599,7 @@ cohere-coefficient
 cohere-coefficient
 0
 100
-69.0
+50.0
 1
 1
 %
@@ -632,7 +629,7 @@ minimum-separation
 minimum-separation
 0
 1
-0.01
+0.92
 .01
 1
 patches

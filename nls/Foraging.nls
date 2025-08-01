@@ -1,53 +1,69 @@
 to forage
-  ;; Only non-predators forage when staging and energy is low
-  if (staging? and energy < 75 and ionregulatory-stress = 1 and breed != stripedbass) [
-
+  ;; Only non-predators forage when staging and conditions are suitable
+  if (staging? and energy < 75 and ionregulatory-stress < 3 and thermal-stress < 3 and SPM < mean-SPM and breed != stripedbass) [
     set foraging? true
 
+    ;; Store candidate patches and scores
+    let candidate-patches []
+    let candidate-scores []
 
-    ;; Each agent evaluates neighboring patches
-    let best-spot nobody
-    let best-score -1
-
+    ;; Evaluate neighboring patches
     ask neighbors [
+      ;; Environmental suitability
       let sal_opt (1 - abs(salinity - [acclimated-salinity] of myself) / 10)
       let temp_opt (1 - abs(temperature - [optimal-temperature] of myself) / 10)
       let vel_opt (1 - abs(velocity - [optimal-velocity] of myself))
       let depth_opt (1 - abs(depth - [optimal-depth] of myself) / 2.5)
 
-      ;; Avoid divide-by-zero
       let spm_penalty 0
       if mean-SPM != 0 [
         set spm_penalty max list 0 (1 - ((SPM - mean-SPM) / mean-SPM))
       ]
 
-      let score (sal_opt * 0.3 + temp_opt * 0.2 + vel_opt * 0.2 + depth_opt * 0.2 + spm_penalty * 0.1)
-      let bounded-score max list 0 (min list 1 score)
+      let suitability (0.3 * sal_opt + 0.2 * temp_opt + 0.2 * vel_opt + 0.2 * depth_opt + 0.1 * spm_penalty)
+      let score suitability * random-float 3.0  ;; final score scales from 0 to 3
 
-      ;; Track the best patch for this fish
-      if bounded-score > best-score [
-        set best-score bounded-score
-        set best-spot self
+      ;; Check species and size-based exclusion rules
+      let competing-fish turtles-here with [foraging?]
+      let interspecific-competing? any? competing-fish with [
+        breed != [breed] of myself and size >= [size] of myself
+      ]
+      let larger-others-total-size sum [size] of competing-fish with [breed != [breed] of myself]
+      let size-blocked? (larger-others-total-size >= [size] of myself)
+
+      if not interspecific-competing? and not size-blocked? [
+        set candidate-patches lput self candidate-patches
+        set candidate-scores lput score candidate-scores
       ]
     ]
 
-    ;; Move to the best patch
-    if best-spot != nobody [
+    ;; Choose best available patch
+      if any? patch-set candidate-patches [
+      let best-index position max candidate-scores candidate-scores
+      let best-spot item best-index candidate-patches
+      let best-score item best-index candidate-scores
+
       face best-spot
       move-to best-spot
-     
-      ;; Track foraging stats on the patch
+
+      ;; Track foraging stats on patch
       ask patch-here [
         set forage-visits forage-visits + 1
-      ] 
-      ;; Energy gain based on the patch's score
-      let gain best-score * (1.5 + random-float 2.0)  ;; gain ranges approx 1.5–3.5 for optimal patches
-      set energy energy + gain
-      if energy > 100 [ set energy 100 ]
+        set forager-count forager-count + 1
+        if not member? [breed] of myself forage-species [
+          set forage-species lput [breed] of myself forage-species
+        ]
+      ]
 
-      ;; Optional: print gain
-       show (word "Energy gained: " gain)  
-      
+      ;; Biomass-weighted energy gain
+      let patch-fish turtles-here with [foraging?]
+      let total-size sum [size] of patch-fish
+      if total-size > 0 [
+        let gain (best-score / total-size) * size * (1.0 + random-float 2.0)
+        set energy energy + gain
+        if energy > 100 [ set energy 100 ]
+        show (word "Energy gained: " gain)
+      ]
     ]
   ]
 end
