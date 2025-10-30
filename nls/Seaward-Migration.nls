@@ -1,21 +1,27 @@
 to calculate-difficulty-seaward
   ;; Ensure required parameters exist
-  let V-max max-seaward-velocity  ;; Maximum observed seaward velocity
-  let V-min max-landward-velocity ;; Maximum observed landward velocity
+  let M-max max [size] of breed         ;; Maximum size among agents
+  let M-agent size                      ;; Current agent size
+  let V-max max-seaward-velocity        ;; Maximum observed seaward velocity
+  let V-min max-landward-velocity       ;; Maximum observed landward velocity
+  let k 0.75                            ;; Scaling exponent (same as landward)
 
-  ;; **Normalize velocity within its observed range (V_min to V_max)**
-  let normalized-velocity (velocity - V-min) / (V-max - V-min)
+  ;; Theoretical raw difficulty (same base equation as landward)
+  let Df-raw (abs(velocity) / (max-speed * (M-agent / M-max))) ^ k
 
-  ;; **Reverse scaling: Difficulty should be highest at V_min (landward max) and lowest at V_max (seaward max)**
-  set difficulty-factor (10 - (normalized-velocity * 9))  
+  ;; Reverse scaling:
+  ;; In landward: high velocity (landward) → low difficulty
+  ;; In seaward: high seaward velocity → low difficulty, landward → high
+  ;; So invert normalization
+  set difficulty-factor (1 + 9 * ((V-max - Df-raw) / (V-max - V-min)))
 
-  ;; Ensure difficulty is always within [1,10] range
+  ;; Ensure difficulty remains within [1, 10]
   set difficulty-factor max list 1 (min list 10 difficulty-factor)
 
-  ;; Debugging output
-  show (word "Seaward Difficulty Factor: " difficulty-factor 
-        " | Normalized Velocity: " normalized-velocity 
-        " | Velocity: " velocity)
+  ;; Debugging (optional)
+  ;show (word "Seaward Difficulty Factor: " difficulty-factor
+  ;      " | Velocity: " velocity
+  ;      " | Df-raw: " Df-raw)
 end
 
 to calculate-swimming-speed-seaward
@@ -24,14 +30,14 @@ to calculate-swimming-speed-seaward
   let energy-factor (energy / 100)  ;; Energy-dependent swimming ability (0-1)
   
   ;; Compute desired speed (without capping)
-  let velocity-impact (k * velocity)  ;; Velocity directly influences speed
+  let velocity-impact (k * velocity * 300)  ;; Velocity directly influences speed
   let desired-speed (max-speed * energy-factor / difficulty-factor) + velocity-impact
 
   ;; Ensure speed is within valid bounds
   set desired-speed min list max-speed (max list min-speed desired-speed)
 
   ;; Cap rate of change (max acceleration per tick)
-  let max-speed-change 0.2  ;; Maximum allowed change per tick
+  let max-speed-change 0.5  ;; Maximum allowed change per tick
 
   ;; Apply capped rate of change
   if abs(desired-speed - prev-speed) > max-speed-change [
@@ -50,7 +56,7 @@ to calculate-swimming-speed-seaward
   set prev-speed speed
 
   ;; Debugging output
-  show (word "Swimming Speed: " speed " | Energy Factor: " energy-factor " | Velocity Impact: " velocity-impact)
+  ;show (word "Swimming Speed (m/5 min): " speed " | Energy Factor: " energy-factor " | Velocity Impact: " velocity-impact)
 end
 
 
@@ -73,17 +79,25 @@ to migrate-seaward
 
   ;; STEP 2: Environmental cue – move toward fast downstream velocity
   let candidates patches in-radius 2 with [patch-terrain = "water"]
+  
   ifelse any? candidates [
     let best-patch min-one-of candidates [cost-to-sea]
-    face best-patch
-    fd speed
-  ] [
-    set heading 1800
-    fd speed
+    safe-move best-patch speed
+  ][
+    ;; fallback: move to a random water neighbor
+    let nearby-water one-of neighbors with [patch-terrain = "water"]
+    if nearby-water != nobody [
+      safe-move nearby-water speed
+    ]
   ]
   
-  ;; STEP 3
+  ;; STEP 3 set trail and calculate energy loss
   set energy max list 0 (energy - swim-base)  ;; Reduce energy cost of swimming
+  
+  if not member? patch-here trail [
+  set trail lput patch-here trail
+]
+  
 end
 
 to calculate-cost-to-sea [sea-patch]

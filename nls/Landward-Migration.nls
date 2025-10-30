@@ -4,10 +4,10 @@ to calculate-difficulty-landward
   
   let M-agent size                ;; Current agent size
   let V-max max-seaward-velocity  ;; Maximum observed seaward velocity
-  print (word "V-max: " V-max)
+  ;print (word "V-max: " V-max)
 
   let V-min max-landward-velocity ;; Maximum observed landward velocity
-  print (word "V-min: " V-min)
+  ;print (word "V-min: " V-min)
   let k 0.75                      ;; Scaling exponent
 
   ;; **Normalize velocity within its observed range (V_min to V_max)**
@@ -23,8 +23,8 @@ to calculate-difficulty-landward
   set difficulty-factor max list 1 (min list 10 difficulty-factor)
 
   ;; Debugging output
-  show (word "Landward Difficulty Factor: " difficulty-factor 
-        " | Velocity: " velocity)
+  ;show (word "Landward Difficulty Factor: " difficulty-factor 
+  ;      " | Velocity: " velocity)
 end
 
 to calculate-swimming-speed-landward
@@ -33,7 +33,7 @@ to calculate-swimming-speed-landward
   let energy-factor (energy / 100)  ;; Energy-dependent swimming ability (0-1)
   
   ;; Compute desired speed (without capping)
-  let velocity-impact (k * velocity)  ;; Velocity directly influences speed
+  let velocity-impact (k * velocity * 300)  ;; Velocity directly influences speed but scale to 5 minutes
   let desired-speed (max-speed * energy-factor / difficulty-factor) + velocity-impact
 
   ;; Ensure speed is within valid bounds
@@ -59,7 +59,7 @@ to calculate-swimming-speed-landward
   set prev-speed speed
 
   ;; Debugging output
-  show (word "Swimming Speed: " speed " | Energy Factor: " energy-factor " | Velocity Impact: " velocity-impact)
+  ;show (word "Swimming Speed (m/5 min): " speed " | Energy Factor: " energy-factor " | Velocity Impact: " velocity-impact)
 end
 
 to migrate-landward
@@ -81,13 +81,16 @@ to migrate-landward
 
   ;; STEP 2: Environmental cue – move toward fast downstream velocity
   let candidates patches in-radius 2 with [patch-terrain = "water"]
+  
   ifelse any? candidates [
     let best-patch min-one-of candidates [cost-to-home]
-    face best-patch
-    fd speed
-  ] [
-    set heading 0
-    fd speed
+    safe-move best-patch speed
+  ][
+    ;; fallback: move to a random water neighbor
+    let nearby-water one-of neighbors with [patch-terrain = "water"]
+    if nearby-water != nobody [
+      safe-move nearby-water speed
+    ]
   ]
   
   ;; STEP 3 set trail and calculate energy loss
@@ -128,7 +131,35 @@ to calculate-cost-to-home [homing-patch]
 end
 
 to-report compute-travel-cost [from-patch to-patch]
-  let velocity-resistance abs ([velocity] of to-patch)  ;; or factor in agent direction
-  let slope max list 0 ([depth] of from-patch - [depth] of to-patch)
+  ;; --- Get velocity safely ---
+  let raw-vel [velocity] of to-patch
+  let velocity-resistance ifelse-value is-number? raw-vel [abs raw-vel] [0]
+
+  ;; --- Water level handling ---
+  let from-level [depth] of from-patch  ;; depth = water level
+  let to-level [depth] of to-patch
+  let slope 0
+  if (is-number? from-level and is-number? to-level) [
+    set slope max list 0 (to-level - from-level)
+  ]
+
+  ;; --- Return combined cost ---
   report velocity-resistance + 0.5 * slope
+end
+
+
+to safe-move [target-patch move-speed]
+  ;; Moves toward target only if water ahead; finds alternate if blocked
+  face target-patch
+
+  let next-patch patch-ahead move-speed
+  ifelse [patch-terrain] of next-patch = "water" [
+    fd move-speed
+  ] [
+    ;; fallback: find nearest water patch and move partially
+    let nearby-water one-of patches in-radius 1 with [patch-terrain = "water"]
+    if nearby-water != nobody [
+      move-to nearby-water
+    ]
+  ]
 end

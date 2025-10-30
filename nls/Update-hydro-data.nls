@@ -1,0 +1,34 @@
+to update-hydro-data
+ 
+  ;; --- Check if we need to load the next month ---
+    initialize-velocity-extremes-from-series
+    let next-index (position current-month month-list) + 1
+    ifelse next-index < length month-list [
+      set current-month item next-index month-list
+      print (word "➡️ Switching to next month: " current-month)
+      
+      ;; Load new month’s datasets
+      set velocity-data csv:from-file (word "inputs/monthly/velocity_" current-month "_2023.csv")
+      print (word "   ✅ Velocity data loaded (" length velocity-data " cols)")
+      
+      set depth-data csv:from-file (word "inputs/monthly/depth_" current-month "_2023.csv")
+      print (word "   ✅ Depth data loaded (" length depth-data " cols)")
+      
+      set temp-data csv:from-file (word "inputs/monthly/temperature_" current-month "_2023.csv")
+      print (word "   ✅ Temperature data loaded (" length temp-data " cols)")
+      
+      set salinity-data csv:from-file (word "inputs/monthly/salinity_" current-month "_2023.csv")
+      print (word "   ✅ Salinity data loaded (" length salinity-data " cols)")
+      
+      ;; Reset counters
+      let header first depth-data
+      set total-hours (length header - 4)
+      set current-hour 0
+
+    ] [
+      print "✅ Simulation reached end of October dataset."
+      stop
+    ]
+      ;; Rebuild patch time series for the new month
+      setup-patch-timeseries
+end

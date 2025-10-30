@@ -1,0 +1,26 @@
+to update-temperature
+    ;; advance depth only once every 12 ticks (5 min × 12 = 1 hour)
+  if ticks mod 12 != 0 [ stop ]
+
+  ;; guard: if we've exceeded the dataset length
+  if current-hour >= total-hours [
+    print (word "Reached end of " total-hours " hourly records in " month ".")
+    stop
+  ]
+
+  ;; the column offset (3 = skip px, py, datetime)
+  let temperature-column (current-hour + 2)
+  let rows temp-data
+
+  ;; assign depth values patch by patch
+  foreach rows [
+    row ->
+    let x item 0 row
+    let y item 1 row
+    let temp item temperature-column row
+
+    ask patch x y [
+      set temperature temp
+    ]
+  ]
+end

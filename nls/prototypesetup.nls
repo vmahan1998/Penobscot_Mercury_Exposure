@@ -42,8 +42,6 @@ end
 to setup-migration
   create-fish alewives initial-alewives  ;; Adjust number as needed
   ;create-fish stripedbass initial-stripedbass
-  ;create-fish shortnose initial-shortnose
-  ;create-fish atlantic initial-atlantic
 end
 
 to create-fish [fish-type num-fish]
@@ -62,19 +60,49 @@ to create-fish [fish-type num-fish]
       set sex "female"
     ]
 
-    ;; Initialize movement-related variables
-    set age-num 3 + random 4
-    set size age-num + random-normal 0 0.3
-    set optimal-temperature 17 - ((size - 3) * 0.4) + random-normal 0 0.3
+    ;; ---- Age ----
+    let min-age-pop 2
+    let max-age-pop 6
+    let mean-age 4
+    let sd-age 0.8
+    set age "adult"
+    set age-num truncated-normal mean-age sd-age min-age-pop max-age-pop
+    
+    ;; ---- Size (m) conditional on age ----
+    ;; Older alewives are longer, drawn from truncated normal distributions per age class
+    let mu-length (
+      ifelse-value (age-num < 3) [0.260]        ;; young adults (early spawners)
+      [ifelse-value (age-num < 4) [0.280]       ;; mid adults
+        [ifelse-value (age-num < 5) [0.295]     ;; mature
+          [0.310]]]                             ;; oldest repeat spawners
+    )
+    let sd-length 0.012                         ;; previously 12 mm
+    let min-size-pop 0.200                      ;; exclude juveniles <200 mm
+    let max-size-pop 0.320
+    set size truncated-normal mu-length sd-length min-size-pop max-size-pop
+    
+    ;; ---- Weight (g) from Length (mm) ----
+    ;; FishBase equation for Alewife (W = a * L_cm ^ b)
+    let Lcm size / 10
+    let a_lw 0.00646
+    let b_lw 3.06
+    set weight (a_lw * (Lcm ^ b_lw))
+    set original-weight weight  ;; store initial weight for later energy/weight-loss comparisons
+    
+    ;; =====================================
+    ;; --- Habitat & physiological prefs ---
+    ;; =====================================
+    set optimal-temperature 17 - ((age-num - 3) * 0.4) + random-normal 0 0.3
     set optimal-velocity 0.25 + ((size - 3) * 0.05) + random-normal 0 0.03
     set optimal-depth 1.5 + ((size - 3) * 0.7) + random-normal 0 0.2
-    set min-speed 0.1 ;; species limit
-    set max-speed (1.5 + random-float 1.5) * size ;; Assign max-speed as 1.5–3.0 × body length (size)
+    set optimal-SPM 0.004 + ((size - 3) * 0.7) + random-normal 0 0.2
+    set min-speed 0.1
+    set max-speed (1.5 + random-float 1.5) * (size / 100)  ;; speed scales with body length
     set speed max-speed / 2
-    set prev-speed min-speed
-    set energy 100  ;; Initial energy level
+    set energy 100
+
+   
     set fleeing? false  ;; Is the fish fleeing from a predator?
-    set rest-time alewife-rest-time  ;; Rest time to recover energy
 
     ;; Contaminant exposure tracking
     set hg-exposure-duration 0  ;; Time spent in high mercury patches
@@ -152,17 +180,10 @@ to prototype-go
 
   ]
 
-  ask shortnose with [age = "adult"] [
-    ;school ;align, cohere, separate, separation minimum, schoolmates,
-    ;migrate ;time, tidal-phase, depth preference
-    ;forgage ;; energy, foraging time?, foraging source?, swim speed
-    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
-    ;spawning ; potential spawning encounters
-  ]
   ask patches [
   ;color-staging-patches
   ;color-tidal-trapping-patches
-  color-foraging-patches
+  ;color-foraging-patches
   ]
 end
 

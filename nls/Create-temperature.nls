@@ -1,0 +1,28 @@
+to create-velocity3
+  let header first velocity-data        ; Extract the header row (optional, if relevant)
+  let rows but-first velocity-data      ; Exclude the header for actual data rows
+  
+  ; Iterate over each row of velocity data
+  foreach rows [
+    row ->
+    let x item 0 row                     ; First column: X coordinate
+    let y item 1 row                     ; Second column: Y coordinate
+    
+    ; Assume velocity data starts at column 3
+    let initial-velocity item 2 row      ; Third column: Initial velocity value
+    
+    ask patch x y [
+      set velocity initial-velocity      ; Set velocity for the patch
+      set patch-terrain "water"          ; Set terrain type (optional, adjust as needed)
+      
+      ; Assign patch color based on velocity
+      if velocity > 0 [
+        ;set pcolor blue
+      ]
+      if velocity <= 0 [
+        ;set pcolor red
+      ]
+    ]
+  ]
+  velocity-color
+end

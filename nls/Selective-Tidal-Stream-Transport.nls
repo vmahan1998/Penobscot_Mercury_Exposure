@@ -1,72 +1,67 @@
 to selective-tidal-stream-transport-landward
-  let V-patch [velocity] of patch-here  ;; Current velocity at the agent's location
-  let S-swim speed  ;; Agent's swimming speed
+  let V-patch [velocity] of patch-here
+  ;; Apply swimming efficiency from metabolism
+  let S-swim (speed) / 300  ;; m/s effective swim capacity
 
-  ;; Check if fish should remain in STST (cooldown period)
+  ;; Case 1: Continue drifting if still in STST (cooldown)
   if selective-tidal-transport? and (ticks - STST-start-tick < 1) [
-    ;; Continue drifting in STST
-    set speed abs V-patch
-    fd abs V-patch
-    set E-swim swim-base
-    set energy energy - E-swim
-    set tidal-transport-in-patch tidal-transport-in-patch + 1;; records sum of number of staging agents in patch
-    ;stop  ;; Prevent other behaviors from triggering
+    let drift-distance abs V-patch * (1 - swim-efficiency)
+    let drift-target one-of neighbors with [patch-terrain = "water"]
+    if drift-target != nobody [
+      safe-move drift-target drift-distance
+    ]
+    set tidal-transport-in-patch tidal-transport-in-patch + 1
+    stop
   ]
 
-  ;; If swimming speed is insufficient to counteract velocity, enter STST
-  if abs V-patch > S-swim and S-swim <= min-speed [ ;isolates when fish are experiencing the mose difficulty which leads to swimmining at minimum speeds
+  ;; Case 2: Enter STST when unable to overcome current
+  if abs V-patch > S-swim and S-swim <= min-speed [
     set selective-tidal-transport? true
-    set STST-start-tick ticks  ;; Store tick count to track STST duration
-    show "Switching to Selective Tidal Stream Transport"
-    
-    ;; Movement during STST: drift with the current (move in velocity direction)
-    set heading towards one-of neighbors with [patch-terrain = "water"]
-    set speed abs V-patch
-    fd abs V-patch  ;; Move at the velocity of the current
-    set E-swim swim-base
-    set energy energy - E-swim
-    set tidal-transport-in-patch tidal-transport-in-patch + 1;; records sum of number of staging agents in patch
-    ;stop  ;; Prevent normal swimming
+    set STST-start-tick ticks
+    let drift-distance abs V-patch * (1 - swim-efficiency)
+    let drift-target one-of neighbors with [patch-terrain = "water"]
+    if drift-target != nobody [
+      safe-move drift-target drift-distance
+    ]
+    set tidal-transport-in-patch tidal-transport-in-patch + 1
+    stop
   ]
 
-  ;; Otherwise, continue normal swimming if STST is off
+  ;; Case 3: Normal swimming resumes once able
   if S-swim > min-speed or (ticks - STST-start-tick >= 1) [
     set selective-tidal-transport? false
     calculate-swim-energy
+    ;; Optional: swimming cost scales inversely with efficiency
+    set energy max list 0 (energy - E-swim)
     migrate-landward
   ]
 end
 
-to selective-tidal-stream-transport-seaward
-  let V-patch [velocity] of patch-here  ;; Current velocity at the agent's location
-  let S-swim speed  ;; Agent's swimming speed
 
-  ;; If swimming speed is insufficient to counteract velocity, enter STST
+to selective-tidal-stream-transport-seaward
+  let V-patch [velocity] of patch-here
+  let S-swim (speed) / 300  ;; m/s adjusted by metabolic condition
+
+  ;; Case 1: Enter STST (current dominates)
   if abs V-patch > S-swim and S-swim <= min-speed [
     set selective-tidal-transport? true
-    set STST-start-tick ticks  ;; Store tick count to track STST duration
-    show "Switching to Selective Tidal Stream Transport"
-    
-    ;; Movement during STST: drift with the current (move in velocity direction)
-    set heading towards one-of neighbors with [patch-terrain = "water"]
-    set speed abs V-patch
-    fd abs V-patch  ;; Move at the velocity of the current
-    set E-swim swim-base
-    set energy energy - E-swim
-    set tidal-transport-in-patch tidal-transport-in-patch + 1;; records sum of number of staging agents in patch
-    stop  ;; Prevent normal swimming
+    set STST-start-tick ticks
+    let drift-distance abs V-patch * (1 - swim-efficiency)
+    let drift-target one-of neighbors with [patch-terrain = "water"]
+    if drift-target != nobody [
+      safe-move drift-target drift-distance
+    ]
+    ;; lower energy burn when drifting passively
+    set energy max list 0 (energy - (E-swim * 0.2))
+    set tidal-transport-in-patch tidal-transport-in-patch + 1
+    stop
   ]
 
-  ;; Otherwise, continue normal swimming if STST is off
+  ;; Case 2: Resume active swimming
   if S-swim > min-speed [
     set selective-tidal-transport? false
     calculate-swim-energy
+    set energy max list 0 (energy - E-swim)
     migrate-seaward
-  ]
-end
-
-to color-tidal-trapping-patches
-  if tidal-transport-in-patch > 0 [
-    set pcolor yellow
   ]
 end

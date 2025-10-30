@@ -1,0 +1,153 @@
+to forage
+  if landward-migration? = true [
+      set lipid-loss? true
+      set filter-feed? false
+    ]
+    if landward-migration? = true and (weight < (0.3 * original-weight)) [
+      set lipid-loss? false
+      set filter-feed? true
+    ]
+  
+    if seaward-migration? = true and foraging? = true [
+    if [salinity] of patch-here <= 0.5 [
+      set lipid-loss? true
+      set filter-feed? false
+    ] 
+    if [salinity] of patch-here > 0.5 or (weight < (0.3 * original-weight)) [
+      set lipid-loss? false
+      set filter-feed? true
+    ]
+  ]
+      forage-options
+end
+
+to forage-options
+  ;; ==========================================================
+  ;; Alewife foraging behavior based on energy level, migration phase, and SPM preference
+  ;; ==========================================================
+
+  ;; ------------------------------------------
+  ;; 1. LANDWARD MIGRATION (lipid catabolism only)
+  ;; ------------------------------------------
+  if lipid-loss? [
+  ;; Maximum lipid metabolized this step, adjusted by efficiency
+  let lipid-refill 0.05 * (weight / original-weight)
+  ;print (word "lipid-refill: " lipid-refill)
+  ;print (word "current energy: " energy)
+  ;; Calculate deficit and lipid need
+  let energy-deficit (100 - energy)
+  ;print (word "energy-deficit: " energy-deficit)
+  let lipid-needed (energy-deficit / 39)
+  ;print (word "lipid-needed: " lipid-needed)
+  
+  ;; Actual lipid use depends on efficiency and availability
+  let lipid-used (min list lipid-needed lipid-refill)
+  set lipid-used (lipid-used * lipid-catabolism-efficiency)
+  ;print (word "lipid-used: " lipid-used)
+  
+  ;; Convert lipid to energy (scaled by efficiency)
+  let energy-change (lipid-used * 39)
+  ;print (word "energy added: " energy-change)
+  set energy (energy + energy-change)
+  ;print (word "energy after lipid conversion: " energy)
+  if energy > 100 [ 
+    set energy 100 
+    print "energy capped at 100"
+  ]
+  
+  ;; Weight loss proportional to lipid burned
+  set weight weight - (lipid-used)
+  ;print (word "weight after lipid loss: " weight)
+  
+  ;; When relying on lipids, Hg uptake stops
+  set hg-uptake-risk 0
+  ;print "hg-uptake-risk set to 0"
+  set mehg-uptake-risk 0
+  ;print "mehg-uptake-risk set to 0"
+]
+
+;; ------------------------------------------
+;; Active Filter-Feeding with Biomagnification
+;; ------------------------------------------
+if filter-feed? [
+  let spm-sd 25
+  ;; Base filtration capacity scales with body size *and* metabolism
+  let base-filtration ((size / 100) * digestion-efficiency)
+  
+  let neighbors-list sort (neighbors with [patch-terrain = "water"])
+  let best-patch nobody
+  let best-score -999
+
+  foreach neighbors-list [p ->
+    let spm-patch [SPM] of p
+    let interest exp (- ((spm-patch - optimal-SPM) ^ 2) / (2 * (spm-sd ^ 2)))
+    ;; benefit now also reduced when metabolism is low
+    let benefit (spm-patch * interest * base-filtration * digestion-efficiency)
+    let comp count alewives-on p
+    if comp > 0 [ set benefit benefit / comp ]
+    if benefit > best-score [
+      set best-score benefit
+      set best-patch p
+    ]
+  ]
+
+  if best-patch != nobody and [patch-terrain] of best-patch = "water" [
+    face best-patch
+    rt random-normal 0 10
+    ;; travel distance reduced by swim-efficiency
+    let travel-distance (min list (distance best-patch) (speed * swim-efficiency))
+    fd travel-distance
+    if [patch-terrain] of patch-here != "water" [ bk travel-distance ]
+
+    ;; --- Swimming energy cost (scaled by efficiency) ---
+    calculate-swim-energy
+    set energy max list 0 (energy - (E-swim * travel-distance))
+
+    ;; --- Feeding and digestion (temperature-dependent) ---
+    let patch-spm [SPM] of best-patch
+    let prey-intake patch-spm * base-filtration * 300
+    ;; digestion-efficiency reduces food assimilation in cold/low-metabolism conditions
+    let prey-assimilated prey-intake * digestion-efficiency
+    set weight weight + (prey-assimilated * 1e-6)
+    set energy min list (energy + (prey-intake * digestion-efficiency)) 100
+
+    ;; --- Contaminant uptake (SPM × Hg and MeHg) ---
+    let spm-hg [mercury] of best-patch
+    let spm-mehg [methylmercury] of best-patch
+
+    ;; --- Biomagnification ---
+    let biomag-factor (random-float 30) + 60  ;; random 60–90
+    let mehg-uptake patch-spm * spm-mehg * biomag-factor * digestion-efficiency
+    let hg-uptake patch-spm * spm-hg * (biomag-factor / 10) * digestion-efficiency
+
+    ;; --- Accumulate uptake ---
+    set mehg-foraging mehg-uptake
+    set hg-foraging hg-uptake
+      
+    set mehg-foraging-total mehg-foraging-total + mehg-uptake
+    set hg-foraging-total hg-foraging-total + hg-uptake
+
+    set mehg-total mehg-total + mehg-uptake
+    set hg-total hg-total + hg-uptake
+  ]
+]
+
+end
+
+to opporunistic-forage
+  ; define probability function where each fish has individual preference for foraging (bell curve) based on SPM or turbidity
+  ; if probability = True for patch opportunistic forage = true
+  ; contamination uptake = SPM x contaminat
+  
+  
+end
+
+to update-SPM-mean-1
+  set mean-SPM mean [SPM] of patches
+end
+
+to color-foraging-patches-1
+  if forage-visits > 0 [
+    set pcolor orange
+  ]
+end

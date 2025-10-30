@@ -1,0 +1,69 @@
+
+to calculate-metabolism
+  ;; --- Safe inputs ---
+  let M-max max [size] of breed
+  let max-age max [age-num] of breed
+  if M-max <= 0 [ set M-max 1 ]              ;; guard against divide-by-zero
+  let T-env [temperature] of patch-here
+  if not is-number? T-env [ set T-env optimal-temperature ]
+
+  ;; --- Allometric + temperature + age scaling ---
+  let beta 0.75
+  let Q10 1.5
+  let size-factor (size / M-max) ^ beta
+  let temp-factor Q10 ^ ((T-env - optimal-temperature) / 10)
+  let age-factor 1 + (1 - (age-num / max-age)) * 0.5
+
+  ;; --- Total metabolic rate (energy units per tick) ---
+  let M-total met-base * size-factor * temp-factor * age-factor
+  set metabolism-rate M-total
+  set total-metabolism total-metabolism + M-total  ;; accumulate each tick
+
+  ;; --- Baseline metabolic rate (reference state) ---
+  let baseline-size-factor 1                       ;; reference size = M-max
+  let baseline-age-factor 1.5                      ;; reference age = 0
+  let baseline-temp-factor 1                       ;; reference temp = optimal
+  let baseline-metabolism met-base * baseline-size-factor * baseline-temp-factor * baseline-age-factor
+
+  ;; --- Efficiency multipliers: ratio of current/baseline metabolic rate ---
+  let efficiency M-total / baseline-metabolism
+
+  set swim-efficiency              efficiency
+  set digestion-efficiency         efficiency
+  set osmoregulation-efficiency    efficiency
+  set lipid-catabolism-efficiency  efficiency
+  ;print (word "lipid-catabolism-efficiency: " efficiency)
+end
+
+to initialize-metabolism
+  ;; === Define constants ===
+  let beta 0.75
+  let age-sensitivity 0.5
+  ;; SCALE base-constant properly:
+  let base-constant 0.7   ;; 2%/day at reference conditions, per 5 min tick
+  
+  let M-max max [size] of breed
+  let max-age max [age-num] of breed
+  if M-max <= 0 [ set M-max 1 ]
+  
+  let size-factor (size / M-max) ^ beta
+  let age-factor 1 + age-sensitivity * (1 - (age-num / max-age))
+  let temp-factor (optimal-temperature / 27)
+  
+  set Met-base base-constant * size-factor * age-factor * temp-factor
+  
+  ;; Partitioning and other code unchanged...
+  let motion-ratio 0.7
+  let osmo-ratio   0.3
+  let total-ratio (motion-ratio + osmo-ratio)
+  set motion-ratio motion-ratio / total-ratio
+  set osmo-ratio   osmo-ratio / total-ratio
+  set swim-base Met-base * motion-ratio
+  set E-osmo 0
+  let base-fraction 0.02
+  let creation-fraction 0.05
+  set E-base     Met-base * base-fraction
+  set E-creation Met-base * creation-fraction
+  set metabolism-rate Met-base
+  set total-metabolism 0
+end

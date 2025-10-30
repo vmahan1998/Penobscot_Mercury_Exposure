@@ -4,6 +4,7 @@ to calendar ;;counter procedure to keep track of the hour, day, month, and year
   
    if minute = 60 [
     set hour (hour + 1)
+    set current-hour (current-hour + 1) ;; Hydro data update
     set minute 0
   ]
   if hour = 24 [set day (day + 1) ]

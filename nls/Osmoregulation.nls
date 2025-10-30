@@ -2,7 +2,7 @@
 ;; Methods of Function: To model ion-regulatory stress on a scale of 1-10, we can define stress as a function of osmotic difference (abs(agent osmolarity - patch osmolarity)) and agent chloride cell density
 ;; Chloride cell density can be expressed as a percentage where 10% is minumum (always expressing some chloride cell function) and 100%
 to osmoregulate
-  show "=== Osmoregulation Step ==="
+  ;show "=== Osmoregulation Step ==="
   
   ;; Step 1: Calculate ion-regulatory stress
   calculate-ionregulatory-stress
@@ -27,9 +27,13 @@ to calculate-ionregulatory-stress
     ;; Compute scaled salinity difference (relative to acclimated level)
     let scaled-difference abs(agent-salinity - patch-salinity)
 
-    ;; Compute salinity-driven stress
-    let salinity-stress salinity-to-stress scaled-difference chloride-cell-density previous-stress 
-
+    ;; Compute base salinity-driven stress
+    let salinity-stress salinity-to-stress scaled-difference chloride-cell-density previous-stress
+    
+    ;; Apply osmoregulation-efficiency as a difficulty modifier
+    ;; Lower efficiency = higher perceived stress
+    ;set salinity-stress salinity-stress * (1 / osmoregulation-efficiency)
+  
     ;; Acclimation logic: If salinity remains stable, adjust acclimated salinity
     let salinity-change abs(patch-salinity - previous-salinity)
     if salinity-change < 1 [  ;; Adjust threshold as needed
@@ -43,7 +47,7 @@ to calculate-ionregulatory-stress
     if stable-time > 4 and chloride-cell-density > chloride-density-min [
       set salinity-stress salinity-stress * 0.98  
       set acclimated-salinity acclimated-salinity + (patch-salinity - acclimated-salinity) * 0.02  
-      show "Acclimation Occurring: Adjusting Acclimated Salinity"
+      ;show "Acclimation Occurring: Adjusting Acclimated Salinity"
     ]
 
     ;; Compute chloride cell buffering
@@ -58,9 +62,9 @@ to calculate-ionregulatory-stress
     ]
 
     ;; Debugging prints
-    show (word "Salinity Change: " salinity-change " | Stable Time: " stable-time)
-    show (word "Acclimated Salinity: " acclimated-salinity " | Patch Salinity: " patch-salinity)
-    show (word "Ion-Regulatory Stress: " ionregulatory-stress " | Stress Reduction: " stress-reduction)
+    ;show (word "Salinity Change: " salinity-change " | Stable Time: " stable-time)
+    ;show (word "Acclimated Salinity: " acclimated-salinity " | Patch Salinity: " patch-salinity)
+    ;show (word "Ion-Regulatory Stress: " ionregulatory-stress " | Stress Reduction: " stress-reduction)
 
     ;; Update tracking variables
     set previous-patch patch-here
@@ -80,7 +84,7 @@ to regulate-chloride-cell-density
     ;; If acclimated for a long time, reduce chloride density faster
     if stable-time > 288 [
       set target-chloride-density target-chloride-density * 0.99  
-      show "Acclimation: Reducing Chloride Cell Density"
+      ;show "Acclimation: Reducing Chloride Cell Density"
     ]
 
     ;; Constrain within limits
@@ -92,7 +96,10 @@ to regulate-chloride-cell-density
     ;; Allow larger changes  
     let max-change-rate (chloride-density-max - chloride-density-min) * chloride-max-proliferation  
     set change max (list (-1 * max-change-rate) (min (list max-change-rate change)))
-
+    
+    ;; reduce efficiency for temperature
+    set change (change * (1 / osmoregulation-efficiency))
+      
     ;; Reduce change if energy is low
     if energy <= 50 [ 
       set change change * 0.5  
@@ -102,7 +109,7 @@ to regulate-chloride-cell-density
     set chloride-cell-density chloride-cell-density + change
     set chloride-cell-density max (list chloride-density-min (min (list chloride-density-max chloride-cell-density)))
 
-    show (word "Chloride Cell Change: " change " | Target Density: " target-chloride-density " | Current Density: " chloride-cell-density)
+    ;show (word "Chloride Cell Change: " change " | Target Density: " target-chloride-density " | Current Density: " chloride-cell-density)
 
     ;; Reset osmoregulation timer
     set time-since-last-osmoregulation 0  
@@ -116,16 +123,18 @@ to calculate-osmoregulation-energy
     set E-osmo maintenance-cost + new-cell-cost
 
     ;; Debugging prints
-    show (word "Osmoregulation Energy Cost: " E-osmo " | Maintenance: " maintenance-cost " | New Cells: " new-cell-cost)
+    ;show (word "Osmoregulation Energy Cost: " E-osmo " | Maintenance: " maintenance-cost " | New Cells: " new-cell-cost)
 
     set energy max (list 0 (energy - E-osmo))  
 end
+
+
 
 ;; Chloride Buffering Function
 to-report calculate-stress-reduction-chloride-function [chloride-density]
   let reduction 5 * (1 - exp(chloride-density * -0.5 / C-mid))  ;; Weakened buffering
 
-  show (word "Chloride Buffering Effect: " reduction " | Chloride Density: " chloride-density)
+  ;show (word "Chloride Buffering Effect: " reduction " | Chloride Density: " chloride-density)
   report reduction
 end
 
@@ -146,10 +155,10 @@ to-report salinity-to-stress [salinity-difference chloride-density previous-stre
   ;; Acclimation reduces stress **only after prolonged stability**
   if stable-time > 288 [
     set stress stress * 0.99  
-    show "Acclimation Reducing Stress"
+    ;show "Acclimation Reducing Stress"
   ]
 
-  show (word "Ion-Regulatory Stress: " stress " | Salinity Difference: " salinity-difference " | Buffering Factor: " buffering-factor)
+  ;show (word "Ion-Regulatory Stress: " stress " | Salinity Difference: " salinity-difference " | Buffering Factor: " buffering-factor)
   report stress
 end
 
@@ -165,11 +174,11 @@ to calculate-E-creation
     set E-creation Met-max * ((size / M-max) ^ beta)
     
     ;; Debugging output
-    show (word "E_creation: " E-creation " | Size: " size " | Max Size: " M-max)
+    ;show (word "E_creation: " E-creation " | Size: " size " | Max Size: " M-max)
     
   ] [
     ;; If agent size is not valid, default to max cost
     set E-creation Met-max
-    show "Warning: Invalid agent size, setting E_creation to Met_max"
+    ;show "Warning: Invalid agent size, setting E_creation to Met_max"
   ]
 end
