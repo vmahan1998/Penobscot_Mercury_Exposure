@@ -59,6 +59,10 @@ patches-own [
   ;SPM-series  ;; time series of depth
   cost-to-home ;; least cost to homing patch
   cost-to-sea ;; least cost back to sea
+  current-velocity-month ;; tracks what month the data is from
+  current-depth-month ;; tracks what month the data is from
+  current-temp-month ;; tracks what month the data is from
+  current-salinity-month ;; tracks what month the data is from
 ]
 
 turtles-own [ trail ]
@@ -110,6 +114,8 @@ Alewives-own [
   days-at-large ;; number of days fish is in spawning grounds
   wait-days ;; counts number of days fish has waited
   wait-ticks
+  planned-path
+  path-index
   landward-migration-time ;; time to travel inland and complete objective
   seaward-migration-time ;; time to travel seaward after completing objective
   

@@ -18,6 +18,7 @@ to forage
       set filter-feed? true
     ]
   ]
+  
       forage-options
 end
 
@@ -31,13 +32,13 @@ to forage-options
   ;; ------------------------------------------
   if lipid-loss? [
   ;; Maximum lipid metabolized this step, adjusted by efficiency
-  let lipid-refill 0.05 * (weight / original-weight)
+  let lipid-refill 0.5 * (weight / original-weight)
   ;print (word "lipid-refill: " lipid-refill)
   ;print (word "current energy: " energy)
   ;; Calculate deficit and lipid need
   let energy-deficit (100 - energy)
   ;print (word "energy-deficit: " energy-deficit)
-  let lipid-needed (energy-deficit / 39)
+  let lipid-needed (energy-deficit / 100)
   ;print (word "lipid-needed: " lipid-needed)
   
   ;; Actual lipid use depends on efficiency and availability
@@ -46,7 +47,7 @@ to forage-options
   ;print (word "lipid-used: " lipid-used)
   
   ;; Convert lipid to energy (scaled by efficiency)
-  let energy-change (lipid-used * 39)
+  let energy-change (lipid-used * 100)
   ;print (word "energy added: " energy-change)
   set energy (energy + energy-change)
   ;print (word "energy after lipid conversion: " energy)

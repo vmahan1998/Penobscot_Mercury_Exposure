@@ -62,6 +62,7 @@ to setup-patch-timeseries
     ask patch x y [
       set velocity-series series
       set velocity item 0 series  ;; ✅ Initialize to first timestep
+      set current-velocity-month current-month ;; mark month of this series on the patch
     ]
   ]
   
@@ -74,6 +75,7 @@ to setup-patch-timeseries
     ask patch x y [
       set depth-series series
       set depth item 0 series  ;; ✅ Initialize to first timestep
+      set current-depth-month current-month ;; mark month of this series on the patch
     ]
   ]
   
@@ -86,6 +88,7 @@ to setup-patch-timeseries
     ask patch x y [
       set temp-series series
       set temperature item 0 series  ;; ✅ Initialize to first timestep
+      set current-temp-month current-month ;; mark month of this series on the patch
     ]
   ]
 
@@ -98,6 +101,7 @@ to setup-patch-timeseries
     ask patch x y [
       set salinity-series series
       set salinity item 0 series  ;; ✅ Initialize to first timestep
+      set current-salinity-month current-month ;; mark month of this series on the patch
     ]
   ]
 
@@ -109,7 +113,8 @@ to setup-patch-timeseries
 ;    let series sublist row 2 length row
 ;    ask patch x y [
 ;      set SPM-series series
-;      set SPM item 0 series  ;; ✅ Initialize to first timestep
+;      set SPM item 0 series  ;; ✅ Initialize to first timeste4
+;       set current-SPM-month current-month ;; mark month of this series on the patcp
 ;    ]
 ;  ]  
   print "✅ Simulation patch data updated."
@@ -224,6 +229,8 @@ to interpolate-missing-time-series
   (
     not is-list? velocity-series or
     length velocity-series = 0 or
+    length velocity-series != total-hours or
+    current-velocity-month != current-month or
     length filter [ v -> v = "NA" ] velocity-series > 1
   )
 ][
@@ -255,6 +262,8 @@ to interpolate-missing-time-series
   (
     not is-list? depth-series or
     length depth-series = 0 or
+    length depth-series != total-hours or
+    current-depth-month != current-month or
     length filter [ v -> v = "NA" ] depth-series > 1
   )
 ] [
@@ -286,7 +295,9 @@ to interpolate-missing-time-series
   patch-terrain = "water" and
   (
     not is-list? temp-series or
+    length temp-series != total-hours or
     length temp-series = 0 or
+    current-temp-month != current-month or
     length filter [ v -> v = "NA" ] temp-series > 1
   )
 ] [
@@ -318,7 +329,9 @@ to interpolate-missing-time-series
   patch-terrain = "water" and
   (
     not is-list? salinity-series or
+    length salinity-series != total-hours or
     length salinity-series = 0 or
+    current-salinity-month != current-month or
     length filter [ v -> v = "NA" ] temp-series > 1
   )
 ] [
@@ -379,16 +392,52 @@ end
 ;end
 
 to-report average-series-from-neighbors [varname]
+
   let radius 4
   let raw-neighbors patches in-radius radius
 
-  ;; Expand search radius until enough neighbors have valid lists
+  ;; determine the month-variable name that corresponds to varname
+  let month-var ""
+  if varname = "velocity-series" [ set month-var "current-velocity-month" ]
+  if varname = "depth-series"    [ set month-var "current-depth-month" ]
+  if varname = "temp-series"     [ set month-var "current-temp-month" ]
+  if varname = "salinity-series" [ set month-var "current-salinity-month" ]
+  ;; if month-var still empty, fall back to a conservative default that will prevent matches
+  if month-var = "" [ set month-var "current-unknown-month" ]
+
+  ;; Expand search radius until enough neighbors have valid lists (and matching month)
   let series-list []
-  while [length series-list < 3 and radius <= 10] [
+  while [ length series-list < 3 and radius <= 10 ] [
     set raw-neighbors patches in-radius radius
-    set series-list [runresult varname] of raw-neighbors with [
-      is-list? runresult varname and length runresult varname > 0
+    ;; collect only those neighbor series where:
+    ;;  - the series exists and is a non-empty list
+    ;;  - the neighbor's month-var equals the global current-month
+    ;; Use runresult to evaluate varname and month-var in the neighbor patch context
+    set series-list (filter [ s -> true ] [
+      runresult varname
+    ] of raw-neighbors) ;; start with the raw values
+
+    ;; now filter by listness/length AND by month match
+    set series-list filter [
+      s ->
+      (is-list? s) and (length s > 0) and
+      ;; find the corresponding patch and check its month var value matches current-month
+      ;; Note: we use of to get the month var from the same patch that produced s
+      ;; build the list of patches that produced the series (raw-neighbors) and zip-check below
+      true
+    ] series-list
+
+    ;; The above filter doesn't yet check month; we need to build the list of neighbors that both
+    ;; satisfy the month and then extract their series. Do that explicitly:
+    set series-list []
+    ask raw-neighbors [
+      let s runresult varname
+      let m runresult month-var
+      if (is-list? s) and (length s > 0) and (m = current-month) [
+        set series-list lput s series-list
+      ]
     ]
+
     set radius radius + 1
   ]
 
@@ -401,8 +450,14 @@ to-report average-series-from-neighbors [varname]
 
   foreach n-values series-length [ i -> i ] [
     i ->
-      ;; Extract only numeric values (ignore NA / empty)
-      let values filter is-number? map [s -> item i s] series-list
+      ;; Extract only numeric values (ignore NA / empty) with guarded access
+      let values []
+      foreach series-list [ s ->
+        if is-list? s and i < length s [
+          let v item i s
+          if is-number? v [ set values lput v values ]
+        ]
+      ]
 
       ;; Only add mean if there are valid numeric entries
       ifelse length values > 0 [

@@ -77,20 +77,24 @@ to migrate-seaward
     adjust-speed
   ]
 
-  ;; STEP 2: Environmental cue – move toward fast downstream velocity
-  let candidates patches in-radius 2 with [patch-terrain = "water"]
+    ;; STEP 2 move along path
+  let travel-distance (speed / 3)
+  let path build-path patch-here migration-patch
   
-  ifelse any? candidates [
-    let best-patch min-one-of candidates [cost-to-sea]
-    safe-move best-patch speed
-  ][
-    ;; fallback: move to a random water neighbor
-    let nearby-water one-of neighbors with [patch-terrain = "water"]
-    if nearby-water != nobody [
-      safe-move nearby-water speed
+  ;; if a valid path exists
+  if not empty? path [
+    ;; number of steps to move — e.g., how many patches to advance this tick
+    let steps-to-move ceiling travel-distance
+    
+    ;; slice the path to move only that far (avoid exceeding path length)
+    let move-patches sublist path 0 (min list steps-to-move length path)
+    
+    ;; move turtle along the path without jumping entire distance at once
+    foreach move-patches [ p ->
+      face p
+      move-to p
     ]
   ]
-  
   ;; STEP 3 set trail and calculate energy loss
   set energy max list 0 (energy - swim-base)  ;; Reduce energy cost of swimming
   
@@ -104,9 +108,10 @@ to calculate-cost-to-sea [sea-patch]
   ask sea-patch [
     set cost-to-sea 0
   ]
-
+  ask patch-here [ set cost-to-sea 1e9 ]
   ;; Start with a list containing the home patch
   let frontier (list sea-patch)
+  let df difficulty-factor           ;; capture it locally
 
   while [not empty? frontier] [
     let current first frontier
@@ -114,9 +119,9 @@ to calculate-cost-to-sea [sea-patch]
 
     ask current [
       let current-cost cost-to-sea
-
+      
       ask neighbors4 with [patch-terrain = "water"] [
-        let travel-cost compute-travel-cost current self
+        let travel-cost compute-travel-cost current self df
         let new-cost current-cost + travel-cost
 
         if new-cost < cost-to-sea [

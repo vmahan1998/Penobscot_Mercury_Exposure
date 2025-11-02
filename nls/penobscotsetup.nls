@@ -5,12 +5,17 @@ to setup-penobscot-migration
   set MeHg-threshold 15 ; ng/kg Adjust based on NOAA data
   set month-list ["April" "May" "June" "July" "August" "September" "October"]
   set current-hour 0
-  ;set day 150
+  ;set day 121
   ;set current-hour 695
   let header first velocity-data
   set total-hours (length header - 4)   ;; columns after px, py
   ;draw-mehg-legend
   reset-ticks
+  
+  ask patches with [patch-terrain != "water"] [
+   set cost-to-home 1e9
+   set cost-to-sea 1e9
+  ]
 end
 
 to initialize-velocity-extremes-from-series
@@ -70,16 +75,27 @@ end
 
 to update-patch-data
   ask patches with [patch-terrain = "water"] [
-    ifelse current-hour < total-hours - 1 [
+    if current-hour < (total-hours - 1) [
       set velocity item current-hour velocity-series
       set depth item current-hour depth-series
       set salinity item current-hour salinity-series
       set temperature item current-hour temp-series
+      set SPM random-float 0.0004  ;; random value between 0 and 0.0004
       ;set SPM item ticks SPN-series
-    ][
-      Update-hydro-data
-      update-patch-data
     ]
+    if current-hour = (total-hours - 1) [
+      Update-hydro-data
+    ]
+  
+  ]
+    ask patches with [patch-terrain != "water"] [
+      set velocity 0
+      set depth 0
+      set salinity 0
+      set temperature 0
+      set SPM 0
+      ;set SPM item ticks SPN-series
+   
   
   ]
 end
@@ -91,7 +107,7 @@ to penobscot-go
     update-patch-data
   ]
   
-  ask patches [ 
+  ask patches with [ patch-terrain = "water" ][ 
    set cost-to-home 1e6
    set cost-to-sea 1e6
    set spm random-float 0.0004  ;; random value between 0 and 0.0004
@@ -124,17 +140,31 @@ ask alewives with [age = "adult"] [
       osmoregulate
 
       ;; Energy recovery strategy
+      if not ([location] of patch-here = "lower estuary" and seaward-migration? = true) [
       if energy <= 25 [ set foraging? true ]
-      if energy >= 75 [ set foraging? false ]
+      if energy >= 75 [ 
+       set foraging? false
+       set lipid-loss? false
+       set filter-feed? false ]
       forage
+      ]
+        
+      ;; Energy recovery strategy before leaving estuary
+      if ([location] of patch-here = "lower estuary" and seaward-migration? = true) [
+      if energy < 75 [ set foraging? true ]
+      if energy >= 75 [ 
+       set foraging? false
+       set lipid-loss? false
+       set filter-feed? false ]
+      forage
+      ]  
     ]
 
     ;; --- Residence phase (fish is home) ---
-    if at-destination? [
+      if (patch-here = home-patch) and (landward-migration? = true) [
       if wait-days < days-at-large [
         set at-destination? true
         set completed-action? true
-
         set wait-ticks wait-ticks + 1
         set wait-days (wait-ticks / 288) ; 5 minute time steps
        
@@ -146,10 +176,14 @@ ask alewives with [age = "adult"] [
         set at-destination? false
       ]
     ]
+      
+      if (patch-here = migration-patch) and (seaward-migration? = true) [
+    set start-migration? false
+  ]
+      
   ]
 ]
     
-
 
   ask stripedbass with [age = "adult"] [
     ;school ;align, cohere, separate, separation minimum, schoolmates
@@ -158,6 +192,13 @@ ask alewives with [age = "adult"] [
 
 
   ]
+  
+  ;; After all agent actions (before 'end')
+if all? alewives with [age = "adult"] [
+     (patch-here = migration-patch) and (seaward-migration?)
+] [
+  stop
+]
   
 ;  ask turtles [
 ;  foreach trail [

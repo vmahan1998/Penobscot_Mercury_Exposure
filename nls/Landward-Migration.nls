@@ -78,21 +78,24 @@ to migrate-landward
 
     adjust-speed
   ]
-
-  ;; STEP 2: Environmental cue – move toward fast downstream velocity
-  let candidates patches in-radius 2 with [patch-terrain = "water"]
+  ;; STEP 2 move along path
+  let travel-distance (speed / 3)
+  let path build-path patch-here home-patch
   
-  ifelse any? candidates [
-    let best-patch min-one-of candidates [cost-to-home]
-    safe-move best-patch speed
-  ][
-    ;; fallback: move to a random water neighbor
-    let nearby-water one-of neighbors with [patch-terrain = "water"]
-    if nearby-water != nobody [
-      safe-move nearby-water speed
+  ;; if a valid path exists
+  if not empty? path [
+    ;; number of steps to move — e.g., how many patches to advance this tick
+    let steps-to-move ceiling travel-distance
+    
+    ;; slice the path to move only that far (avoid exceeding path length)
+    let move-patches sublist path 0 (min list steps-to-move length path)
+    
+    ;; move turtle along the path without jumping entire distance at once
+    foreach move-patches [ p ->
+      face p
+      move-to p
     ]
   ]
-  
   ;; STEP 3 set trail and calculate energy loss
   set energy max list 0 (energy - swim-base)  ;; Reduce energy cost of swimming
   
@@ -103,12 +106,13 @@ to migrate-landward
 end
 
 to calculate-cost-to-home [homing-patch]
-  ask homing-patch [
+  ask home-patch [
     set cost-to-home 0
   ]
-
+  ask patch-here [ set cost-to-home 1e9 ]
   ;; Start with a list containing the home patch
-  let frontier (list homing-patch)
+  let frontier (list home-patch)
+  let df difficulty-factor           ;; capture it locally
 
   while [not empty? frontier] [
     let current first frontier
@@ -116,9 +120,9 @@ to calculate-cost-to-home [homing-patch]
 
     ask current [
       let current-cost cost-to-home
-
+      
       ask neighbors4 with [patch-terrain = "water"] [
-        let travel-cost compute-travel-cost current self
+        let travel-cost compute-travel-cost current self df
         let new-cost current-cost + travel-cost
 
         if new-cost < cost-to-home [
@@ -130,36 +134,73 @@ to calculate-cost-to-home [homing-patch]
   ]
 end
 
-to-report compute-travel-cost [from-patch to-patch]
-  ;; --- Get velocity safely ---
-  let raw-vel [velocity] of to-patch
-  let velocity-resistance ifelse-value is-number? raw-vel [abs raw-vel] [0]
 
-  ;; --- Water level handling ---
-  let from-level [depth] of from-patch  ;; depth = water level
+to-report build-path [current-patch homing-patch]
+  ;; Must call `calculate-cost-to-home home-patch` before using this.
+  ;; Returns a list of patches representing the least-cost route from current-patch to home-patch.
+
+  let path (list current-patch)   ;; start list with current patch
+  let cur current-patch
+  let max-steps 2000              ;; safety stop to avoid infinite loops
+
+  while [cur != home-patch and max-steps > 0] [
+    set max-steps max-steps - 1
+
+    ;; only consider water neighbors with lower cost-to-home
+    let candidates [neighbors4] of cur
+    set candidates candidates with [
+      patch-terrain = "water" and cost-to-home < [cost-to-home] of cur
+    ]
+
+    if not any? candidates [
+      ;; dead end – stop building path
+      report path
+    ]
+
+    ;; choose the next patch with the minimum cost-to-home
+    let next-patch min-one-of candidates [cost-to-home]
+
+    ;; add next patch to path
+    set path lput next-patch path
+
+    ;; move the "cursor" forward
+    set cur next-patch
+  ]
+
+  report path
+end
+
+to-report reconstruct-path [came-from current]
+  let total-path (list current)
+  while [table:has-key? came-from current] [
+    set current table:get came-from current
+    set total-path fput current total-path
+  ]
+  report total-path
+end
+
+
+to-report compute-travel-cost [from-patch to-patch df]
+  ;; Compute travel cost for moving from from-patch to to-patch,
+  ;; scaled by difficulty factor df (passed in by the calling turtle).
+  ;; Keeps your original base calculation:
+  ;;   base-cost = abs(velocity at to-patch) + 0.5 * max(0, depth_to - depth_from)
+  ;; and returns base-cost * df (df defaults to 1 if non-numeric).
+  let raw-vel [velocity] of to-patch
+  let velocity-resistance ifelse-value is-number? raw-vel [ abs raw-vel ] [ 0 ]
+
+  let from-level [depth] of from-patch
   let to-level [depth] of to-patch
   let slope 0
   if (is-number? from-level and is-number? to-level) [
     set slope max list 0 (to-level - from-level)
   ]
 
-  ;; --- Return combined cost ---
-  report velocity-resistance + 0.5 * slope
-end
+  let base-cost velocity-resistance + 0.5 * slope
 
+  ;; ensure df numeric (fall back to 1)
+  let df2 ifelse-value is-number? df [ df ] [ 1 ]
 
-to safe-move [target-patch move-speed]
-  ;; Moves toward target only if water ahead; finds alternate if blocked
-  face target-patch
-
-  let next-patch patch-ahead move-speed
-  ifelse [patch-terrain] of next-patch = "water" [
-    fd move-speed
-  ] [
-    ;; fallback: find nearest water patch and move partially
-    let nearby-water one-of patches in-radius 1 with [patch-terrain = "water"]
-    if nearby-water != nobody [
-      move-to nearby-water
-    ]
-  ]
+  ;; final non-negative cost
+  report max list 0 (base-cost * df2)
 end

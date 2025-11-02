@@ -43,7 +43,17 @@ to selective-tidal-stream-transport-seaward
   let S-swim (speed) / 300  ;; m/s adjusted by metabolic condition
 
   ;; Case 1: Enter STST (current dominates)
-  if abs V-patch > S-swim and S-swim <= min-speed [
+  if selective-tidal-transport? and (ticks - STST-start-tick < 1) [
+    let drift-distance abs V-patch * (1 - swim-efficiency)
+    let drift-target one-of neighbors with [patch-terrain = "water"]
+    if drift-target != nobody [
+      safe-move drift-target drift-distance
+    ]
+    set tidal-transport-in-patch tidal-transport-in-patch + 1
+    stop
+  ]
+  
+if abs V-patch > S-swim and S-swim <= min-speed [
     set selective-tidal-transport? true
     set STST-start-tick ticks
     let drift-distance abs V-patch * (1 - swim-efficiency)
@@ -51,17 +61,32 @@ to selective-tidal-stream-transport-seaward
     if drift-target != nobody [
       safe-move drift-target drift-distance
     ]
-    ;; lower energy burn when drifting passively
-    set energy max list 0 (energy - (E-swim * 0.2))
     set tidal-transport-in-patch tidal-transport-in-patch + 1
     stop
   ]
 
-  ;; Case 2: Resume active swimming
-  if S-swim > min-speed [
+  ;; Case 3: Normal swimming resumes once able
+  if S-swim > min-speed or (ticks - STST-start-tick >= 1) [
     set selective-tidal-transport? false
     calculate-swim-energy
+    ;; Optional: swimming cost scales inversely with efficiency
     set energy max list 0 (energy - E-swim)
     migrate-seaward
+  ]
+end
+
+to safe-move [target-patch move-speed]
+  ;; Moves toward target only if water ahead; finds alternate if blocked
+  face target-patch
+
+  let next-patch patch-ahead move-speed
+  ifelse [patch-terrain] of next-patch = "water" [
+    fd move-speed
+  ] [
+    ;; fallback: find nearest water patch and move partially
+    let nearby-water one-of patches in-radius 1 with [patch-terrain = "water"]
+    if nearby-water != nobody [
+      move-to nearby-water
+    ]
   ]
 end

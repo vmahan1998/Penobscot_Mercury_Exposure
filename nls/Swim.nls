@@ -37,6 +37,7 @@ to swim
   ;; UNIVERSAL METABOLIC COST (swimming energy)
   ;; ------------------------------------------
   calculate-swim-energy
+  set previous-patch patch-here
 end
 
 to calculate-swim-energy

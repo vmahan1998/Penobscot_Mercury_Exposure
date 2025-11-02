@@ -24,11 +24,66 @@ to update-hydro-data
       let header first depth-data
       set total-hours (length header - 4)
       set current-hour 0
+     ;; Rebuild patch time series for the new month
+      setup-patch-timeseries
+      print "✅ Time Series Called."
+      debug-hydro-data
+      print "✅ Pre-Interpolation Check."
+      interpolate-missing-time-series
+      print "✅ Interpolation Complete."
+      debug-hydro-data
+      print "✅ Post-Interpolation Check."
+      initialize-velocity-extremes-from-series
+        print "✅ Velocity Extremes Computed."
+      print (word "✅ Initialization complete for " current-month ".")
 
     ] [
       print "✅ Simulation reached end of October dataset."
       stop
     ]
-      ;; Rebuild patch time series for the new month
-      setup-patch-timeseries
+      
+end
+
+
+to debug-hydro-data
+  ;; Inspect per-patch series variables on water patches and print:
+  ;; - total number of water patches
+  ;; - for each series var: # length 720, # length 744, # missing / not-a-list
+  let vars ["velocity-series" "salinity-series" "depth-series" "temp-series"]
+  let water-patches patches with [ patch-terrain = "water" ]
+  let n-water count water-patches
+  show (word "Total water patches: " n-water)
+  if n-water = 0 [
+    show "No water patches found."
+    stop
+  ]
+
+  foreach vars [
+    vn ->
+    ;; reset counters for this variable
+    let cnt-720 0
+    let cnt-744 0
+    let cnt-missing 0
+    ask water-patches [
+      ;; runresult takes a STRING and evaluates it in the context of the current agent (here: the patch),
+      ;; so calling runresult vn here returns the patch variable named by vn.
+      let val runresult vn
+      ifelse not is-list? val [
+        set cnt-missing cnt-missing + 1
+      ] [
+        let L length val
+        if L = 720 [ set cnt-720 cnt-720 + 1 ]
+        if L = 744 [ set cnt-744 cnt-744 + 1 ]
+      ]
+    ]
+    show (word "=== " vn " ===")
+    show (word "Total water patches inspected: " n-water)
+    show (word "# length 720: " cnt-720)
+    show (word "# length 744: " cnt-744)
+    show (word "# missing / not-a-list: " cnt-missing)
+    ;; optional: show proportions relative to water patches
+    show (word "prop. 720: " precision (ifelse-value (n-water > 0) [ cnt-720 / n-water ] [ 0 ]) 4)
+    show (word "prop. 744: " precision (ifelse-value (n-water > 0) [ cnt-744 / n-water ] [ 0 ]) 4)
+    show (word "prop. missing: " precision (ifelse-value (n-water > 0) [ cnt-missing / n-water ] [ 0 ]) 4)
+  ]
 end
