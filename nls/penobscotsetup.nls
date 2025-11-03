@@ -124,8 +124,8 @@ ask alewives with [age = "adult"] [
   if ((not start-migration?) and (local-temp >= migration-temp)) or 
    ((count alewives with [start-migration?]) / count alewives >= 0.5) [
     set start-migration? true
-    set landward-migration? true
-    set seaward-migration? false
+    ;set landward-migration? true
+    ;set seaward-migration? false
   ]
 
   ;; --- Migration and behavior sequence ---
@@ -160,28 +160,28 @@ ask alewives with [age = "adult"] [
       ]  
     ]
 
-    ;; --- Residence phase (fish is home) ---
-      if (patch-here = home-patch) and (landward-migration? = true) [
-      if wait-days < days-at-large [
-        set at-destination? true
-        set completed-action? true
-        set wait-ticks wait-ticks + 1
-        set wait-days (wait-ticks / 288) ; 5 minute time steps
-       
-      ]
-      ;; --- Departure phase ---
-      if wait-days >= days-at-large [
-        set seaward-migration? true
-        set landward-migration? false
-        set at-destination? false
-      ]
-    ]
-      
-      if (patch-here = migration-patch) and (seaward-migration? = true) [
-    set start-migration? false
-  ]
-      
-  ]
+;    ;; --- Residence phase (fish is home) ---
+;      if (patch-here = home-patch) and (landward-migration? = true) [
+;      if wait-days < days-at-large [
+;        set at-destination? true
+;        set completed-action? true
+;        set wait-ticks wait-ticks + 1
+;        set wait-days (wait-ticks / 288) ; 5 minute time steps
+;       
+;      ]
+;      ;; --- Departure phase ---
+;      if wait-days >= days-at-large [
+;        set seaward-migration? true
+;        set landward-migration? false
+;        set at-destination? false
+;      ]
+;    ]
+;      
+;      if (patch-here = migration-patch) and (seaward-migration? = true) [
+;    set start-migration? false
+;  ]
+;      
+]
 ]
     
 
@@ -192,14 +192,19 @@ ask alewives with [age = "adult"] [
 
 
   ]
-  
-  ;; After all agent actions (before 'end')
+;  
+;  ;; After all agent actions (before 'end')
+;if all? alewives with [age = "adult"] [
+;     (patch-here = migration-patch) and (seaward-migration?)
+;] [
+;  stop
+;]
+   ;; After all agent actions (before 'end')
 if all? alewives with [age = "adult"] [
-     (patch-here = migration-patch) and (seaward-migration?)
+     (patch-here = home-patch) and (landward-migration?)
 ] [
   stop
 ]
-  
 ;  ask turtles [
 ;  foreach trail [
 ;    p -> ask p [ set pcolor yellow ]

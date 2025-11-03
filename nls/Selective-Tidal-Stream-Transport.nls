@@ -40,7 +40,7 @@ end
 
 to selective-tidal-stream-transport-seaward
   let V-patch [velocity] of patch-here
-  let S-swim (speed) / 300  ;; m/s adjusted by metabolic condition
+  let S-swim (speed / 300 ) ;; m/s adjusted by metabolic condition
 
   ;; Case 1: Enter STST (current dominates)
   if selective-tidal-transport? and (ticks - STST-start-tick < 1) [
