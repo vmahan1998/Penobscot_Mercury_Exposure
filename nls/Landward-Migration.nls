@@ -1,23 +1,21 @@
 to calculate-difficulty-landward
   ;; Ensure required parameters exist
-  let M-max max [size] of breed
+  ;; Ensure required parameters exist
+  let M-max max [size] of breed         ;; Maximum size among agents
+  let M-agent size                      ;; Current agent size
+  let V-max max-seaward-velocity        ;; Maximum observed seaward velocity
+  let V-min max-landward-velocity        ;; Minimum observed seaward velocity
+  let k 0.75                            ;; Scaling exponent (same as landward)
+
+  ;; Normalize velocity within its observed range (V-min to V-max)
+  let normalized-velocity (velocity - V-min) / (V-max - V-min)
+
+  ;; Theoretical raw difficulty (same base equation as landward)
+  let Df-raw (normalized-velocity / (M-agent / M-max)) ^ k
   
-  let M-agent size                ;; Current agent size
-  let V-max max-seaward-velocity  ;; Maximum observed seaward velocity
-  ;print (word "V-max: " V-max)
-
-  let V-min max-landward-velocity ;; Maximum observed landward velocity
-  ;print (word "V-min: " V-min)
-  let k 0.75                      ;; Scaling exponent
-
-  ;; **Normalize velocity within its observed range (V_min to V_max)**
-  ;;let normalized-velocity (velocity - V-min) / (V-max - V-min)
-  
-  ;; Theoretical difficulty calculation
-  let Df-raw (abs(velocity) / (max-speed * (M-agent / M-max))) ^ k
-
-  ;; Normalize difficulty to scale 1–10 based on velocity bounds
-  set difficulty-factor (1 + 9 * ((Df-raw - V-min) / (V-max - V-min)))  
+  ;; Normalize difficulty to scale 1–10 based on normalized velocity
+  ;; Difficulty = 1 at V-min (normalized-velocity = 0), 10 at V-max (normalized-velocity = 1)
+  set difficulty-factor (1 + 9 * Df-raw)
 
   ;; Ensure difficulty is always within [1,10] range
   set difficulty-factor max list 1 (min list 10 difficulty-factor)
@@ -81,7 +79,7 @@ to migrate-landward
   ;; STEP 2 move along path
   let travel-distance (speed / 3)
   let path build-path patch-here home-patch
-  
+  set planned-path path
   ;; if a valid path exists
   if not empty? path [
     ;; number of steps to move — e.g., how many patches to advance this tick

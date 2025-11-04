@@ -30,6 +30,7 @@ globals [
   Hg-threshold ;; Safe threshold for mercury exposure
   MeHg-threshold ;; Safe threshold for methylmercury exposure
   staging-start-tick ;; time the agent is staging
+  local-temp
   ]
 
 patches-own [ 

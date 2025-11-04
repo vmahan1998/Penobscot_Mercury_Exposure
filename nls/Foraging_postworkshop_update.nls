@@ -38,7 +38,7 @@ to forage-options
   ;; Calculate deficit and lipid need
   let energy-deficit (100 - energy)
   ;print (word "energy-deficit: " energy-deficit)
-  let lipid-needed (energy-deficit / 100)
+  let lipid-needed (energy-deficit / 10)
   ;print (word "lipid-needed: " lipid-needed)
   
   ;; Actual lipid use depends on efficiency and availability
@@ -47,7 +47,7 @@ to forage-options
   ;print (word "lipid-used: " lipid-used)
   
   ;; Convert lipid to energy (scaled by efficiency)
-  let energy-change (lipid-used * 100)
+  let energy-change (lipid-used * 10)
   ;print (word "energy added: " energy-change)
   set energy (energy + energy-change)
   ;print (word "energy after lipid conversion: " energy)

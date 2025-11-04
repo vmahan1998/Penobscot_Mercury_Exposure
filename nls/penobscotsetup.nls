@@ -5,8 +5,8 @@ to setup-penobscot-migration
   set MeHg-threshold 15 ; ng/kg Adjust based on NOAA data
   set month-list ["April" "May" "June" "July" "August" "September" "October"]
   set current-hour 0
-  ;set day 121
-  ;set current-hour 695
+  ;set day 0
+  ;set current-hour 240
   let header first velocity-data
   set total-hours (length header - 4)   ;; columns after px, py
   ;draw-mehg-legend
@@ -15,7 +15,10 @@ to setup-penobscot-migration
   ask patches with [patch-terrain != "water"] [
    set cost-to-home 1e9
    set cost-to-sea 1e9
+    set temperature temperature + 5
   ]
+    set local-temp mean [temperature] of patches with [any? alewives-here]
+    show (word "Local Temperature: " local-temp)
 end
 
 to initialize-velocity-extremes-from-series
@@ -29,7 +32,7 @@ to initialize-velocity-extremes-from-series
   let all-mins []
   let all-maxs []
 
-  ;; Collect patch-level minima and maxima
+  ;; Collect patch-level minima and maxima (no outlier filtering)
   foreach sort valid-water-patches [
     p ->
     let vs [velocity-series] of p
@@ -41,21 +44,14 @@ to initialize-velocity-extremes-from-series
     ]
   ]
 
-  ;; Combine and filter outliers
+  ;; Combine values without filtering for outliers
   let combined-values sentence all-mins all-maxs
   if length combined-values > 0 [
-    let q1 my-quantile combined-values 0.25
-    let q3 my-quantile combined-values 0.75
-    let iqr q3 - q1
-    let lower-bound q1 - (1.5 * iqr)
-    let upper-bound q3 + (1.5 * iqr)
-    set combined-values filter [v -> v >= lower-bound and v <= upper-bound] combined-values
-
-    ;; Recalculate min/max from filtered data
     let seaward-values filter [v -> v < 0] combined-values
     let landward-values filter [v -> v > 0] combined-values
 
     ifelse length seaward-values > 0 [
+      ;; most negative (min) seaward value is the maximum seaward magnitude
       set max-seaward-velocity min seaward-values
     ][
       set max-seaward-velocity -0.001
@@ -67,8 +63,8 @@ to initialize-velocity-extremes-from-series
       set max-landward-velocity 0.001
     ]
 
-    show (word "System-wide Seaward V-max (most negative): " max-seaward-velocity)
-    show (word "System-wide Landward V-min (most positive): " max-landward-velocity)
+    ;show (word "System-wide Seaward V-max (most negative): " max-seaward-velocity)
+    ;show (word "System-wide Landward V-min (most positive): " max-landward-velocity)
   ]
 end
 
@@ -82,9 +78,15 @@ to update-patch-data
       set temperature item current-hour temp-series
       set SPM random-float 0.0004  ;; random value between 0 and 0.0004
       ;set SPM item ticks SPN-series
+      ;set temperature temperature + 5
+            ;; ---- Temperature cue for alewife migration ----
+      let temp-patches patches with [any? alewives-here]
+    set local-temp mean [temperature] of temp-patches
+          ;show (word "Local Temperature: " local-temp)
     ]
     if current-hour = (total-hours - 1) [
       Update-hydro-data
+
     ]
   
   ]
@@ -98,6 +100,8 @@ to update-patch-data
    
   
   ]
+  
+  initialize-velocity-extremes-from-series
 end
 
 to penobscot-go
@@ -105,6 +109,7 @@ to penobscot-go
   ;; update the simulation data
   if ticks mod 12 = 0 [
     update-patch-data
+    
   ]
   
   ask patches with [ patch-terrain = "water" ][ 
@@ -117,15 +122,14 @@ to penobscot-go
   
 ask alewives with [age = "adult"] [
 
-  ;; ---- Temperature cue for alewife migration ----
-  let local-temp [temperature] of patch-here
+  
 
   ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
   if ((not start-migration?) and (local-temp >= migration-temp)) or 
    ((count alewives with [start-migration?]) / count alewives >= 0.5) [
     set start-migration? true
-    ;set landward-migration? true
-    ;set seaward-migration? false
+    set landward-migration? true
+    set seaward-migration? false
   ]
 
   ;; --- Migration and behavior sequence ---
@@ -160,28 +164,29 @@ ask alewives with [age = "adult"] [
       ]  
     ]
 
-;    ;; --- Residence phase (fish is home) ---
-;      if (patch-here = home-patch) and (landward-migration? = true) [
-;      if wait-days < days-at-large [
-;        set at-destination? true
-;        set completed-action? true
-;        set wait-ticks wait-ticks + 1
-;        set wait-days (wait-ticks / 288) ; 5 minute time steps
-;       
-;      ]
-;      ;; --- Departure phase ---
-;      if wait-days >= days-at-large [
-;        set seaward-migration? true
-;        set landward-migration? false
-;        set at-destination? false
-;      ]
-;    ]
-;      
-;      if (patch-here = migration-patch) and (seaward-migration? = true) [
-;    set start-migration? false
-;  ]
-;      
+    ;; --- Residence phase (fish is home) ---
+      if (patch-here = home-patch) and (landward-migration? = true) [
+      if wait-days < days-at-large [
+        set at-destination? true
+        set completed-action? true
+        set wait-ticks wait-ticks + 1
+        set wait-days (wait-ticks / 288) ; 5 minute time steps
+       
+     ]
+      ;; --- Departure phase ---
+      if wait-days >= days-at-large [
+        set seaward-migration? true
+        set landward-migration? false
+        set at-destination? false
+      ]
+    ]
+      
+      if (patch-here = migration-patch) and (seaward-migration? = true) [
+    set start-migration? false
+  ]
+      
 ]
+    
 ]
     
 
@@ -192,19 +197,19 @@ ask alewives with [age = "adult"] [
 
 
   ]
-;  
-;  ;; After all agent actions (before 'end')
-;if all? alewives with [age = "adult"] [
-;     (patch-here = migration-patch) and (seaward-migration?)
-;] [
-;  stop
-;]
-   ;; After all agent actions (before 'end')
+  
+  ;; After all agent actions (before 'end')
 if all? alewives with [age = "adult"] [
-     (patch-here = home-patch) and (landward-migration?)
+     (patch-here = migration-patch) and (seaward-migration?)
 ] [
   stop
 ]
+;   ;; After all agent actions (before 'end')
+;if all? alewives with [age = "adult"] [
+;     (patch-here = home-patch) and (landward-migration?)
+;] [
+;  stop
+;]
 ;  ask turtles [
 ;  foreach trail [
 ;    p -> ask p [ set pcolor yellow ]

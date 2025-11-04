@@ -4,28 +4,29 @@ to setup-alewives
     ;; --- Movement & visual setup ---
     set home-patch patch 199 346
     set migration-patch one-of patches with [patchtype = "sea"]
+    ;set migration-patch patch 10 31
     
     ;; Landward Migration Start
-;    if migration-patch != nobody [ move-to migration-patch ]
-;    set landward-migration? true
-;    set seaward-migration? false
-;    set at-destination? false
-;    set lipid-loss? true
-;    set filter-feed? false
-;    set completed-action? false
-;    set start-migration? false
-    
-    ; Seaward migration start
-    if home-patch != nobody [ move-to home-patch ]
-    set seaward-migration? false
+    if migration-patch != nobody [ move-to migration-patch ]
     set landward-migration? true
-    set at-destination? true
+    set seaward-migration? false
+    set at-destination? false
     set lipid-loss? true
     set filter-feed? false
-    set completed-action? true
-    set start-migration? true
-    set acclimated-salinity [salinity] of patch-here
-    set previous-patch patch-here
+    set completed-action? false
+    set start-migration? false
+    
+    ; Seaward migration start
+;    if home-patch != nobody [ move-to home-patch ]
+;    set seaward-migration? false
+;    set landward-migration? true
+;    set at-destination? true
+;    set lipid-loss? true
+;    set filter-feed? false
+;    set completed-action? true
+;    set start-migration? true
+;    set acclimated-salinity [salinity] of patch-here
+;    set previous-patch patch-here
     
     set align-coefficient 50
     set cohere-coefficient 50
@@ -76,13 +77,13 @@ to setup-alewives
     set min-speed 0.1
     
     ;; ---- Migration Temperature Preference ----
-    let min-temp 5     ;; lower migration bound
-    let max-temp 10     ;; upper migration bound
-    let mean-temp 8    ;; optimal migration temperature (mean)
+    let min-temp 5.5     ;; lower migration bound
+    let max-temp 6.5     ;; upper migration bound
+    let mean-temp 6    ;; optimal migration temperature (mean)
     let sd-temp 1.5     ;; spread (wide enough for early & late migrants)
     
-    ;set migration-temp truncated-normal mean-temp sd-temp min-temp max-temp
-    set migration-temp 10
+    set migration-temp truncated-normal mean-temp sd-temp min-temp max-temp
+    ;set migration-temp 5
     
     ;; ---- Metabolic Variables ----
     set swim-efficiency 1             ;; metabolic cost/benefit to swimming       
@@ -98,8 +99,9 @@ to setup-alewives
     let mean-days 3.5    ;; optimal migration temperature (mean)
     let sd-days 1.5     ;; spread (wide enough for early & late migrants)
     
-    ;set days-at-large truncated-normal mean-days sd-days min-days max-days
-    set days-at-large 1
+    set days-at-large truncated-normal mean-days sd-days min-days max-days
+    ;set days-at-large 1
+    
     ;; ---- Swimming Speed (m per 5 minutes) ----
     ;; Speed = 1.5–3.0 × body length per second, converted to 5-minute step
     let swim-multiplier (1.5 + random-float 1.5)
