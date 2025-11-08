@@ -40,7 +40,7 @@ to initialize-metabolism
   let beta 0.75
   let age-sensitivity 0.5
   ;; SCALE base-constant properly:
-  let base-constant 0.5   
+  let base-constant 0.25   
   
   let M-max max [size] of breed
   let max-age max [age-num] of breed

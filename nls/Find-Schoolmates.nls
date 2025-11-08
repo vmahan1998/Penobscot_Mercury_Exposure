@@ -1,4 +1,9 @@
 to find-schoolmates
-  ;; Select other alewives within vision radius that have started migration
-  set schoolmates other alewives with [start-migration?] ;in-radius alewife-vision ;; prevents schooling with fish "not in system" yet
+  ;; Select other alewives within vision radius that have started migration and match direction
+  set schoolmates other alewives with [
+    start-migration? and
+    landward-migration? = [landward-migration?] of myself and
+    seaward-migration? = [seaward-migration?] of myself
+    ;in-radius alewife-vision
+  ]
 end

@@ -11,6 +11,7 @@ globals [
   year ;; records years
   night? ;; nightime
   dataset ;; Penobscot Model Domain
+  sun-data ;; photoperiod
   velocity-data ;; velocity file data
   depth-data ;; depth data
   salinity-data ;; salinity data
@@ -30,7 +31,24 @@ globals [
   Hg-threshold ;; Safe threshold for mercury exposure
   MeHg-threshold ;; Safe threshold for methylmercury exposure
   staging-start-tick ;; time the agent is staging
-  local-temp
+  local-temp ;; temperature of alewife patches
+  latitude             ;; site latitude (e.g., 45 for Maine)
+  sun_rows          ;; raw rows from CSV (without header)
+  sun_index         ;; table keyed by "month_day" -> [rh rm sh sm]
+  daylength            ;; hours of daylight for current day
+  sunrise-hour         ;; hour of sunrise
+  sunset-hour          ;; hour of sunset
+  photoperiod-change
+  temp-index
+  prev-temp
+  prev-daylength
+  tavg_f                 ;; average daily air temperature (°F)
+  temp-change             ;; ΔTemperature (°F)
+  cue-active?             ;; whether coincident decline cue is active
+  cue-days
+  day_in_month ;; month day
+  cue-strength
+  cue-strength-index
   ]
 
 patches-own [ 
@@ -111,6 +129,7 @@ Alewives-own [
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
   migration-destination ;;
+  migration-photo ;;
   at-destination? ;; is fish at migratory destination?
   days-at-large ;; number of days fish is in spawning grounds
   wait-days ;; counts number of days fish has waited
@@ -175,6 +194,8 @@ Alewives-own [
   stagnation-counter  ;; Tracks how long the agent has been in the same spot
   trapped?  ;; Flag indicating if the fish is stuck
   STST-start-tick ;; Selective tidal transport transition
+  migration-day
+  migration-probability ;; porbability to migrate
 ]
 
 StripedBass-own [

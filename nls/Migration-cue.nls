@@ -1,0 +1,216 @@
+to setup-temp
+  set temp-index table:make
+  let rows csv:from-file "inputs/Average_Temp_Change.csv"
+
+  ;; Skip header if it contains text in the first row
+  if is-string? item 0 first rows [
+    set rows but-first rows
+  ]
+
+  ;; Loop through rows and store DoY → tavg_f
+  foreach rows [ r ->
+    if is-list? r [
+      ;; The first item might already be numeric (DoY)
+      let doy item 0 r
+      if is-string? doy [ set doy read-from-string doy ]
+      
+      let tavg item 1 r
+      if is-string? tavg [ set tavg read-from-string tavg ]
+      
+      table:put temp-index doy tavg
+    ]
+  ]
+  show (word "Loaded " table:length temp-index " temperature records.")
+end
+
+to find-migration-days
+  set cue-days []
+  set cue-strength-index table:make
+
+  let all-days sort table:keys temp-index
+
+  foreach all-days [ d ->
+    if table:has-key? temp-index d and d > min all-days [
+      let prev-d d - 1
+
+      ;; ✅ Extract daylength for both days
+      if table:has-key? temp-index prev-d and table:has-key? sun_index (doy-to-key d) and table:has-key? sun_index (doy-to-key prev-d) [
+        set tavg_f table:get temp-index d
+        set prev-temp table:get temp-index prev-d
+        let deltaT (tavg_f - prev-temp)
+        let deltaL ((daylength * 60) - (prev-daylength * 60))
+
+        ;; ✅ Cue condition identical to R
+        if (deltaT < 0) and (deltaL < 0) [
+          let strength (abs deltaT + abs deltaL)
+          table:put cue-strength-index d strength
+          set cue-days lput d cue-days
+        ]
+      ]
+    ]
+  ]
+
+  ;; ✅ Group consecutive cue days into events
+  let events []
+  let current-event []
+  let prev-day -999
+
+  foreach sort cue-days [ d ->
+    ifelse (d = prev-day + 1) [
+      set current-event lput d current-event
+    ] [
+      if not empty? current-event [
+        set events lput current-event events
+      ]
+      set current-event (list d)
+    ]
+    set prev-day d
+  ]
+
+  if not empty? current-event [
+    set events lput current-event events
+  ]
+
+  ;; ✅ Compute mean declines per event
+  let summary []
+  foreach events [ ev ->
+    let start first ev
+    let stop-1 last ev
+    let temp-list []
+    let daylen-list []
+
+    foreach ev [ dd ->
+      if table:has-key? cue-strength-index dd [
+        set tavg_f table:get temp-index dd
+        set prev-temp table:get temp-index (dd - 1)
+        let deltaT (tavg_f - prev-temp)
+
+        let deltaL ((daylength * 60) - (prev-daylength * 60))
+
+        set temp-list lput deltaT temp-list
+        set daylen-list lput deltaL daylen-list
+      ]
+    ]
+
+    let meanT mean temp-list
+    let meanL mean daylen-list
+    let ndays length ev
+
+    ;; ✅ Only keep multi-day cues
+    if ndays >= 3 [
+      set summary lput (list start stop-1 meanT meanL ndays) summary
+    ]
+  ]
+
+show "Cue event summary (start end meanΔT meanΔL n_days):"
+  foreach summary [ s ->
+    show s
+  ]
+
+  ;; ✅ Update cue-days list to include only multi-day periods
+  set cue-days []
+  let readable-ranges []
+  foreach summary [ s ->
+    let startday item 0 s
+    let endday item 1 s
+
+    ;; Build list of individual days
+    let days []
+    let d startday
+    while [d <= endday] [
+      set days lput d days
+      set d d + 1
+    ]
+    set cue-days sentence cue-days days
+
+    ;; Record readable range
+    set readable-ranges lput (word "[" startday "–" endday "]") readable-ranges
+  ]
+
+  ;; --- STEP 5: Display results ---
+  show "Cue event summary (start end meanΔT meanΔL n_days):"
+  foreach summary [ s -> show s ]
+  show (word "Cue day ranges retained (≥3 days): " readable-ranges)
+  show (word "Total cue days retained: " length cue-days)
+  show (word "Cue days identified: " cue-days)
+end
+
+
+
+
+to-report doy-to-key [d]
+  ;; Converts numeric day-of-year to "Month_Day" string, e.g. "April_5"
+  let month-new ""
+  set day_in_month 0
+
+  if d >= 1 and d <= 31 [
+    set month-new "January"
+    set day_in_month d
+  ]
+  if d >= 32 and d <= 59 [
+    set month-new "February"
+    set day_in_month d - 31
+  ]
+  if d >= 60 and d <= 90 [
+    set month-new "March"
+    set day_in_month d - 59
+  ]
+  if d >= 91 and d <= 120 [
+    set month-new "April"
+    set day_in_month d - 90
+  ]
+  if d >= 121 and d <= 151 [
+    set month-new "May"
+    set day_in_month d - 120
+  ]
+  if d >= 152 and d <= 181 [
+    set month-new "June"
+    set day_in_month d - 151
+  ]
+  if d >= 182 and d <= 212 [
+    set month-new "July"
+    set day_in_month d - 181
+  ]
+  if d >= 213 and d <= 243 [
+    set month-new "August"
+    set day_in_month d - 212
+  ]
+  if d >= 244 and d <= 273 [
+    set month-new "September"
+    set day_in_month d - 243
+  ]
+  if d >= 274 and d <= 304 [
+    set month-new "October"
+    set day_in_month d - 273
+  ]
+  if d >= 305 and d <= 334 [
+    set month-new "November"
+    set day_in_month d - 304
+  ]
+  if d >= 335 and d <= 365 [
+    set month-new "December"
+    set day_in_month d - 334
+  ]
+
+  report (word month "_" day_in_month)
+end
+
+to update-migration-cue
+  ifelse member? day cue-days [
+    set cue-active? true
+  ] [
+    set cue-active? false
+  ]
+end
+
+to calc-migration-probability
+  ;; Slower and more natural migration buildup
+  if member? day cue-days [
+    if daylength > 14 [
+      let increment 0.05 + random-float 0.05   ;; small individual variation
+      set migration-probability migration-probability + increment
+      if migration-probability > 1 [ set migration-probability 1 ]
+      show (word "migration-probability " precision migration-probability 3)
+    ]
+  ]
+end

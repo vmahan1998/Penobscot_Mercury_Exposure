@@ -1,21 +1,21 @@
 to setup-alewives
   create-alewives initial-alewives [
-    
     ;; --- Movement & visual setup ---
     set home-patch patch 199 346
-    set migration-patch one-of patches with [patchtype = "sea"]
+    let v-options patches with [velocity < 0.1 ]
+    set migration-patch one-of v-options with [patchtype = "sea"] 
     ;set migration-patch patch 10 31
     
     ;; Landward Migration Start
     if migration-patch != nobody [ move-to migration-patch ]
-    set landward-migration? true
+    set landward-migration? false
     set seaward-migration? false
     set at-destination? false
     set lipid-loss? true
     set filter-feed? false
     set completed-action? false
     set start-migration? false
-    
+    set migration-day 0
     ; Seaward migration start
 ;    if home-patch != nobody [ move-to home-patch ]
 ;    set seaward-migration? false
@@ -82,8 +82,17 @@ to setup-alewives
     let mean-temp 6    ;; optimal migration temperature (mean)
     let sd-temp 1.5     ;; spread (wide enough for early & late migrants)
     
-    set migration-temp truncated-normal mean-temp sd-temp min-temp max-temp
-    ;set migration-temp 5
+    ;set migration-temp truncated-normal mean-temp sd-temp min-temp max-temp
+    ;set migration-temp 5.5
+    
+    ;; ---- Migration Photoperiod Preference (minutes) ----
+    let min-photo 10.25     ;; lower migration bound
+    let max-photo 15.25     ;; upper migration bound
+    let mean-photo 14.75    ;; optimal migration temperature (mean)
+    let sd-photo 1.5     ;; spread (wide enough for early & late migrants)
+    
+    ;set target-migration-day (random-normal cue-day sigma-days)
+    ;set migration-photo 5.5
     
     ;; ---- Metabolic Variables ----
     set swim-efficiency 1             ;; metabolic cost/benefit to swimming       
@@ -94,9 +103,9 @@ to setup-alewives
     initialize-metabolism
     
     ;; ---- Days at Large in Estuary ----
-    let min-days 1     ;; lower migration bound
-    let max-days 7     ;; upper migration bound
-    let mean-days 3.5    ;; optimal migration temperature (mean)
+    let min-days 21     ;; lower migration bound
+    let max-days 72     ;; upper migration bound
+    let mean-days 48    ;; optimal migration temperature (mean)
     let sd-days 1.5     ;; spread (wide enough for early & late migrants)
     
     set days-at-large truncated-normal mean-days sd-days min-days max-days
@@ -104,9 +113,9 @@ to setup-alewives
     
     ;; ---- Swimming Speed (m per 5 minutes) ----
     ;; Speed = 1.5–3.0 × body length per second, converted to 5-minute step
-    let swim-multiplier (1.5 + random-float 1.5)
+    let swim-multiplier (1.0 + random-float 0.5)
     set max-speed (size * swim-multiplier * 300) ;; speed from m/s to m / 5 minutes
-    set speed max-speed / 2
+    set speed 0.1
     set energy 100
 
     ;; =====================================
@@ -126,7 +135,7 @@ to setup-alewives
     set mehg-total 0 ; sum of methylmercury risk
     set hg-total 0 ; sum of mercury risk
     set migration-action "spawning"
-
+    set migration-probability 0
     set migration-destination "upper estuary"
 
     set landward-migration-time 0

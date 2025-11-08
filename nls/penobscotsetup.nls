@@ -10,15 +10,25 @@ to setup-penobscot-migration
   let header first velocity-data
   set total-hours (length header - 4)   ;; columns after px, py
   ;draw-mehg-legend
-  reset-ticks
+  setup-sun
+  setup-temp
+  set prev-temp 33
+  set prev-daylength 15.3 ;; march 31st
+  set cue-active? false
+  set cue-strength 0
+  
+  calculate-photoperiod
+  find-migration-days
+  update-migration-cue
   
   ask patches with [patch-terrain != "water"] [
    set cost-to-home 1e9
    set cost-to-sea 1e9
-    set temperature temperature + 5
+    ;set temperature temperature + 5
   ]
-    set local-temp mean [temperature] of patches with [any? alewives-here]
-    show (word "Local Temperature: " local-temp)
+    ;set local-temp mean [temperature] of patches with [patchtype = "sea"]
+    ;show (word "Local Temperature: " local-temp)
+    reset-ticks
 end
 
 to initialize-velocity-extremes-from-series
@@ -80,16 +90,17 @@ to update-patch-data
       ;set SPM item ticks SPN-series
       ;set temperature temperature + 5
             ;; ---- Temperature cue for alewife migration ----
-      let temp-patches patches with [any? alewives-here]
-    set local-temp mean [temperature] of temp-patches
-          ;show (word "Local Temperature: " local-temp)
-    ]
-    if current-hour = (total-hours - 1) [
+    ;let temp-patches patches with [patchtype = "sea"]
+    ;if (count alewives with [start-migration?]) = count alewives [
+    ;set local-temp mean [temperature] of temp-patches
+        ;show (word "Local Temperature: " local-temp)]
+    ;]
+    ] ;; only update for migration cue
+    
+      if current-hour = (total-hours - 1) [
       Update-hydro-data
-
-    ]
   
-  ]
+  ]]
     ask patches with [patch-terrain != "water"] [
       set velocity 0
       set depth 0
@@ -121,16 +132,19 @@ to penobscot-go
   ]
   
 ask alewives with [age = "adult"] [
-
-  
-
+  if ticks mod 288 = 0 [
+      calc-migration-probability
+    ]
+    
   ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
-  if ((not start-migration?) and (local-temp >= migration-temp)) or 
-   ((count alewives with [start-migration?]) / count alewives >= 0.5) [
-    set start-migration? true
-    set landward-migration? true
-    set seaward-migration? false
-  ]
+    if (not start-migration?) [
+      let p migration-probability
+      if random-float 1 < p [
+        set start-migration? true
+        set landward-migration? true
+        set seaward-migration? false
+      ]
+    ]
 
   ;; --- Migration and behavior sequence ---
   if start-migration? [
