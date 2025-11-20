@@ -1,0 +1,60 @@
+to update-migration-cue
+  ;; if column of both_negative from 
+  ifelse member? day cue-days [
+    set cue-active? true
+    set migration-trigger? true
+  ] [
+    set cue-active? false
+  ]
+end
+
+to calc-migration-probability
+  if migration-trigger? [
+
+      set migration-probability migration-probability + random-float 0.003  ;; total 0.10
+      if migration-probability > 1 [ set migration-probability 1 ]
+  ]
+end
+
+to load-cue-csv
+  set cue-table table:make
+
+  let raw csv:from-file "inputs/cue_dataset_full.csv"
+  let header first raw
+  let rows but-first raw
+
+  foreach rows [
+    r ->
+
+      ;; Extract fields directly; no read-from-string needed
+      let doy item 7 r              ;; day_of_year
+      let dTsm item 21 r            ;; dT_smooth
+      let dLsm item 22 r            ;; dL_smooth
+      let negflag item 24 r         ;; coincident decline
+
+      ;; Put into lookup table
+      table:put cue-table doy (list dTsm dLsm negflag)
+  ]
+
+  show (word "Loaded cue dataset with " table:length cue-table " entries.")
+end
+
+
+to find-migration-days
+  set cue-days []   ;; reset list
+
+  ;; loop through each day (key) in the cue-table
+  foreach sort table:keys cue-table [
+    d ->
+
+      let vals table:get cue-table d
+      let negflag item 2 vals   ;; third item in (dTsm dLsm negflag)
+
+      ;; Only keep days where both_negative == TRUE
+      if (negflag = "TRUE" or negflag = true) [
+        set cue-days lput d cue-days
+      ]
+  ]
+
+  show (word "Cue days identified: " cue-days)
+end

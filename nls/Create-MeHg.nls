@@ -1,67 +1,68 @@
 to create-mehg
+set mercury-data csv:from-file "inputs/mercury_contamination_px_py.csv"
+  ;; Handle both header and numeric-first cases
   let header first mercury-data
-  let rows but-first mercury-data
+  let rows mercury-data
+  
+  ;; If first row looks like text, skip it
+  if is-string? first header [
+    set rows but-first mercury-data
+  ]
 
+  ;; Assign initial mercury values from data
   foreach rows [
     row ->
-    let x item 0 row
-    let y item 1 row
-    let mean-mehg item 3 row
-    
-    ;let px 
-    ask patch x y [
-      set methylmercury mean-mehg
-      ;set pcolor yellow
-    ]
+      let x item 0 row
+      let y item 1 row
+      let mean-mehg 0
+
+      ;; Safely handle missing or non-numeric values
+      if is-number? item 3 row [
+        set mean-mehg item 3 row
+      ] 
+      if is-string? item 3 row [
+        if item 3 row != "NA" [
+          set mean-mehg read-from-string item 3 row
+        ]
+      ]
+
+      ask patch x y [
+        set methylmercury mean-mehg
+      ]
   ]
-  
-  ;; Interpolate mercury for water patches in Penobscot
+
+  ;; Interpolate missing values for water patches
   ask patches with [patch-terrain = "water" and location = "Penobscot" and methylmercury = 0] [
     let radius 2
-    let potential-neighbors patches in-radius radius with [
-      methylmercury != 0
-    ]
+    let potential-neighbors patches in-radius radius with [methylmercury != 0]
     
-    ;; Expand radius until enough neighbors are found
-    while [count potential-neighbors < 5 and radius <= 15] [
+    ;; Expand search until we have at least 5 valid neighbors
+    while [count potential-neighbors < 5 and radius <= 30] [
       set radius radius + 1
-      set potential-neighbors patches in-radius radius with [
-        methylmercury != 0
-      ]
+      set potential-neighbors patches in-radius radius with [methylmercury != 0]
     ]
     
-    ;; Sort by distance
-    let sorted-neighbors sort-on [distance myself] potential-neighbors
-    
-    ;; Predefine the agentset
-    let valid-neighbors-set no-patches
-    
-    ;; Assign neighbors
-    if length sorted-neighbors >= 3 [
-      let valid-neighbors n-of 3 sorted-neighbors
-      set valid-neighbors-set patch-set valid-neighbors
-    ]
-    if length sorted-neighbors < 3 [
-      set valid-neighbors-set patch-set sorted-neighbors
-    ]
-    
-    ;; Interpolate if available
-    if any? valid-neighbors-set [
-      let avg-methylmercury mean [methylmercury] of valid-neighbors-set
+    if any? potential-neighbors [
+      let sorted-neighbors sort-on [distance myself] potential-neighbors
+      let valid-neighbors n-of 5 sorted-neighbors
+      let avg-methylmercury mean [methylmercury] of patch-set valid-neighbors
+
       set methylmercury avg-methylmercury
     ]
   ]
+  
+  ;; Record global range
   set max-MeHg max [methylmercury] of patches
   set min-MeHg min [methylmercury] of patches
 
-  ;; Define Green → Yellow → Red color gradient
-  let grywrd-gradient [[0 255 0] [255 255 0] [255 0 0]]  ;; Green → Yellow → Red
-  
+  ;; --- Apply color gradient (Green → Yellow → Red) ---
+  let grywrd-gradient [[0 255 0] [255 255 0] [255 0 0]]
   ask patches with [patch-terrain = "water" and location = "Penobscot"] [
     let rgb-color palette:scale-gradient grywrd-gradient methylmercury min-MeHg max-MeHg
     set pcolor rgb (item 0 rgb-color) (item 1 rgb-color) (item 2 rgb-color)
   ]
 end
+
 
 to draw-mehg-legend
   let n 150  ;; height of the legend

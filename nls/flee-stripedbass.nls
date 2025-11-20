@@ -5,13 +5,13 @@ to flee-stripedbass
         set energy energy - 1 
         set color red
       ]
-      set rest-time alewife-rest-time
+      ;set rest-time alewife-rest-time
       ; set color green
     ]
     [ ;; not bursting
       ; set color yellow
       if energy < 100 [ ;; if not fleeing and energy less than limit, fish is "resting"
-        set rest-time rest-time - 1 
+        ;set rest-time rest-time - 1 
       ] 
       if rest-time <= 0 [
         set energy 100

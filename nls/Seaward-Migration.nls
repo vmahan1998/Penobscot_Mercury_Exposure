@@ -1,21 +1,29 @@
 to calculate-difficulty-seaward
   ;; Ensure required parameters exist
-  let V-max max-seaward-velocity  ;; Maximum observed seaward velocity
-  let V-min max-landward-velocity ;; Maximum observed landward velocity
+  let M-max max [size] of breed         ;; Maximum size among agents
+  let M-agent size                      ;; Current agent size
+  let V-max max-landward-velocity        ;; Maximum observed seaward velocity
+  let V-min max-seaward-velocity        ;; Minimum observed seaward velocity
+  let k 0.75                            ;; Scaling exponent (same as landward)
 
-  ;; **Normalize velocity within its observed range (V_min to V_max)**
+  ;; Normalize velocity within its observed range (V-min to V-max)
   let normalized-velocity (velocity - V-min) / (V-max - V-min)
 
-  ;; **Reverse scaling: Difficulty should be highest at V_min (landward max) and lowest at V_max (seaward max)**
-  set difficulty-factor (10 - (normalized-velocity * 9))  
+  ;; Theoretical raw difficulty (same base equation as landward)
+  let Df-raw (normalized-velocity / (M-agent / M-max)) ^ k
+  
+  ;; Normalize difficulty to scale 1–10 based on normalized velocity
+  ;; Difficulty = 1 at V-min (normalized-velocity = 0), 10 at V-max (normalized-velocity = 1)
+  set difficulty-factor (1 + 9 * Df-raw)
 
   ;; Ensure difficulty is always within [1,10] range
   set difficulty-factor max list 1 (min list 10 difficulty-factor)
 
-  ;; Debugging output
-  show (word "Seaward Difficulty Factor: " difficulty-factor 
-        " | Normalized Velocity: " normalized-velocity 
-        " | Velocity: " velocity)
+  ;; Debugging (optional)
+  ; show (word "Seaward Difficulty Factor: " difficulty-factor
+  ;       " | Velocity: " velocity
+  ;       " | Normalized Velocity: " normalized-velocity
+  ;       " | Df-raw: " Df-raw)
 end
 
 to calculate-swimming-speed-seaward
@@ -24,14 +32,14 @@ to calculate-swimming-speed-seaward
   let energy-factor (energy / 100)  ;; Energy-dependent swimming ability (0-1)
   
   ;; Compute desired speed (without capping)
-  let velocity-impact (k * velocity)  ;; Velocity directly influences speed
+  let velocity-impact (k * velocity * 300)  ;; Velocity directly influences speed
   let desired-speed (max-speed * energy-factor / difficulty-factor) + velocity-impact
 
   ;; Ensure speed is within valid bounds
   set desired-speed min list max-speed (max list min-speed desired-speed)
 
   ;; Cap rate of change (max acceleration per tick)
-  let max-speed-change 0.2  ;; Maximum allowed change per tick
+  let max-speed-change 0.5  ;; Maximum allowed change per tick
 
   ;; Apply capped rate of change
   if abs(desired-speed - prev-speed) > max-speed-change [
@@ -50,7 +58,7 @@ to calculate-swimming-speed-seaward
   set prev-speed speed
 
   ;; Debugging output
-  show (word "Swimming Speed: " speed " | Energy Factor: " energy-factor " | Velocity Impact: " velocity-impact)
+  ;show (word "Swimming Speed (m/5 min): " speed " | Energy Factor: " energy-factor " | Velocity Impact: " velocity-impact)
 end
 
 
@@ -71,28 +79,42 @@ to migrate-seaward
     adjust-speed
   ]
 
-  ;; STEP 2: Environmental cue – move toward fast downstream velocity
-  let candidates patches in-radius 2 with [patch-terrain = "water"]
-  ifelse any? candidates [
-    let best-patch min-one-of candidates [cost-to-sea]
-    face best-patch
-    fd speed
-  ] [
-    set heading 1800
-    fd speed
+    ;; STEP 2 move along path
+  ;; STEP 2 move along path
+  let travel-distance (speed / 3)
+  let path build-path-sea patch-here migration-patch
+    set planned-path path
+  ;; if a valid path exists
+  if not empty? path [
+    ;; number of steps to move — e.g., how many patches to advance this tick
+    let steps-to-move ceiling travel-distance
+    
+    ;; slice the path to move only that far (avoid exceeding path length)
+    let move-patches sublist path 0 (min list steps-to-move length path)
+    
+    ;; move turtle along the path without jumping entire distance at once
+    foreach move-patches [ p ->
+      face p
+      move-to p
+    ]
   ]
-  
-  ;; STEP 3
+  ;; STEP 3 set trail and calculate energy loss
   set energy max list 0 (energy - swim-base)  ;; Reduce energy cost of swimming
+  
+  if not member? patch-here trail [
+  set trail lput patch-here trail
+]
+  
 end
 
 to calculate-cost-to-sea [sea-patch]
-  ask sea-patch [
+  ask migration-patch [
     set cost-to-sea 0
   ]
-
+  ask patch-here [ set cost-to-sea 1e9 ]
   ;; Start with a list containing the home patch
-  let frontier (list sea-patch)
+  let frontier (list migration-patch)
+  let df difficulty-factor           ;; capture it locally
 
   while [not empty? frontier] [
     let current first frontier
@@ -100,16 +122,51 @@ to calculate-cost-to-sea [sea-patch]
 
     ask current [
       let current-cost cost-to-sea
-
+      
       ask neighbors4 with [patch-terrain = "water"] [
-        let travel-cost compute-travel-cost current self
+        let travel-cost compute-travel-cost current self df
         let new-cost current-cost + travel-cost
 
         if new-cost < cost-to-sea [
-          set cost-to-home new-cost
+          set cost-to-sea new-cost
           set frontier lput self frontier
         ]
       ]
     ]
   ]
+end
+
+to-report build-path-sea [current-patch sea-patch]
+  ;; Must call `calculate-cost-to-home home-patch` before using this.
+  ;; Returns a list of patches representing the least-cost route from current-patch to home-patch.
+
+  let path (list current-patch)   ;; start list with current patch
+  let cur current-patch
+  let max-steps 2000              ;; safety stop to avoid infinite loops
+
+  while [cur != migration-patch and max-steps > 0] [
+    set max-steps max-steps - 1
+
+    ;; only consider water neighbors with lower cost-to-home
+    let candidates [neighbors] of cur
+    set candidates candidates with [
+      patch-terrain = "water" and cost-to-sea < [cost-to-sea] of cur
+    ]
+
+    if not any? candidates [
+      ;; dead end – stop building path
+      report path
+    ]
+
+    ;; choose the next patch with the minimum cost-to-home
+    let next-patch min-one-of candidates [cost-to-sea]
+
+    ;; add next patch to path
+    set path lput next-patch path
+
+    ;; move the "cursor" forward
+    set cur next-patch
+  ]
+
+  report path
 end

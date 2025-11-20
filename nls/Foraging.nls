@@ -1,4 +1,4 @@
-to forage
+to forage-old
   ;; Only non-predators forage when staging and conditions are suitable
   if (staging? and energy < 75 and ionregulatory-stress < 3 and thermal-stress < 3 and SPM < mean-SPM and breed != stripedbass) [
     set foraging? true

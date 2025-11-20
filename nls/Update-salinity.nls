@@ -1,0 +1,29 @@
+to update-hydro-data
+ 
+  ;; --- Check if we need to load the next month ---
+  if current-hour >= total-hours [
+    let next-index (position current-month month-list) + 1
+    ifelse next-index < length month-list [
+      set current-month item next-index month-list
+      print (word "➡️ Switching to next month: " current-month)
+      
+      ;; Load new month’s datasets
+      set depth-data csv:from-file (word "inputs/monthly/depth_" current-month ".csv")
+      set velocity-data csv:from-file (word "inputs/monthly/velocity_" current-month ".csv")
+      set salinity-data csv:from-file (word "inputs/monthly/salinity_" current-month ".csv")
+      set temp-data csv:from-file (word "inputs/monthly/temperature_" current-month ".csv")
+      
+      ;; Reset counters
+      let header first depth-data
+      set total-hours (length header - 2)
+      set current-hour 0
+
+      ;; Rebuild patch time series for the new month
+      setup-patch-timeseries
+    ] [
+      print "✅ Simulation reached end of October dataset."
+      stop
+    ]
+  ]
+
+end

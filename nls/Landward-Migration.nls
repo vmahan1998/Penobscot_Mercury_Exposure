@@ -1,30 +1,28 @@
 to calculate-difficulty-landward
   ;; Ensure required parameters exist
-  let M-max max [size] of breed
+  ;; Ensure required parameters exist
+  let M-max max [size] of breed         ;; Maximum size among agents
+  let M-agent size                      ;; Current agent size
+  let V-max max-seaward-velocity        ;; Maximum observed seaward velocity
+  let V-min max-landward-velocity        ;; Minimum observed seaward velocity
+  let k 0.75                            ;; Scaling exponent (same as landward)
+
+  ;; Normalize velocity within its observed range (V-min to V-max)
+  let normalized-velocity (velocity - V-min) / (V-max - V-min)
+
+  ;; Theoretical raw difficulty (same base equation as landward)
+  let Df-raw (normalized-velocity / (M-agent / M-max)) ^ k
   
-  let M-agent size                ;; Current agent size
-  let V-max max-seaward-velocity  ;; Maximum observed seaward velocity
-  print (word "V-max: " V-max)
-
-  let V-min max-landward-velocity ;; Maximum observed landward velocity
-  print (word "V-min: " V-min)
-  let k 0.75                      ;; Scaling exponent
-
-  ;; **Normalize velocity within its observed range (V_min to V_max)**
-  ;;let normalized-velocity (velocity - V-min) / (V-max - V-min)
-  
-  ;; Theoretical difficulty calculation
-  let Df-raw (abs(velocity) / (max-speed * (M-agent / M-max))) ^ k
-
-  ;; Normalize difficulty to scale 1–10 based on velocity bounds
-  set difficulty-factor (1 + 9 * ((Df-raw - V-min) / (V-max - V-min)))  
+  ;; Normalize difficulty to scale 1–10 based on normalized velocity
+  ;; Difficulty = 1 at V-min (normalized-velocity = 0), 10 at V-max (normalized-velocity = 1)
+  set difficulty-factor (1 + 9 * Df-raw)
 
   ;; Ensure difficulty is always within [1,10] range
   set difficulty-factor max list 1 (min list 10 difficulty-factor)
 
   ;; Debugging output
-  show (word "Landward Difficulty Factor: " difficulty-factor 
-        " | Velocity: " velocity)
+  ;show (word "Landward Difficulty Factor: " difficulty-factor 
+  ;      " | Velocity: " velocity)
 end
 
 to calculate-swimming-speed-landward
@@ -33,7 +31,7 @@ to calculate-swimming-speed-landward
   let energy-factor (energy / 100)  ;; Energy-dependent swimming ability (0-1)
   
   ;; Compute desired speed (without capping)
-  let velocity-impact (k * velocity)  ;; Velocity directly influences speed
+  let velocity-impact (k * velocity * 300)  ;; Velocity directly influences speed but scale to 5 minutes
   let desired-speed (max-speed * energy-factor / difficulty-factor) + velocity-impact
 
   ;; Ensure speed is within valid bounds
@@ -59,7 +57,7 @@ to calculate-swimming-speed-landward
   set prev-speed speed
 
   ;; Debugging output
-  show (word "Swimming Speed: " speed " | Energy Factor: " energy-factor " | Velocity Impact: " velocity-impact)
+  ;show (word "Swimming Speed (m/5 min): " speed " | Energy Factor: " energy-factor " | Velocity Impact: " velocity-impact)
 end
 
 to migrate-landward
@@ -78,18 +76,24 @@ to migrate-landward
 
     adjust-speed
   ]
-
-  ;; STEP 2: Environmental cue – move toward fast downstream velocity
-  let candidates patches in-radius 2 with [patch-terrain = "water"]
-  ifelse any? candidates [
-    let best-patch min-one-of candidates [cost-to-home]
-    face best-patch
-    fd speed
-  ] [
-    set heading 0
-    fd speed
+  ;; STEP 2 move along path
+  let travel-distance (speed / 3)
+  let path build-path patch-here home-patch
+  set planned-path path
+  ;; if a valid path exists
+  if not empty? path [
+    ;; number of steps to move — e.g., how many patches to advance this tick
+    let steps-to-move ceiling travel-distance
+    
+    ;; slice the path to move only that far (avoid exceeding path length)
+    let move-patches sublist path 0 (min list steps-to-move length path)
+    
+    ;; move turtle along the path without jumping entire distance at once
+    foreach move-patches [ p ->
+      face p
+      move-to p
+    ]
   ]
-  
   ;; STEP 3 set trail and calculate energy loss
   set energy max list 0 (energy - swim-base)  ;; Reduce energy cost of swimming
   
@@ -100,12 +104,13 @@ to migrate-landward
 end
 
 to calculate-cost-to-home [homing-patch]
-  ask homing-patch [
+  ask home-patch [
     set cost-to-home 0
   ]
-
+  ask patch-here [ set cost-to-home 1e9 ]
   ;; Start with a list containing the home patch
-  let frontier (list homing-patch)
+  let frontier (list home-patch)
+  let df difficulty-factor           ;; capture it locally
 
   while [not empty? frontier] [
     let current first frontier
@@ -113,9 +118,9 @@ to calculate-cost-to-home [homing-patch]
 
     ask current [
       let current-cost cost-to-home
-
+      
       ask neighbors4 with [patch-terrain = "water"] [
-        let travel-cost compute-travel-cost current self
+        let travel-cost compute-travel-cost current self df
         let new-cost current-cost + travel-cost
 
         if new-cost < cost-to-home [
@@ -127,8 +132,73 @@ to calculate-cost-to-home [homing-patch]
   ]
 end
 
-to-report compute-travel-cost [from-patch to-patch]
-  let velocity-resistance abs ([velocity] of to-patch)  ;; or factor in agent direction
-  let slope max list 0 ([depth] of from-patch - [depth] of to-patch)
-  report velocity-resistance + 0.5 * slope
+
+to-report build-path [current-patch homing-patch]
+  ;; Must call `calculate-cost-to-home home-patch` before using this.
+  ;; Returns a list of patches representing the least-cost route from current-patch to home-patch.
+
+  let path (list current-patch)   ;; start list with current patch
+  let cur current-patch
+  let max-steps 2000              ;; safety stop to avoid infinite loops
+
+  while [cur != home-patch and max-steps > 0] [
+    set max-steps max-steps - 1
+
+    ;; only consider water neighbors with lower cost-to-home
+    let candidates [neighbors4] of cur
+    set candidates candidates with [
+      patch-terrain = "water" and cost-to-home < [cost-to-home] of cur
+    ]
+
+    if not any? candidates [
+      ;; dead end – stop building path
+      report path
+    ]
+
+    ;; choose the next patch with the minimum cost-to-home
+    let next-patch min-one-of candidates [cost-to-home]
+
+    ;; add next patch to path
+    set path lput next-patch path
+
+    ;; move the "cursor" forward
+    set cur next-patch
+  ]
+
+  report path
+end
+
+to-report reconstruct-path [came-from current]
+  let total-path (list current)
+  while [table:has-key? came-from current] [
+    set current table:get came-from current
+    set total-path fput current total-path
+  ]
+  report total-path
+end
+
+
+to-report compute-travel-cost [from-patch to-patch df]
+  ;; Compute travel cost for moving from from-patch to to-patch,
+  ;; scaled by difficulty factor df (passed in by the calling turtle).
+  ;; Keeps your original base calculation:
+  ;;   base-cost = abs(velocity at to-patch) + 0.5 * max(0, depth_to - depth_from)
+  ;; and returns base-cost * df (df defaults to 1 if non-numeric).
+  let raw-vel [velocity] of to-patch
+  let velocity-resistance ifelse-value is-number? raw-vel [ abs raw-vel ] [ 0 ]
+
+  let from-level [depth] of from-patch
+  let to-level [depth] of to-patch
+  let slope 0
+  if (is-number? from-level and is-number? to-level) [
+    set slope max list 0 (to-level - from-level)
+  ]
+
+  let base-cost velocity-resistance + 0.5 * slope
+
+  ;; ensure df numeric (fall back to 1)
+  let df2 ifelse-value is-number? df [ df ] [ 1 ]
+
+  ;; final non-negative cost
+  report max list 0 (base-cost * df2)
 end

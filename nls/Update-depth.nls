@@ -1,22 +1,33 @@
 to update-depth
-  let header first depth-data
-  let rows but-first depth-data
-  
-  ; Calculate the correct column based on day and hour, starting from day 254 and column 3
-  let depth-column ((day - starting-date) * 24 + hour + 3)  ; Adjust for the start day and column
-  
+if ticks mod 12 != 0 [ stop ]
+
+  if current-hour >= total-hours [
+    ;; load next month if available
+    let next-index (position current-month month-list) + 1
+    ifelse next-index < length month-list [
+      set current-month item next-index month-list
+      penobscot-parameters
+      print (word "➡️ Switching to next month: " current-month)
+    ] [
+      print "✅ Simulation reached end of October dataset."
+      stop
+    ]
+  ]
+
+  let depth-column (current-hour + 2)
+  let rows depth-data
+
   foreach rows [
     row ->
     let x item 0 row
     let y item 1 row
-    
-    ; Ensure the column index is within bounds of the data
-    if depth-column < length row [
-      let depth-input abs item depth-column row  ; Calculate the absolute value of depth
-  
-      ask patch x y [
-        set depth depth-input
-  ]
-]
+    let deep item depth-column row
+
+    ask patch x y [
+      set depth deep
+      set patch-terrain "water"
+      if depth <= 0 [ set patch-terrain "land" ]
+    ]
   ]
 end
+

@@ -1,5 +1,19 @@
-extensions [csv gis palette]
+extensions [csv gis palette table]
 ;;NOTE; Counter taken from Canvas and provided by Todd Swannack
+
+;; ==============================================================
+;;                   NEXT STEPS
+;; ==============================================================
+
+;; 1. Striped Bass Population Statistics
+;; 2. Striped Bass Predation Movement
+;; 4. Update migration start temperature striped bass
+;; 5. Biomagnification Equations
+;; 6. Sediment Data
+;; 7. Metabolism & Energetics check
+;; 8. Contamination Tracking
+;Is it relevant to track exposure to mercury at all or just methylmercury
+;; 10. Milford fish lifts validation data
 
 __includes[
   "nls/calendar.nls"
@@ -7,35 +21,34 @@ __includes[
   "nls/Create-map.nls"
   "nls/prototypesetup.nls"
   "nls/penobscotsetup.nls"
-  "nls/Create-velocity.nls"
-  "nls/Update-velocity.nls"
-  "nls/Create-depth.nls"
-  "nls/Update-depth.nls"
+  ;"nls/Create-velocity.nls"
+  ;"nls/Update-velocity.nls"
+  ;"nls/Create-depth.nls"
+  ;"nls/Update-depth.nls"
   ;"nls/Create-salinity.nls"
   ;"nls/Update-salinity.nls"
   ;"nls/Create-SSC.nls"
   ;"nls/Update-SSC.nls"
+  ;"nls/Create-Temperature.nls"
+  ;"nls/Update-Temperature.nls"
+  "nls/Update-hydro-data.nls"
   "nls/Create-Hg.nls"
   "nls/Create-MeHg.nls"
   "nls/Fill-Missing-Data.nls"
   "nls/Identify-Missing-Patches.nls"
   "nls/Velocity-Color.nls"
   "nls/Schooling.nls"
-  "nls/Find-Schoolmates.nls"
+  "nls/Find-Schoolmates.nls" ; should I have multiple schools or 1?
   "nls/Find-nearest-neighbor.nls"
   "nls/Align.nls"
   "nls/Cohere.nls"
   "nls/Separate.nls"
   "nls/Setup-Alewives.nls"
   "nls/Setup-StripedBass.nls"
-  "nls/Setup-ShortnoseSturgeon.nls"
-  "nls/Setup-AtlanticSturgeon.nls"
   "nls/Adjust-Alewife-speed.nls"
   "nls/Adjust-StripedBass-speed.nls"
-  "nls/Adjust-ShortnoseSturgeon-speed.nls"
-  "nls/Adjust-AtlanticSturgeon-speed.nls"
   "nls/Reporters.nls"
-  "nls/Landward-Migration.nls"
+  "nls/Landward-Migration.nls" ; no foraging for alewives during migration here, will lose lipids
   "nls/Seaward-Migration.nls"
   "nls/Selective-Tidal-Stream-Transport.nls"
   "nls/Swim.nls"
@@ -52,20 +65,31 @@ __includes[
   "nls/Prey-on-Alewives.nls"
   "nls/Mercury-Contamination.nls"
   "nls/Methylmercury-Contamination.nls"
-  "nls/Osmoregulation.nls"
-  "nls/Staging.nls"
-  "nls/Foraging.nls"
+  "nls/Osmoregulation.nls" ; update to salinity exposure
+  ;"nls/Staging.nls" ;Remove post workshop
+  ;"nls/Foraging.nls" ;Remove post workshop
+  "nls/Foraging_postworkshop_update.nls" ; define from turbidity or sediment, also need opportunistic foragig
+  "nls/Calculate-metabolism.nls" ; metabolic caluclation
+  "nls/Calculate-photoperiod.nls" ; photoperiod
+  "nls/Migration-cue.nls" ;; migration
+  "nls/dam_counts_validation.nls"
 ]
 
 to setup
   clear-all ;; reset variables
 
   ;; Initialize time variables
-  set minute 0
+;; set simulation to start at chosen month
+  set monthnum start-month
+
+  let months ["January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December"]
+  let monthstarts [1 32 60 91 121 152 182 213 244 274 305 335]
+
+  set month item (monthnum - 1) months
+  set current-month month
+  set day item (monthnum - 1) monthstarts
   set hour 0
-  set day starting-date
-  set month "September"
-  set monthnum 9
+  set minute 0
 
   ;; Initialize the model environment
   if model-type = "penobscot" [setup-GIS]
@@ -75,7 +99,7 @@ to setup
   if model-type = "penobscot" [penobscot-parameters]
   if model-type = "prototype" [prototype-parameters]
 
-  update-SPM-mean
+  ;update-SPM-mean
 
   ;; Agent setup
   set-default-shape turtles "fish"
@@ -144,9 +168,9 @@ NIL
 
 BUTTON
 322
-56
+55
 385
-89
+88
 Go
 go
 T
@@ -177,25 +201,10 @@ NIL
 1
 
 SLIDER
-188
-146
-386
-179
-starting-date
-starting-date
-0
-266
-253.0
-1
-1
-day of the year
-HORIZONTAL
-
-SLIDER
-210
-279
-382
-312
+208
+380
+380
+413
 initial-stripedbass
 initial-stripedbass
 0
@@ -207,92 +216,62 @@ fish
 HORIZONTAL
 
 SLIDER
-211
-232
-383
-265
+209
+334
+381
+367
 initial-alewives
 initial-alewives
-0
+2
 10000
-0.0
-1
-1
-fish
-HORIZONTAL
-
-SLIDER
-211
-327
-383
-360
-initial-shortnose
-initial-shortnose
-0
-1000
-0.0
+1000.0
 1
 1
 fish
 HORIZONTAL
 
 TEXTBOX
-260
-196
-410
-225
+297
+300
+394
+330
 Species
 24
 0.0
 1
 
 TEXTBOX
-236
-422
-386
-451
-Rest Time
+264
+434
+381
+492
+Digestion Time
 24
 0.0
 1
 
 SLIDER
-117
-459
-384
-492
-alewife-rest-time
-alewife-rest-time
+53
+469
+379
+502
+alewife-digestion-efficiency
+alewife-digestion-efficiency
 0
-1000
-59.0
 1
+0.2
+0.1
 1
-tick (1 tick = 5 minutes)
+portion of food > energy
 HORIZONTAL
 
 SLIDER
-94
-509
-384
-542
+89
+519
+379
+552
 stripedbass-rest-time
 stripedbass-rest-time
-0
-1000
-0.0
-1
-1
-tick (1 tick = 5 minutes)
-HORIZONTAL
-
-SLIDER
-105
-559
-386
-592
-shortnose-rest-time
-shortnose-rest-time
 0
 1000
 0.0
@@ -302,44 +281,14 @@ tick (1 tick = 5 minutes)
 HORIZONTAL
 
 TEXTBOX
-185
+181
 19
-442
+438
 48
 Initialize Simulation
 24
 0.0
 1
-
-SLIDER
-212
-373
-384
-406
-initial-atlantic
-initial-atlantic
-0
-1000
-0.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-114
-611
-387
-644
-atlantic-rest-time
-atlantic-rest-time
-0
-1000
-205.0
-1
-1
-tick (1 tick = 5 minutes)
-HORIZONTAL
 
 CHOOSER
 27
@@ -370,9 +319,9 @@ PENS
 "Agent Energy" 1.0 0 -13840069 true "" "plot mean [energy] of alewives"
 
 PLOT
-1468
+1938
 282
-1894
+2364
 540
 Chloride Cells
 ticks
@@ -388,10 +337,10 @@ PENS
 "default" 1.0 0 -8630108 true "" "plot mean [chloride-cell-density] of alewives"
 
 PLOT
-1470
-546
-1892
-802
+1941
+548
+2363
+804
 Stress Dynamics
 ticks
 stress
@@ -406,9 +355,9 @@ PENS
 "Ion-Regulatory Stress" 1.0 0 -13840069 true "" "plot mean [ionregulatory-stress] of alewives"
 
 PLOT
-1470
+1940
 20
-1894
+2364
 275
 Salinity
 ticks
@@ -421,26 +370,26 @@ true
 true
 "" ""
 PENS
-"Salinity (psu0" 1.0 0 -16777216 true "" "plot mean [salinity] of patches"
+"Salinity (psu)" 1.0 0 -16777216 true "" "plot mean [salinity] of patches with [any? turtles-here]"
 "Acclimated-Salinity" 1.0 0 -817084 true "" "plot mean [acclimated-salinity] of turtles"
 
 PLOT
-1474
+1944
 808
-1894
+2364
 1064
-Osmoregulation Energy
+Metabolic Rate
 ticks
 Energy Consumed
 0.0
 1.0
 0.0
-0.005
+7.0E-4
 true
 false
 "" ""
 PENS
-"Osmo_Energy" 1.0 0 -16777216 true "" "plot mean [E-osmo] of turtles"
+"Osmo_Energy" 1.0 0 -16777216 true "" "plot mean [metabolism-rate] of turtles"
 
 PLOT
 1032
@@ -449,7 +398,7 @@ PLOT
 272
 Velocities
 ticks
-velocity
+velocity (m/s)
 0.0
 10.0
 0.0
@@ -458,9 +407,9 @@ true
 true
 "" ""
 PENS
-"Swimming Speed" 1.0 0 -955883 true "" "plot mean [speed] of turtles"
+"Swimming Speed" 1.0 0 -955883 true "" "plot mean [speed] of turtles / 300"
 "velocity" 1.0 0 -16777216 true "" "plot mean [velocity] of patches"
-"Zero-0" 1.0 0 -7500403 true "" "plot 0"
+"Zero-0" 1.0 0 -7500403 true "" ";plot 0"
 
 PLOT
 1032
@@ -479,6 +428,7 @@ false
 "" ""
 PENS
 "Energy" 1.0 0 -5825686 true "" "plot mean [E-swim] of turtles"
+"pen-1" 1.0 0 -7500403 true "" "plot mean [metabolism-rate] of turtles"
 
 PLOT
 1030
@@ -499,10 +449,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot mean [difficulty-factor] of turtles"
 
 PLOT
-1904
-806
-2352
-1062
+1478
+808
+1927
+1066
 Behaviors
 ticks
 behavior type
@@ -514,15 +464,20 @@ true
 true
 "" ""
 PENS
-"STST" 1.0 0 -13791810 true "" "plot (count turtles with [selective-tidal-transport?]) / count turtles"
-"Staging" 1.0 0 -5825686 true "" "plot (count turtles with [staging?]) / count turtles"
-"Foraging" 1.0 0 -15302303 true "" "plot (count turtles with [breed != stripedbass and foraging?]) / count turtles with [breed != stripedbass]"
+"STST" 1.0 0 -13791810 true "" "plot (count turtles with [selective-tidal-transport? = true]) / count turtles"
+"Foraging" 1.0 0 -15302303 true "" "plot (count turtles with [breed != stripedbass and foraging? = true]) / count turtles with [breed != stripedbass]"
+"Filter-Feeding" 1.0 0 -7500403 true "" "plot (count turtles with [breed != stripedbass and filter-feed? = true]) / count turtles with [breed != stripedbass]"
+"Lipid-Loss" 1.0 0 -2674135 true "" "plot (count turtles with [breed != stripedbass and lipid-loss? = true]) / count turtles with [breed != stripedbass]"
+"Home Patch" 1.0 0 -955883 true "" "plot (count turtles with [breed != stripedbass and at-destination? = true]) / count turtles with [breed != stripedbass]"
+"Migration" 1.0 0 -6459832 true "" "plot (count turtles with [breed != stripedbass and start-migration? = true]) / count turtles with [breed != stripedbass]"
+"Landward" 1.0 0 -1184463 true "" "plot (count turtles with [breed != stripedbass and landward-migration? = true]) / count turtles with [breed != stripedbass]"
+"Seaward" 1.0 0 -10899396 true "" "plot (count turtles with [breed != stripedbass and seaward-migration? = true]) / count turtles with [breed != stripedbass]"
 
 PLOT
-1906
-278
-2348
-538
+1474
+279
+1916
+539
 Level of Net Contamination Exposure 
 ticks
 mercury
@@ -538,9 +493,9 @@ PENS
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [hg-exposure-total-normalized] of turtles"
 
 PLOT
-1904
+1476
 20
-2348
+1920
 271
 Duration of Exposure to Harmful Contamination Levels
 ticks
@@ -557,11 +512,11 @@ PENS
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [mehg-exposure-duration] of turtles"
 
 PLOT
-1904
+1476
 544
-2350
+1922
 800
-Contamination Uptake Risk
+Contamination Dynamics
 ticks
 uptake risk
 0.0
@@ -574,12 +529,16 @@ true
 PENS
 "mercury" 1.0 0 -8630108 true "" "plot mean [hg-uptake-risk] of turtles"
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [mehg-uptake-risk] of turtles"
+"Mercury total" 1.0 0 -11033397 true "" "plot mean [hg-total] of alewives"
+"Methylmercury total" 1.0 0 -5298144 true "" "plot mean [mehg-total] of alewives"
+"Mercury Foraging" 1.0 0 -7500403 true "" "plot mean [hg-foraging] of alewives"
+"Methylmercury Foraging" 1.0 0 -5825686 true "" "plot mean [mehg-foraging] of alewives"
 
 SLIDER
-216
-669
-389
-702
+203
+614
+376
+647
 align-coefficient
 align-coefficient
 0
@@ -591,10 +550,10 @@ align-coefficient
 HORIZONTAL
 
 SLIDER
-216
-715
-389
-748
+203
+660
+376
+693
 cohere-coefficient
 cohere-coefficient
 0
@@ -606,10 +565,10 @@ cohere-coefficient
 HORIZONTAL
 
 SLIDER
-218
-759
-391
-792
+204
+704
+377
+737
 separate-coefficient
 separate-coefficient
 0
@@ -621,19 +580,306 @@ separate-coefficient
 HORIZONTAL
 
 SLIDER
-190
-802
-395
-835
+172
+747
+377
+780
 minimum-separation
 minimum-separation
 0
-1
-0.92
+3
+0.1
 .01
 1
-patches
+meters
 HORIZONTAL
+
+TEXTBOX
+263
+573
+379
+605
+Schooling
+24
+0.0
+1
+
+PLOT
+1030
+1070
+1469
+1327
+Length Distribution (m)
+Length (mm)
+Number of Alewives
+0.0
+10.0
+0.0
+10.0
+true
+false
+"set-plot-x-range 200 310\n" ""
+PENS
+"default" 1.0 0 -16777216 true "" "histogram [length-size] of alewives"
+
+PLOT
+1477
+1069
+1926
+1328
+Weight Distribution (g)
+Weight (g)
+Number of Alewives
+0.0
+10.0
+0.0
+10.0
+true
+false
+"set-plot-x-range 100 310\n" ""
+PENS
+"default" 1.0 0 -16777216 true "" "histogram [weight] of alewives"
+
+PLOT
+1938
+1069
+2368
+1329
+Adult Age Distribution (years)
+Age (years)
+Number of Alewives
+-3.0
+20.0
+0.0
+10.0
+true
+false
+"set-plot-x-range 2 6\n" ""
+PENS
+"Age" 1.0 0 -5298144 true "" "histogram [age-num] of alewives"
+"Days at Large" 1.0 0 -14439633 true "" "histogram [days-at-large] of alewives"
+"Photoperiod" 1.0 0 -13345367 true "" "histogram [migration-photo] of alewives"
+
+PLOT
+642
+1078
+1020
+1330
+Weight over Time (g)
+time
+mean weight (g)
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Weight (g)" 1.0 0 -16777216 true "" "plot mean [weight] of alewives"
+
+PLOT
+296
+1079
+631
+1332
+Wait Time
+ticks
+Wait Time (ticks)
+0.0
+20.0
+0.0
+20.0
+true
+false
+"" ""
+PENS
+"pen-1" 1.0 0 -7500403 true "" "plot mean [wait-ticks] of alewives"
+
+MONITOR
+189
+245
+246
+290
+Month
+month
+17
+1
+11
+
+MONITOR
+258
+245
+315
+290
+Day
+day
+17
+1
+11
+
+MONITOR
+327
+245
+384
+290
+Hour
+hour
+17
+1
+11
+
+TEXTBOX
+26
+152
+309
+210
+Simulation Year: 2023
+24
+0.0
+1
+
+MONITOR
+24
+189
+120
+234
+Dataset Month
+current-month
+17
+1
+11
+
+MONITOR
+24
+242
+112
+287
+Dataset Hour
+current-hour
+17
+1
+11
+
+MONITOR
+25
+294
+150
+339
+Dataset Total Hours
+total-hours
+17
+1
+11
+
+SLIDER
+139
+99
+311
+132
+start-month
+start-month
+4
+10
+4.0
+1
+1
+Month (#)
+HORIZONTAL
+
+PLOT
+18
+1334
+289
+1596
+Migration Cue
+day
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" ";plot mean [velocity] of patches with [any? turtles-here]"
+"pen-1" 1.0 0 -3844592 true "" ";plot mean [speed] of turtles / 300"
+"Strength" 1.0 0 -7500403 true "" "plot cue-strength"
+"cue" 1.0 0 -2674135 true "" "plot (ifelse-value cue-active? [1] [0])"
+
+MONITOR
+304
+143
+386
+188
+Photoperiod
+daylength
+2
+1
+11
+
+MONITOR
+305
+196
+388
+241
+trigger
+migration-trigger?
+2
+1
+11
+
+MONITOR
+240
+196
+298
+241
+cue
+cue-active?
+17
+1
+11
+
+PLOT
+294
+1335
+654
+1602
+Milford Fish Lift Validation
+Ticks
+Alewives (Scaled)
+0.0
+10.0
+0.0
+1.0
+true
+true
+"" ""
+PENS
+"Landward Counts" 1.0 0 -15040220 true "" "plot alewives-on-line-daily-total-landward"
+"Seaward Counts" 1.0 0 -955883 true "" "plot alewives-on-line-daily-total-seaward"
+"migration probability" 1.0 0 -13345367 true "" "plot mean [migration-probability] of alewives"
+"Estuary Enter" 1.0 0 -5825686 true "" "plot alewives-entering-estuary-daily-total"
+"Estuary Exit" 1.0 0 -2674135 true "" "plot alewives-exiting-estuary-daily-total"
+
+PLOT
+659
+1334
+1021
+1603
+Migration Day
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "histogram [migration-day] of alewives"
 
 @#$#@#$#@
 ## WHAT IS IT?

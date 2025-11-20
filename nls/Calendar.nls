@@ -4,13 +4,25 @@ to calendar ;;counter procedure to keep track of the hour, day, month, and year
   
    if minute = 60 [
     set hour (hour + 1)
+    set current-hour (current-hour + 1) ;; Hydro data update
     set minute 0
   ]
-  if hour = 24 [set day (day + 1) ]
+  if hour = 24 [
+    report-estuary-entry-daily
+    report-fish-lift-daily
+    report-estuary-exit-daily
+
+    ;; NOW start new day
+    set day (day + 1)
+
+    ;; other calendar functions
+    update-migration-cue
+]
+  
   if hour = 24 [set hour 0 ]
-  ifelse hour >= 22 or hour <= 4
-  [set night? true]                                                                ;keeps track of day/night
-  [set night? false]
+  ifelse (hour < sunrise-hour or hour > sunset-hour) ;; keeps track of day and night
+  [ set night? true ]
+  [ set night? false ]
                                                                                     ; counter to keep track of the number of days a.k.a. time
  ; set day (day + 1)
   if day = 366 [set year (year + 1)]                                                ; define the number of days in a year

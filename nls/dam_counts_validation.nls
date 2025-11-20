@@ -1,0 +1,76 @@
+to count-fish-lift
+  let dam-line 342
+  
+  ;; LANDWARD (moving up-river)
+  let landward count alewives with [
+    pycor >= dam-line and [pycor] of previous-patch < dam-line
+  ]
+  
+  ;; SEAWARD (moving down-river)
+  let seaward count alewives with [
+    pycor < dam-line and [pycor] of previous-patch >= dam-line
+  ]
+
+  ;; update daily totals
+  set alewives-on-line-daily-total-landward
+      alewives-on-line-daily-total-landward + landward
+  
+  set alewives-on-line-daily-total-seaward
+      alewives-on-line-daily-total-seaward + seaward
+
+  ;; optional debug
+  ;show (word "Dam landward this tick: " landward)
+ ; show (word "Dam seaward this tick: " seaward)
+end
+
+to report-fish-lift-daily
+  show (word "--- End of Day " day " (" month ") ---")
+  show (word "Landward (upriver) today: "
+       alewives-on-line-daily-total-landward)
+  show (word "Seaward (downriver) today: "
+       alewives-on-line-daily-total-seaward)
+
+  ;; reset for next day
+  set alewives-on-line-daily-total-landward 0
+  set alewives-on-line-daily-total-seaward 0
+end
+
+to count-estuary-entry
+  let entrants count alewives with [
+    [location] of patch-here != "Sea" and
+    [location] of previous-patch = "Sea"
+  ]
+
+  set alewives-entering-estuary-daily-total
+      alewives-entering-estuary-daily-total + entrants
+
+  ;show (word "Estuary entrants this tick: " entrants)
+end
+
+to report-estuary-entry-daily
+  show (word "Alewives entering estuary today: "
+       alewives-entering-estuary-daily-total)
+
+  ;; reset
+  set alewives-entering-estuary-daily-total 0
+end
+
+to count-estuary-exit
+  let exiting count alewives with [
+    [location] of patch-here = "Sea" and
+    [location] of previous-patch != "Sea"
+  ]
+
+  set alewives-exiting-estuary-daily-total
+      alewives-exiting-estuary-daily-total + exiting
+
+  ;show (word "Estuary exits this tick: " exiting)
+end
+
+to report-estuary-exit-daily
+  show (word "Alewives exiting estuary today: "
+       alewives-exiting-estuary-daily-total)
+
+  ;; reset
+  set alewives-exiting-estuary-daily-total 0
+end

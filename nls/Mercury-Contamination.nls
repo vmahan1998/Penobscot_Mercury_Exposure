@@ -16,7 +16,8 @@ to mercury-contamination
   ]
 
   ;; Bioaccumulation risk scales with normalized contamination, stress, and SPM
-  set hg-uptake-risk (Hg-normalized * (1 + ionregulatory-stress) * (1 + SPM-current))
+  set hg-uptake-risk (metabolism-rate * Hg-normalized * (1 + ionregulatory-stress) * (1 + SPM-current))
+  set hg-total (hg-total + hg-uptake-risk)
   
   ;; Track cumulative Hg exposure
   set hg-exposure-total hg-exposure-total + Hg-current

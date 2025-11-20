@@ -1,38 +1,39 @@
 to update-velocity
-  ;let header first velocity-data
-  ;let rows but-first velocity-data
+  ;; update every 12 ticks = 1 hour
+  if ticks mod 12 != 0 [ stop ]
+
+  if current-hour >= total-hours [
+    ;; load next month if available
+    let next-index (position current-month month-list) + 1
+    ifelse next-index < length month-list [
+      set current-month item next-index month-list
+      penobscot-parameters
+      print (word "➡️ Switching to next month: " current-month)
+    ] [
+      print "✅ Simulation reached end of October dataset."
+      stop
+    ]
+  ]
+
+  let velocity-column (current-hour + 2)
   let rows velocity-data
-  
-  ; Calculate the correct column based on day and hour, starting from day 254 and column 3
-  let velocity-column ((day - starting-date) * 24 + hour + 3)  ; Adjust for the start day and column
-  
-  ;; Extract velocity values from the correct column only
+
   let all-velocities filter is-number? map [row -> item velocity-column row] rows
-  
   set max-seaward-velocity max all-velocities
   set max-landward-velocity min all-velocities
-  
+
   foreach rows [
     row ->
     let x item 0 row
     let y item 1 row
-    
-    ; Ensure the column index is within bounds of the data
-    if velocity-column < length row [
-      let velocity-input item velocity-column row
-      
-      ask patch x y [
-        set velocity velocity-input
-        if velocity > 0 [
-          ;set pcolor blue
-          set patch-terrain "water"
-        ]
-        if velocity <= 0 [
-          ;set pcolor red
-          set patch-terrain "water"
-        ]
-        ;print (word "Patch (" x ", " y ") - Velocity: " velocity) ; Print the coordinates and velocity
-      ]
+    let vel item velocity-column row
+
+    ask patch x y [
+      set velocity vel
+      set patch-terrain "water"
+      if velocity > 0 [ set pcolor scale-color blue velocity max-seaward-velocity 0 ]
+      if velocity < 0 [ set pcolor scale-color red velocity 0 max-landward-velocity ]
     ]
   ]
+
 end

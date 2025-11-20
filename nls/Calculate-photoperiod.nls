@@ -1,0 +1,135 @@
+to setup-sun
+  ;; Load sunrise–sunset CSV
+  set sun_index table:make
+  let rows csv:from-file "inputs/Bucksport_SunriseSunset.csv"
+
+  if empty? rows [
+    user-message "Error: Could not load Bucksport_SunriseSunset.csv"
+    stop
+  ]
+
+  ;; Drop header if present
+  if is-list? first rows and is-string? item 0 first rows and (item 0 first rows) = "day" [
+    set rows but-first rows
+  ]
+
+  ;; Build lookup table: key = "Month_Day", value = [rh rm sh sm daylength]
+  foreach rows [ r ->
+    if is-list? r [
+
+      ;; Extract raw columns from CSV
+      let d   read-from-string (word item 0 r)
+      let m   item 1 r
+      let rh  read-from-string (word item 2 r)
+      let rm  read-from-string (word item 3 r)
+      let sh  read-from-string (word item 4 r)
+      let sm  read-from-string (word item 5 r)
+
+      ;; Compute daylength EXACTLY like R: (sunset − sunrise) in hours
+      let sunrise-minutes ((rh * 60) + rm)
+      let sunset-minutes  ((sh * 60) + sm)
+      let dayl ((sunset-minutes - sunrise-minutes) / 60)  ;; decimal hours
+
+      ;; Build the lookup key
+      let key (word m "_" d)
+
+      ;; Store in table
+      table:put sun_index key (list rh rm sh sm dayl)
+    ]
+  ]
+
+  show (word "Loaded " table:length sun_index " sun entries.")
+end
+
+
+to calculate-photoperiod
+
+  ;; ---------------------------------------------------------
+  ;; Convert DOY → month + day-of-month
+  ;; ---------------------------------------------------------
+  let month-new ""
+  set day_in_month 0
+
+  if day >= 1 and day <= 31 [
+    set month-new "January"
+    set day_in_month day
+  ]
+  if day >= 32 and day <= 59 [
+    set month-new "February"
+    set day_in_month day - 31
+  ]
+  if day >= 60 and day <= 90 [
+    set month-new "March"
+    set day_in_month day - 59
+  ]
+  if day >= 91 and day <= 120 [
+    set month-new "April"
+    set day_in_month day - 90
+  ]
+  if day >= 121 and day <= 151 [
+    set month-new "May"
+    set day_in_month day - 120
+  ]
+  if day >= 152 and day <= 181 [
+    set month-new "June"
+    set day_in_month day - 151
+  ]
+  if day >= 182 and day <= 212 [
+    set month-new "July"
+    set day_in_month day - 181
+  ]
+  if day >= 213 and day <= 243 [
+    set month-new "August"
+    set day_in_month day - 212
+  ]
+  if day >= 244 and day <= 273 [
+    set month-new "September"
+    set day_in_month day - 243
+  ]
+  if day >= 274 and day <= 304 [
+    set month-new "October"
+    set day_in_month day - 273
+  ]
+  if day >= 305 and day <= 334 [
+    set month-new "November"
+    set day_in_month day - 304
+  ]
+  if day >= 335 and day <= 365 [
+    set month-new "December"
+    set day_in_month day - 334
+  ]
+
+  let key (word month-new "_" day_in_month)
+
+  if not table:has-key? sun_index key [
+    user-message (word "No sun data for " key)
+    stop
+  ]
+
+  ;; ---------------------------------------------------------
+  ;; Retrieve sunrise/sunset & daylength
+  ;; ---------------------------------------------------------
+  let vals table:get sun_index key
+  let rh   item 0 vals
+  let rm   item 1 vals
+  let sh   item 2 vals
+  let sm   item 3 vals
+  let dayl item 4 vals   ;; decimal hours (e.g., 12.75)
+
+  ;; optional display vars
+  set sunrise-hour ((rh * 60) + rm) / 60
+  set sunset-hour  ((sh * 60) + sm) / 60
+
+  ;; ---------------------------------------------------------
+  ;; Compute difference from yesterday
+  ;; ---------------------------------------------------------
+  set prev-daylength daylength     ;; store yesterday
+  show (word "Previous Photoperiod " precision prev-daylength 3)
+
+  set daylength dayl               ;; today's value
+  show (word "Photoperiod " precision daylength 3)
+
+  set photoperiod-diff (daylength - prev-daylength)
+  show (word "Photoperiod-Difference " precision photoperiod-diff 3)
+
+end

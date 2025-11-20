@@ -1,75 +1,63 @@
 to swim
-  if landward-migration? = true [ ;; general goal of moving upstream landward 
+    set previous-patch patch-here
+  ;; ==========================================================
+  ;; Fish movement control integrating swimming energy metabolism
+  ;; ==========================================================
+
+  ;; ------------------------------------------
+  ;; LANDWARD MIGRATION (pre-spawning)
+  ;; ------------------------------------------
+  if landward-migration? [
     calculate-cost-to-home home-patch
     calculate-difficulty-landward
     calculate-swimming-speed-landward
-    if energy > 25 and not staging? [  
-      migrate-landward
+
+    ;; Move upstream if energetic enough
+    if not foraging? [
       selective-tidal-stream-transport-landward
-      ;school  ;; Built into migration function
-     ]
-    
-    ;; Enter staging only if energy ≤ 25
-    if energy <= 25 or ionregulatory-stress > 5 [  
-      set staging? true  ;; Flag agent as staging
     ]
-    
-    ;; Agents remain in staging until energy reaches 75 & stress = 1
-    if staging? [
-      stage  
-      if energy >= 75 and ionregulatory-stress = 1 [  
-        set staging? false  ;; Exit staging once fully recovered
-      ]
-    ]
+
   ]
- 
-  if seaward-migration? = true [ ;; general goal of moving downstream seaward
+
+  ;; ------------------------------------------
+  ;; SEAWARD MIGRATION (post-spawning) OR CRITICAL ENERGY LOW
+  ;; ------------------------------------------
+  if seaward-migration?[
     calculate-cost-to-sea migration-patch
     calculate-difficulty-seaward
     calculate-swimming-speed-seaward
-    if energy > 25 and not staging? [ 
-      migrate-seaward
-       selective-tidal-stream-transport-seaward
-      ;school  ;; Built into migration function
-     ]
-    
-    ;; Enter staging only if energy ≤ 25
-    if energy <= 25 or ionregulatory-stress > 5 [  
-      set staging? true  ;; Flag agent as staging
+
+    ;; Migrate only if energetic enough
+    if not foraging? [
+      selective-tidal-stream-transport-seaward ;; swim energy cost is in here
     ]
-    
-    ;; Agents remain in staging until energy reaches 75 & stress = 1
-    if staging? [
-      stage  
-      if energy >= 75 and ionregulatory-stress = 1 [  
-        set staging? false  ;; Exit staging once fully recovered
-      ]
-    ]
+
   ]
+
+  ;; ------------------------------------------
+  ;; UNIVERSAL METABOLIC COST (swimming energy)
+  ;; ------------------------------------------
+  calculate-swim-energy
 end
 
 to calculate-swim-energy
-  let M-max max [size] of breed
   let beta 0.75 
     
-  ;; Calculate metabolic cost of chloride cell creation
-  let swim-max 0.5 ;; swim max cost is whatever is left over after osmoregulation 1-.075
-    
-  ;; Calculate metabolic cost of locomotion
-  set swim-base swim-max * ((size / M-max) ^ beta)
+  ;; --- Modify energy multiplier by hydrodynamic difficulty and efficiency ---
+  ;; Higher difficulty → higher cost
+  ;; Lower swim-efficiency → higher cost
+  let energy-multiplier (difficulty-factor * (1 / swim-efficiency))
 
-  ;; Calculate difficulty factor (assumed already computed in `difficulty-factor`)
-  let energy-multiplier difficulty-factor  ;; Higher difficulty means higher cost
+  ;; --- Compute effective swimming energy expenditure ---
+  set E-swim swim-base * (energy-multiplier ^ beta)  ;; exponential scaling for realism
 
-  ;; Compute swim energy expenditure (E_swim)
-  set E-swim swim-base * (energy-multiplier ^ beta)  ;; Exponential scaling for realism
+  ;; --- Deduct swimming cost from total energy ---
+  set energy max list 0 (energy - E-swim)  ;; ensures energy doesn’t drop below 0
 
-  ;; Deduct swimming cost from agent's energy
-  set energy max list 0 (energy - E-swim)  ;; Ensure energy does not go below 0
-
-  ;; Debugging output
-  show (word "Swim Energy Cost: " E-swim 
-        " | Difficulty Factor: " difficulty-factor 
-        " | Base Cost: " swim-base 
-        " | Current Energy: " energy)
+  ;; --- Optional debugging output ---
+  ;show (word "Swim Energy Cost: " precision swim-Ex 4
+  ;      " | Swim-efficiency: " precision swim-efficiency 3
+  ;      " | Difficulty: " precision difficulty-factor 3
+  ;      " | Base Cost: " precision swim-base 4
+  ;      " | Energy: " precision energy 2)
 end

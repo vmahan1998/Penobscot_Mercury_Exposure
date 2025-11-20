@@ -1,88 +1,215 @@
 to setup-penobscot-migration
   setup-alewives
   setup-stripedbass
-  setup-shortnose
-  setup-atlantic
   set Hg-threshold 150 ; ng/kg (National Oceanic and Atmospheric Administration (NOAA), 1990) Adjust based on NOAA data
   set MeHg-threshold 15 ; ng/kg Adjust based on NOAA data
-  initialize-velocity-extremes-from-series
-  draw-mehg-legend
-  reset-ticks
+  set month-list ["April" "May" "June" "July" "August" "September" "October"]
+  set current-hour 0
+  ;set day 0
+  ;set current-hour 240
+  let header first velocity-data
+  set total-hours (length header - 4)   ;; columns after px, py
+  ;draw-mehg-legend
+  load-cue-csv
+  set cue-active? false
+  set migration-trigger? false
+  set alewives-exiting-estuary-daily-total 0
+  set alewives-entering-estuary-daily-total 0
+  set alewives-on-line-daily-total-landward 0
+  set alewives-on-line-daily-total-seaward 0
+  set daylength-diff-list []
+  find-migration-days
+  update-migration-cue
+  
+  ask patches with [patch-terrain != "water"] [
+   set cost-to-home 1e9
+   set cost-to-sea 1e9
+    ;set temperature temperature + 5
+  ]
+    ;set local-temp mean [temperature] of patches with [patchtype = "sea"]
+    ;show (word "Local Temperature: " local-temp)
+    reset-ticks
 end
 
 to initialize-velocity-extremes-from-series
   ;; Only consider water patches with valid velocity series
   let valid-water-patches patches with [
-    patch-terrain = "water" and is-list? velocity-series and length velocity-series > 0
+    patch-terrain = "water" and
+    is-list? velocity-series and
+    length velocity-series > 0 
   ]
+
   let all-mins []
   let all-maxs []
 
-  ;; Collect min and max for each patch using foreach
+  ;; Collect patch-level minima and maxima (no outlier filtering)
   foreach sort valid-water-patches [
     p ->
     let vs [velocity-series] of p
-    set all-mins lput min vs all-mins
-    set all-maxs lput max vs all-maxs
+    ;; remove "NA" entries if any
+    let clean-vs filter [v -> (is-number? v)] vs
+    if length clean-vs > 0 [
+      set all-mins lput min clean-vs all-mins
+      set all-maxs lput max clean-vs all-maxs
+    ]
   ]
 
-  ;; Filter and compute system-wide extremes
-  let seaward-values filter [v -> v < 0] all-mins
-  let landward-values filter [v -> v > 0] all-maxs
+  ;; Combine values without filtering for outliers
+  let combined-values sentence all-mins all-maxs
+  if length combined-values > 0 [
+    let seaward-values filter [v -> v < 0] combined-values
+    let landward-values filter [v -> v > 0] combined-values
 
-  ifelse length seaward-values > 0 [
-    set max-seaward-velocity min seaward-values
-  ] [
-    set max-seaward-velocity -0.001
+    ifelse length seaward-values > 0 [
+      ;; most negative (min) seaward value is the maximum seaward magnitude
+      set max-seaward-velocity min seaward-values
+    ][
+      set max-seaward-velocity -0.001
+    ]
+
+    ifelse length landward-values > 0 [
+      set max-landward-velocity max landward-values
+    ][
+      set max-landward-velocity 0.001
+    ]
+
+    ;show (word "System-wide Seaward V-max (most negative): " max-seaward-velocity)
+    ;show (word "System-wide Landward V-min (most positive): " max-landward-velocity)
   ]
-
-  ifelse length landward-values > 0 [
-    set max-landward-velocity max landward-values
-  ] [
-    set max-landward-velocity 0.001
-  ]
-
-  show (word "System-wide Seaward V-max (most negative): " max-seaward-velocity)
-  show (word "System-wide Landward V-min (most positive): " max-landward-velocity)
 end
 
-to update-patch-velocity-and-depth
+
+to update-patch-data
   ask patches with [patch-terrain = "water"] [
-    ifelse ticks < length velocity-series [
-      set velocity item ticks velocity-series
-      set depth item ticks depth-series
-    ][
-      set velocity 0  ;; or last known
+    if current-hour < (total-hours - 1) [
+      set velocity item current-hour velocity-series
+      set depth item current-hour depth-series
+      set salinity item current-hour salinity-series
+      set temperature item current-hour temp-series
+      set SPM random-float 0.0004  ;; random value between 0 and 0.0004
+      ;set SPM item ticks SPN-series
+      ;set temperature temperature + 5
+            ;; ---- Temperature cue for alewife migration ----
+    ;let temp-patches patches with [patchtype = "sea"]
+    ;if (count alewives with [start-migration?]) = count alewives [
+    ;set local-temp mean [temperature] of temp-patches
+        ;show (word "Local Temperature: " local-temp)]
+    ;]
+    ] ;; only update for migration cue
+    
+      if current-hour = (total-hours - 1) [
+      Update-hydro-data
+  
+  ]]
+    ask patches with [patch-terrain != "water"] [
+      set velocity 0
       set depth 0
-    ]
+      set salinity 0
+      set temperature 0
+      set SPM 0
+      ;set SPM item ticks SPN-series
+   
   
   ]
+  
+  initialize-velocity-extremes-from-series
 end
 
 to penobscot-go
-  ;; update the data
-  update-patch-velocity-and-depth
-  ask patches [ 
+
+  ;; update the simulation data
+  if ticks mod 12 = 0 [
+    update-patch-data
+    
+  ]
+  
+  ask patches with [ patch-terrain = "water" ][ 
    set cost-to-home 1e6
    set cost-to-sea 1e6
-   ;set spm random-float 0.0004  ;; random value between 0 and 0.0004
-   ;update-temperature
-   ;update-salinity
-   ;update-SPM
-   ;color-staging-patches
+   set spm random-float 0.0004  ;; random value between 0 and 0.0004
    ;color-tidal-trapping-patches
    ;color-foraging-patches
   ]
   
-;; potential behavioral rules
-   ask alewives with [age = "adult"] [
-    mercury-contamination ;; track mercury contamination
-    methylmercury-contamination ;; track methylmercury contamination
-    ;osmoregulate ;; always osmoregulate
-    swim ;; always swim, school, and stage (built in)
-    ;forage
+  ;; now that everyone has moved this tick, count crossings
+  count-estuary-entry
+  count-fish-lift
+  count-estuary-exit
+  
+ask alewives with [age = "adult"] [
     
+  ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
+    if ticks mod 288 = 0 [
+    calc-migration-probability
+    ]
+    
+    if (not start-migration?) [
+      let p migration-probability
+      if random-float 1 <= p [
+        set start-migration? true
+        set landward-migration? true
+        set seaward-migration? false
+        set migration-day day
+      ]
+    ]
+   
+  ;; --- Migration and behavior sequence ---
+  if start-migration? [
+      
+    ;; Perform behavioral sequence only if not at home
+    if not at-destination? [
+      calculate-metabolism
+      swim
+      mercury-contamination
+      methylmercury-contamination
+      osmoregulate
+
+      ;; Energy recovery strategy
+      if not ([location] of patch-here = "lower estuary" and seaward-migration? = true) [
+      if energy <= 25 [ set foraging? true ]
+      if energy >= 75 [ 
+       set foraging? false
+       set lipid-loss? false
+       set filter-feed? false ]
+      forage
+      ]
+        
+      ;; Energy recovery strategy before leaving estuary
+      if ([location] of patch-here = "lower estuary" and seaward-migration? = true) [
+      if energy < 75 [ set foraging? true ]
+      if energy >= 75 [ 
+       set foraging? false
+       set lipid-loss? false
+       set filter-feed? false ]
+      forage
+      ]  
+    ]
+
+    ;; --- Residence phase (fish is home) ---
+      if (patch-here = home-patch) and (landward-migration? = true) [
+      if wait-days < days-at-large [
+        set at-destination? true
+        set completed-action? true
+        set wait-ticks wait-ticks + 1
+        set wait-days (wait-ticks / 288) ; 5 minute time steps
+       
+     ]
+      ;; --- Departure phase ---
+      if wait-days >= days-at-large [
+        set seaward-migration? true
+        set landward-migration? false
+        set at-destination? false
+      ]
+    ]
+      
+      if (patch-here = migration-patch) and (seaward-migration? = true) [
+    set start-migration? false
   ]
+      
+]
+    
+]
+    
 
   ask stripedbass with [age = "adult"] [
     ;school ;align, cohere, separate, separation minimum, schoolmates
@@ -91,20 +218,27 @@ to penobscot-go
 
 
   ]
-
-  ask shortnose with [age = "adult"] [
-    ;school ;align, cohere, separate, separation minimum, schoolmates,
-    ;migrate ;time, tidal-phase, depth preference
-    ;forgage ;; energy, foraging time?, foraging source?, swim speed
-    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
-    ;spawning ; potential spawning encounters
-  ]
   
-  ask turtles [
-  foreach trail [
-    p -> ask p [ set pcolor yellow ]
-  ]
+
+  
+  ;; After all agent actions (before 'end')
+if all? alewives with [age = "adult"] [
+     (patch-here = migration-patch) and (seaward-migration?)
+] [
+  stop
 ]
+;   ;; After all agent actions (before 'end')
+;if all? alewives with [age = "adult"] [
+;     (patch-here = home-patch) and (landward-migration?)
+;] [
+;  stop
+;]
+;  ask turtles [
+;  foreach trail [
+;    p -> ask p [ set pcolor yellow ]
+;  ]
+;]
+
 end
 
 

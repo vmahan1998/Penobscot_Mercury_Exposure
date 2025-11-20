@@ -42,8 +42,6 @@ end
 to setup-migration
   create-fish alewives initial-alewives  ;; Adjust number as needed
   ;create-fish stripedbass initial-stripedbass
-  ;create-fish shortnose initial-shortnose
-  ;create-fish atlantic initial-atlantic
 end
 
 to create-fish [fish-type num-fish]
@@ -62,63 +60,132 @@ to create-fish [fish-type num-fish]
       set sex "female"
     ]
 
-    ;; Initialize movement-related variables
-    set age-num 3 + random 4
-    set size age-num + random-normal 0 0.3
-    set optimal-temperature 17 - ((size - 3) * 0.4) + random-normal 0 0.3
+
+    ;; ---- Age ----
+    let min-age-pop 2
+    let max-age-pop 6
+    let mean-age 4
+    let sd-age 1.5
+    set age "adult"
+    set age-num truncated-normal mean-age sd-age min-age-pop max-age-pop
+    
+    ;; ---- Size (mm) conditional on age ----
+    ;; Older alewives are longer, drawn from truncated normal distributions per age class
+    let mu-length (0.26 + ((age-num - 2) * ((0.31 - 0.26) / (6 - 2))))  ;; 0.26–0.31 m across 2–6 yrs
+    let sd-length 0.012
+    let min-size-pop 0.200
+    let max-size-pop 0.320
+    set size truncated-normal mu-length sd-length min-size-pop max-size-pop
+    set length-size size * 1000
+    
+    ;; ---- Weight (g) from Length (mm) ----
+    ;; FishBase equation for Alewife (W = a * L_cm ^ b)
+    let Lcm size * 100           ;; convert meters → centimeters
+    let a_lw 0.00646
+    let b_lw 3.06
+    set weight (a_lw * (Lcm ^ b_lw))
+    set original-weight weight  ;; store initial weight for later energy/weight-loss comparisons
+    
+    ;; =====================================
+    ;; --- Habitat & physiological prefs ---
+    ;; =====================================
+    set optimal-temperature 17
     set optimal-velocity 0.25 + ((size - 3) * 0.05) + random-normal 0 0.03
     set optimal-depth 1.5 + ((size - 3) * 0.7) + random-normal 0 0.2
-    set min-speed 0.1 ;; species limit
-    set max-speed (1.5 + random-float 1.5) * size ;; Assign max-speed as 1.5–3.0 × body length (size)
-    set speed max-speed / 2
-    set prev-speed min-speed
-    set energy 100  ;; Initial energy level
-    set fleeing? false  ;; Is the fish fleeing from a predator?
-    set rest-time alewife-rest-time  ;; Rest time to recover energy
-
-    ;; Contaminant exposure tracking
-    set hg-exposure-duration 0  ;; Time spent in high mercury patches
-    set mehg-exposure-duration 0  ;; Time spent in high methylmercury patches
-    set hg-uptake-risk 0  ;; Time spent in high sediment concentration patches
-    set mehg-uptake-risk 0  ;; Time spent in high sediment concentration patches
-    set hg-exposure-total 0  ;; Cumulative mercury exposure
-    set mehg-exposure-total 0  ;; Cumulative methylmercury exposure
-
-    ;; Migration tracking variables
-    set migration-action "spawning"  ;; Migratory purpose
-    set completed-action? false  ;; Has the objective been completed?
-    set migration-destination "upper estuary"  ;; Target migration location
-    set at-destination? false  ;; Has the fish reached the destination?
-    set landward-migration-time 0  ;; Time taken to migrate inland
-    set seaward-migration-time 0  ;; Time taken to migrate back to the ocean
-
-    ;; Osmoregulation variables
-    set acclimated-salinity 35 ;; level of salinity fish is acclimated to currently 
-    set ionregulatory-stress 1  ;; Initial osmoregulatory stress level
-    set chloride-density-min 10  ;; Minimum chloride cell density
-    set chloride-density-max 100  ;; Maximum chloride cell density
-    set chloride-cell-density 10  ;; Initial chloride cell density
-    set chloride-max-proliferation 0.05  ;; Max chloride cell increase per time step (5% of max density)
-    set chloride-cells-this-tick 0.0  ;; Chloride cells created/destroyed this tick
-    set acclimation-rate 0.002  ;; Chloride cell density increase rate per time step
-    set C-mid 0.5  ;; Midpoint for stress buffering effectiveness
-    set time-since-last-osmoregulation 0  ;; Tracks elapsed time since last regulation
-    set E-osmo 0  ;; Initial osmoregulatory energy usage
-    set E-base 0.04  ;; Base energy cost per chloride cell maintenance 4% in teleosts
-    set stable-time 0;; 
-    set Met-max 0.035 ;; max energy cost per chloride cell created 3.5% in teleosts
-    set staging? false ;; boolean for staging behavior
-    set selective-tidal-transport? false;; boolean to track if agent is experiencing selective tidal transport
-    set landward-migration? true ;;
-    set seaward-migration? false ;;
-    set foraging? false
-    set swim-base 0.25 ;; base energy cost of swimming
+    let min-spm 0     ;; lower migration bound
+    let max-spm 0.0004     ;; upper migration bound
+    let mean-spm-choice 0.0002    ;; optimal migration temperature (mean)
+    let sd-spm 1.5     ;; spread (wide enough for early & late migrants)
+    set optimal-spm truncated-normal mean-spm-choice sd-spm min-spm max-spm
+    set min-speed 0.1
     
-    let M-max max [size] of breed
-    ;; Calculate metabolic cost of chloride cell creation
-    let swim-max 0.5 ;; swim max cost is whatever is left over after osmoregulation 1-.075
-    ;; Calculate metabolic cost of locomotion
-    set swim-base swim-max * ((size / M-max) ^ 0.75)
+    ;; ---- Migration Temperature Preference ----
+    let min-temp 5     ;; lower migration bound
+    let max-temp 10     ;; upper migration bound
+    let mean-temp 8    ;; optimal migration temperature (mean)
+    let sd-temp 1.5     ;; spread (wide enough for early & late migrants)
+    
+    ;set migration-temp truncated-normal mean-temp sd-temp min-temp max-temp
+    set migration-temp 10
+    
+    ;; ---- Metabolic Variables ----
+    set swim-efficiency 1             ;; metabolic cost/benefit to swimming       
+    set digestion-efficiency 1        ;; metabolic cost/benefit to digestion
+    set osmoregulation-efficiency 1   ;; metabolic cost/benefit to osmoregulation
+    set lipid-catabolism-efficiency 1 ;; metabolic cost/benefit to lpid catabolism
+    
+    initialize-metabolism
+    
+    ;; ---- Days at Large in Estuary ----
+    let min-days 1     ;; lower migration bound
+    let max-days 7     ;; upper migration bound
+    let mean-days 3.5    ;; optimal migration temperature (mean)
+    let sd-days 1.5     ;; spread (wide enough for early & late migrants)
+    
+    ;set days-at-large truncated-normal mean-days sd-days min-days max-days
+    set days-at-large 1
+    ;; ---- Swimming Speed (m per 5 minutes) ----
+    ;; Speed = 1.5–3.0 × body length per second, converted to 5-minute step
+    let swim-multiplier (1.5 + random-float 1.5)
+    set max-speed (size * swim-multiplier * 300) ;; speed from m/s to m / 5 minutes
+    set speed max-speed / 2
+    set energy 100
+
+    ;; =====================================
+    ;; --- Migration & exposure tracking ---
+    ;; =====================================
+    set fleeing? false
+    set hg-exposure-duration 0 ; time spect exposed
+    set mehg-exposure-duration 0 ; time spect exposed
+    set hg-uptake-risk 0 ; instantanious risk from exposure
+    set mehg-uptake-risk 0 ; instantanious risk from exposure
+    set hg-exposure-total 0 ; total risk from exposure
+    set mehg-exposure-total 0 ; total risk from exposure
+    set hg-foraging 0 ; total risk from foraging
+    set mehg-foraging 0 ; total risk from foraging
+    set mehg-foraging-total 0 ; sum of foraging risk
+    set hg-foraging-total 0 ; sum of foraging risk
+    set mehg-total 0 ; sum of methylmercury risk
+    set hg-total 0 ; sum of mercury risk
+    set migration-action "spawning"
+
+    set migration-destination "upper estuary"
+
+    set landward-migration-time 0
+    set seaward-migration-time 0
+    set thermal-stress 1
+    set ionregulatory-stress 5
+    set chloride-density-min 10
+    set chloride-density-max 100
+    set chloride-cell-density 50
+    set chloride-max-proliferation 0.05
+    set chloride-cells-this-tick 0.0
+    set acclimation-rate 0.1
+    set C-mid 0.5
+    set time-since-last-osmoregulation 0
+    ;set E-osmo 0
+    ;set E-base 0.05
+    ;set E-creation 0.02
+    set selective-tidal-transport? false
+    set foraging? false
+    set lipid-loss? true
+    set filter-feed? false
+    set start-migration? true
+    set landward-migration? true
+    set seaward-migration? false
+    set wait-days 0
+    set wait-ticks 0
+    set path-index 1
+    set home-patch patch 99 329
+    set migration-patch patch 100 35
+    set trail []
+    set planned-path []
+    ;; ---- Sex assignment ----
+    ifelse random-float 1 < 0.5 [
+      set sex "male"
+    ] [
+      set sex "female"
+    ]
   ]
 
 end
@@ -129,6 +196,7 @@ to prototype-go
     set velocity update-prototype-velocity ticks ;; random value between -1.5 and 1.5
     set patch-terrain "water"
     set depth random-float 5  ;; random value between 0 and 5 meters
+    set temperature 17
     set salinity update-salinity ticks
     set SPM random-float 0.0004  ;; random value between 0 and 0.0004
 
@@ -136,6 +204,7 @@ to prototype-go
   
 ;; potential behavioral rules
    ask alewives with [age = "adult"] [
+    calculate-metabolism
     mercury-contamination ;; track mercury contamination
     methylmercury-contamination ;; track methylmercury contamination
     osmoregulate ;; always osmoregulate
@@ -152,17 +221,10 @@ to prototype-go
 
   ]
 
-  ask shortnose with [age = "adult"] [
-    ;school ;align, cohere, separate, separation minimum, schoolmates,
-    ;migrate ;time, tidal-phase, depth preference
-    ;forgage ;; energy, foraging time?, foraging source?, swim speed
-    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
-    ;spawning ; potential spawning encounters
-  ]
   ask patches [
   ;color-staging-patches
   ;color-tidal-trapping-patches
-  color-foraging-patches
+  ;color-foraging-patches
   ]
 end
 

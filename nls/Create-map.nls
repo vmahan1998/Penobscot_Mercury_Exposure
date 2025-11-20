@@ -50,16 +50,19 @@ end
 to setup-patch-timeseries
   let velocity-rows but-first velocity-data
   let depth-rows but-first depth-data
+  let temp-rows but-first temp-data
+  let salinity-rows but-first salinity-data
   
   ;; Velocity time series
   foreach velocity-rows [
     row ->
     let x item 0 row
     let y item 1 row
-    let series sublist row 2 length row
+    let series sublist row 4 length row
     ask patch x y [
       set velocity-series series
       set velocity item 0 series  ;; ✅ Initialize to first timestep
+      set current-velocity-month current-month ;; mark month of this series on the patch
     ]
   ]
   
@@ -68,32 +71,169 @@ to setup-patch-timeseries
     row ->
     let x item 0 row
     let y item 1 row
-    let series sublist row 2 length row
+    let series sublist row 4 length row
     ask patch x y [
       set depth-series series
       set depth item 0 series  ;; ✅ Initialize to first timestep
+      set current-depth-month current-month ;; mark month of this series on the patch
     ]
   ]
-end
+  
+;; Temperature time series
+  foreach temp-rows [
+    row ->
+    let x item 0 row
+    let y item 1 row
+    let series sublist row 4 length row
+    ask patch x y [
+      set temp-series series
+      set temperature item 0 series  ;; ✅ Initialize to first timestep
+      set current-temp-month current-month ;; mark month of this series on the patch
+    ]
+  ]
 
+;; Salinty time series
+  foreach salinity-rows [
+    row ->
+    let x item 0 row
+    let y item 1 row
+    let series sublist row 4 length row
+    ask patch x y [
+      set salinity-series series
+      set salinity item 0 series  ;; ✅ Initialize to first timestep
+      set current-salinity-month current-month ;; mark month of this series on the patch
+    ]
+  ]
+
+;; SPM time series
+;  foreach SPM-rows [
+;    row ->
+;    let x item 0 row
+;    let y item 1 row
+;    let series sublist row 2 length row
+;    ask patch x y [
+;      set SPM-series series
+;      set SPM item 0 series  ;; ✅ Initialize to first timeste4
+;       set current-SPM-month current-month ;; mark month of this series on the patcp
+;    ]
+;  ]  
+  print "✅ Simulation patch data updated."
+  ask patch 75 167 [
+    print (word "velocity-series length: " length velocity-series)
+    print (word "velocity-series (first 10): " sublist velocity-series 0 (min list 10 length velocity-series))
+  ]
+
+end
 
 to penobscot-parameters
-  set velocity-data csv:from-file "inputs/velocity_px_py.csv"
-  print (word "Velocity data loaded: " length velocity-data)
-  set depth-data csv:from-file "inputs/depth_px_py.csv"
-  print (word "Depth data loaded: " length depth-data)
-  set mercury-data csv:from-file "inputs/mercury_contamination_px_py.csv"
-  ;; hydrodynamic model data here (salinity, temperature, and sediment)
-  setup-patch-timeseries ;; creates list of time series
-  interpolate-missing-time-series ;;replaces identify-missing-patches
-  create-Hg ;; Initialize mercury
-  create-MeHg ;; Initialize methylmercury
-  ;identify-missing-patches ;; Identify patches needing interpolation
+  ;; Guard: ensure valid month
+  if not member? current-month ["April" "May" "June" "July" "August" "September" "October"] [
+    set current-month "April"
+  ]
+  
+    set velocity-data csv:from-file (word "inputs/monthly/velocity_" current-month "_2023.csv")
+    print (word "   ✅ Velocity data loaded (" length velocity-data " rows)")
+
+    set depth-data csv:from-file (word "inputs/monthly/depth_" current-month "_2023.csv")
+    print (word "   ✅ Depth data loaded (" length depth-data " rows)")
+
+    set temp-data csv:from-file (word "inputs/monthly/temperature_" current-month "_2023.csv")
+    print (word "   ✅ Temperature data loaded (" length temp-data " rows)")
+
+    set salinity-data csv:from-file (word "inputs/monthly/salinity_" current-month "_2023.csv")
+    print (word "   ✅ Salinity data loaded (" length salinity-data " rows)")
+
+    ;; --- Remove extreme outliers (IQR-based filter) ---
+    print "🧹 Cleaning extreme outliers before interpolation..."
+    set velocity-data remove-outliers velocity-data "velocity"
+    set depth-data remove-outliers depth-data "depth"
+    set temp-data remove-outliers temp-data "temperature"
+    set salinity-data remove-outliers salinity-data "salinity"
+    print "   ✅ Outlier filtering complete."
+
+  ;; Initialize patch-level time series and interpolation
+  setup-patch-timeseries
+  interpolate-missing-time-series
+  initialize-velocity-extremes-from-series
+  
+  ;; Initialize contaminant state variables
+  create-Hg
+  create-MeHg
+
+  print (word "✅ Initialization complete for " current-month ".")
 end
+
+;; ===========================================
+;; OUTLIER FILTER
+;; ===========================================
+to-report remove-outliers [data varname]
+  let header first data
+  let rows but-first data
+  let clean-rows []
+
+  foreach rows [
+    row ->
+    let spatial sublist row 0 4
+    let values sublist row 4 length row
+    let numeric-only filter [v -> is-number? v] values
+
+    if not empty? numeric-only [
+      let q1 my-quantile numeric-only 0.25
+      let q3 my-quantile numeric-only 0.75
+      let iqr q3 - q1
+      let lower q1 - (1.5 * iqr)
+      let upper q3 + (1.5 * iqr)
+
+      let row-mean mean numeric-only
+      let filtered map [v ->
+        ifelse-value (is-number? v and (v < lower or v > upper))
+        [row-mean] [v]
+      ] values
+
+      set clean-rows lput (sentence spatial filtered) clean-rows
+    ]
+  ]
+  report fput header clean-rows
+end
+
+
+;; ===========================================
+;; QUANTILE HELPER (replacement for missing NetLogo primitive)
+;; ===========================================
+to-report my-quantile [lst q]
+  ;; Computes the quantile of a list using linear interpolation.
+  let sorted sort lst
+  let n length sorted
+  if n = 0 [ report 0 ]  ;; safety fallback for empty lists
+
+  let pos (q * (n - 1))
+  let lower-index floor pos
+  let upper-index ceiling pos
+
+  if lower-index = upper-index [
+    report item lower-index sorted
+  ]
+
+  ;; If indices differ, interpolate linearly
+  let lower-val item lower-index sorted
+  let upper-val item upper-index sorted
+  let frac pos - lower-index
+  report lower-val + frac * (upper-val - lower-val)
+end
+
 
 to interpolate-missing-time-series
   ;; Interpolate or copy velocity-series
-  ask patches with [patch-terrain = "water" and not is-list? velocity-series] [
+  ask patches with [
+  patch-terrain = "water" and
+  (
+    not is-list? velocity-series or
+    length velocity-series = 0 or
+    length velocity-series != total-hours or
+    current-velocity-month != current-month or
+    length filter [ v -> v = "NA" ] velocity-series > 1
+  )
+][
     let interpolated average-series-from-neighbors "velocity-series"
     ifelse is-list? interpolated and length interpolated > 0 [
       set velocity-series interpolated
@@ -117,7 +257,16 @@ to interpolate-missing-time-series
   ]
 
   ;; Interpolate or copy depth-series
-  ask patches with [patch-terrain = "water" and not is-list? depth-series] [
+  ask patches with [
+  patch-terrain = "water" and
+  (
+    not is-list? depth-series or
+    length depth-series = 0 or
+    length depth-series != total-hours or
+    current-depth-month != current-month or
+    length filter [ v -> v = "NA" ] depth-series > 1
+  )
+] [
     let interpolated average-series-from-neighbors "depth-series"
     ifelse is-list? interpolated and length interpolated > 0 [
       set depth-series interpolated
@@ -140,36 +289,184 @@ to interpolate-missing-time-series
       ]
     ]
   ]
+  
+;; Interpolate or copy temperature-series
+  ask patches with [
+  patch-terrain = "water" and
+  (
+    not is-list? temp-series or
+    length temp-series != total-hours or
+    length temp-series = 0 or
+    current-temp-month != current-month or
+    length filter [ v -> v = "NA" ] temp-series > 1
+  )
+] [
+    let interpolated average-series-from-neighbors "temp-series"
+    ifelse is-list? interpolated and length interpolated > 0 [
+      set temp-series interpolated
+      set temperature item 0 temp-series
+    ][
+      ;; fallback: copy nearest valid series
+      let nearest one-of patches with [
+        is-list? temp-series and length temp-series > 0
+      ] with-min [distance myself]
+
+      ifelse nearest != nobody [
+        set temp-series [temp-series] of nearest
+        set temperature item 0 temp-series
+        show (word "(patch " pxcor ", " pycor "): copied depth from patch " [pxcor] of nearest ", " [pycor] of nearest)
+      ][
+        show (word "(patch " pxcor ", " pycor "): FAILED to interpolate or copy temperature")
+        set temp-series []
+        set temperature 0
+        set pcolor yellow
+      ]
+    ]
+  ]
+  
+;; Interpolate or copy temperature-series
+  ask patches with [
+  patch-terrain = "water" and
+  (
+    not is-list? salinity-series or
+    length salinity-series != total-hours or
+    length salinity-series = 0 or
+    current-salinity-month != current-month or
+    length filter [ v -> v = "NA" ] temp-series > 1
+  )
+] [
+    let interpolated average-series-from-neighbors "salinity-series"
+    ifelse is-list? interpolated and length interpolated > 0 [
+      set salinity-series interpolated
+      set salinity item 0 salinity-series
+    ][
+      ;; fallback: copy nearest valid series
+      let nearest one-of patches with [
+        is-list? salinity-series and length salinity-series > 0
+      ] with-min [distance myself]
+
+      ifelse nearest != nobody [
+        set salinity-series [salinity-series] of nearest
+        set salinity item 0 salinity-series
+        show (word "(patch " pxcor ", " pycor "): copied depth from patch " [pxcor] of nearest ", " [pycor] of nearest)
+      ][
+        show (word "(patch " pxcor ", " pycor "): FAILED to interpolate or copy salinity")
+        set salinity-series []
+        set salinity 0
+        set pcolor yellow
+      ]
+    ]
+  ]
 end
 
+;to-report average-series-from-neighbors [varname]
+;  let radius 4
+;  let raw-neighbors patches in-radius radius
+;
+;  ;; Expand until enough neighbors have valid lists
+;  let series-list []
+;  while [length series-list < 3 and radius <= 10] [
+;    set raw-neighbors patches in-radius radius
+;    set series-list [runresult varname] of raw-neighbors with [
+;      is-list? runresult varname and length runresult varname > 0
+;    ]
+;    set radius radius + 1
+;  ]
+;
+;  ;; Only proceed if we have valid lists
+;  if not empty? series-list [
+;    let series-length length item 0 series-list
+;    let averaged []
+;
+;    foreach n-values series-length [ i -> i ] [
+;      i ->
+;      let values map [s -> item i s] series-list
+;      set averaged lput (mean values) averaged
+;    ]
+;
+;    report averaged
+;  ]
+;
+;  ;; Otherwise, return an empty list
+;  report []
+;end
+
 to-report average-series-from-neighbors [varname]
+
   let radius 4
   let raw-neighbors patches in-radius radius
 
-  ;; Expand until enough neighbors have valid lists
+  ;; determine the month-variable name that corresponds to varname
+  let month-var ""
+  if varname = "velocity-series" [ set month-var "current-velocity-month" ]
+  if varname = "depth-series"    [ set month-var "current-depth-month" ]
+  if varname = "temp-series"     [ set month-var "current-temp-month" ]
+  if varname = "salinity-series" [ set month-var "current-salinity-month" ]
+  ;; if month-var still empty, fall back to a conservative default that will prevent matches
+  if month-var = "" [ set month-var "current-unknown-month" ]
+
+  ;; Expand search radius until enough neighbors have valid lists (and matching month)
   let series-list []
-  while [length series-list < 3 and radius <= 10] [
+  while [ length series-list < 3 and radius <= 10 ] [
     set raw-neighbors patches in-radius radius
-    set series-list [runresult varname] of raw-neighbors with [
-      is-list? runresult varname and length runresult varname > 0
+    ;; collect only those neighbor series where:
+    ;;  - the series exists and is a non-empty list
+    ;;  - the neighbor's month-var equals the global current-month
+    ;; Use runresult to evaluate varname and month-var in the neighbor patch context
+    set series-list (filter [ s -> true ] [
+      runresult varname
+    ] of raw-neighbors) ;; start with the raw values
+
+    ;; now filter by listness/length AND by month match
+    set series-list filter [
+      s ->
+      (is-list? s) and (length s > 0) and
+      ;; find the corresponding patch and check its month var value matches current-month
+      ;; Note: we use of to get the month var from the same patch that produced s
+      ;; build the list of patches that produced the series (raw-neighbors) and zip-check below
+      true
+    ] series-list
+
+    ;; The above filter doesn't yet check month; we need to build the list of neighbors that both
+    ;; satisfy the month and then extract their series. Do that explicitly:
+    set series-list []
+    ask raw-neighbors [
+      let s runresult varname
+      let m runresult month-var
+      if (is-list? s) and (length s > 0) and (m = current-month) [
+        set series-list lput s series-list
+      ]
     ]
+
     set radius radius + 1
   ]
 
-  ;; Only proceed if we have valid lists
-  if not empty? series-list [
-    let series-length length item 0 series-list
-    let averaged []
+  ;; If still no valid series found, return empty list
+  if empty? series-list [ report [] ]
 
-    foreach n-values series-length [ i -> i ] [
-      i ->
-      let values map [s -> item i s] series-list
-      set averaged lput (mean values) averaged
-    ]
+  ;; Compute average across valid series only
+  let series-length length item 0 series-list
+  let averaged []
 
-    report averaged
+  foreach n-values series-length [ i -> i ] [
+    i ->
+      ;; Extract only numeric values (ignore NA / empty) with guarded access
+      let values []
+      foreach series-list [ s ->
+        if is-list? s and i < length s [
+          let v item i s
+          if is-number? v [ set values lput v values ]
+        ]
+      ]
+
+      ;; Only add mean if there are valid numeric entries
+      ifelse length values > 0 [
+        set averaged lput mean values averaged
+      ] [
+        set averaged lput 0 averaged   ;; replace 0 with another default if preferred
+        set pcolor black
+      ]
   ]
 
-  ;; Otherwise, return an empty list
-  report []
+  report averaged
 end

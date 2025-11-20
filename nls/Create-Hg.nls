@@ -1,56 +1,57 @@
 to create-hg
-  ;; Assign initial mercury values from data
+  set mercury-data csv:from-file "inputs/mercury_contamination_px_py.csv"
+  ;; Handle both header and numeric-first cases
   let header first mercury-data
-  let rows but-first mercury-data
-  foreach rows [
-    row ->
-    let x item 0 row
-    let y item 1 row
-    let mean-hg item 2 row
-    
-    ask patch x y [
-      set mercury mean-hg
-    ]
+  let rows mercury-data
+  
+  ;; If first row looks like text, skip it
+  if is-string? first header [
+    set rows but-first mercury-data
   ]
 
-  ;; Interpolate mercury for water patches in Penobscot
+  ;; Assign initial mercury values from data
+  foreach rows [
+    row ->
+      let x item 0 row
+      let y item 1 row
+      let mean-hg 0
+
+      ;; Safely handle missing or non-numeric values
+      if is-number? item 2 row [
+        set mean-hg item 2 row
+      ] 
+      if is-string? item 2 row [
+        if item 2 row != "NA" [
+          set mean-hg read-from-string item 2 row
+        ]
+      ]
+
+      ask patch x y [
+        set mercury mean-hg
+      ]
+  ]
+
+  ;; Interpolate missing values for water patches
   ask patches with [patch-terrain = "water" and location = "Penobscot" and mercury = 0] [
     let radius 2
-    let potential-neighbors patches in-radius radius with [
-      mercury != 0
-    ]
+    let potential-neighbors patches in-radius radius with [mercury != 0]
     
-    ;; Expand the radius until enough valid neighbors are found
+    ;; Expand search until we have at least 5 valid neighbors
     while [count potential-neighbors < 5 and radius <= 30] [
       set radius radius + 1
-      set potential-neighbors patches in-radius radius with [
-        mercury != 0
-      ]
+      set potential-neighbors patches in-radius radius with [mercury != 0]
     ]
-    ; show (word "Potential neighbors: " count potential-neighbors)
     
-    ;; Sort potential neighbors by distance to the current patch
-    let sorted-neighbors sort-on [distance myself] potential-neighbors
-    
-    ;; Select the closest 5 neighbors
-    let valid-neighbors n-of 5 sorted-neighbors
-    
-    ;; Convert the list of valid neighbors to an agentset
-    let valid-neighbors-set patch-set valid-neighbors
-    
-    ;; Check if the agentset is not empty
-    if any? valid-neighbors-set [
-      ;; Calculate interpolated mercury value using the agentset
-      let avg-mercury mean [mercury] of valid-neighbors-set
-      
-      ;; Assign interpolated mercury value
+    if any? potential-neighbors [
+      let sorted-neighbors sort-on [distance myself] potential-neighbors
+      let valid-neighbors n-of 5 sorted-neighbors
+      let avg-mercury mean [mercury] of patch-set valid-neighbors
+
       set mercury avg-mercury
-      ;set pcolor yellow
-      ;; Mark patch as interpolated
-      ;set interpolated-patch? true
     ]
   ]
   
+  ;; Record global range
   set max-Hg max [mercury] of patches
   set min-Hg min [mercury] of patches
 end

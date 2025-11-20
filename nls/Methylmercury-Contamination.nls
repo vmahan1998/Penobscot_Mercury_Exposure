@@ -16,7 +16,8 @@ to methylmercury-contamination
   ]
 
   ;; Bioaccumulation risk scales with normalized contamination, stress, and SPM
-  set mehg-uptake-risk (MeHg-normalized * (1 + ionregulatory-stress) * (1 + SPM-current))
+  set mehg-uptake-risk (metabolism-rate * MeHg-normalized * (1 + ionregulatory-stress) * (1 + SPM-current))
+  set mehg-total (hg-total + mehg-uptake-risk)
   
   ;; Track cumulative MeHg exposure
   set mehg-exposure-total mehg-exposure-total + MeHg-current ;; total exposure 
