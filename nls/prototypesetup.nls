@@ -40,6 +40,9 @@ to prototype-parameters
 ] [
   set patch-terrain "land"
   set pcolor brown
+     ;; Extremely high cost to prevent entering these patches
+  set cost-to-home 1e12
+  set cost-to-sea  1e12
 ]
   
  ask patches with [patch-terrain != "land"] [ 
@@ -262,7 +265,7 @@ end
 
 to prototype-go
 ;; update the data
-  ask patches [ 
+ask patches with [patch-terrain != "land"] [
     set velocity update-prototype-velocity ticks ;; random value between -1.5 and 1.5
     ;set velocity (random-float 0.1 - 0.05)
     set patch-terrain "water"

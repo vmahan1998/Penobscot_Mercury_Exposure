@@ -1,3 +1,52 @@
+to count-alewives
+  ;; --------------------------------------------
+;; AFTER THE ALEWIFE MOVES
+;; --------------------------------------------
+
+let old-patch previous-patch
+let new-patch patch-here
+
+;; -------------------------------------------------
+;; 1. Count dam crossing (landward / seaward)
+;; -------------------------------------------------
+let dam-line 342
+let old-y [pycor] of old-patch
+let new-y [pycor] of new-patch
+
+if (old-y < dam-line and new-y >= dam-line) [
+  set alewives-on-line-daily-total-landward
+      alewives-on-line-daily-total-landward + 1
+]
+
+if (old-y >= dam-line and new-y < dam-line) [
+  set alewives-on-line-daily-total-seaward
+      alewives-on-line-daily-total-seaward + 1
+]
+
+
+;; -------------------------------------------------
+;; 2. Count estuary entry (SEA → NOT-SEA)
+;; -------------------------------------------------
+let old-type [patchtype] of old-patch
+let new-type [patchtype] of new-patch
+
+if (old-type = "sea" and new-type != "sea") [
+  set alewives-entering-estuary-daily-total
+      alewives-entering-estuary-daily-total + 1
+]
+
+;; -------------------------------------------------
+;; 3. Count estuary exit (NOT-SEA → SEA)
+;; -------------------------------------------------
+if (old-type != "sea" and new-type = "sea") [
+  set alewives-exiting-estuary-daily-total
+      alewives-exiting-estuary-daily-total + 1
+]
+
+end
+
+
+
 to count-fish-lift
   let dam-line 342
 

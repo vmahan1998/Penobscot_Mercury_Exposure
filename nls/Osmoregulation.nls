@@ -67,7 +67,6 @@ to calculate-ionregulatory-stress
     ;show (word "Ion-Regulatory Stress: " ionregulatory-stress " | Stress Reduction: " stress-reduction)
 
     ;; Update tracking variables
-    set previous-patch patch-here
     set previous-stress ionregulatory-stress
 end
 

@@ -199,6 +199,10 @@ Alewives-own [
   STST-start-tick ;; Selective tidal transport transition
   migration-day
   migration-probability ;; porbability to migrate
+  
+  ;; pred/prey 
+  vision ;;should change from spm
+  
 ]
 
 StripedBass-own [

@@ -224,7 +224,7 @@ initial-alewives
 initial-alewives
 2
 10000
-5.0
+1000.0
 1
 1
 fish
@@ -298,7 +298,7 @@ CHOOSER
 model-type
 model-type
 "penobscot" "prototype"
-1
+0
 
 PLOT
 1032
@@ -788,10 +788,10 @@ Month (#)
 HORIZONTAL
 
 PLOT
-18
-1334
-289
-1596
+20
+1080
+292
+1332
 Migration Cue
 day
 NIL
@@ -842,10 +842,10 @@ cue-active?
 11
 
 PLOT
-294
-1335
-654
-1602
+24
+805
+384
+1072
 Milford Fish Lift Validation
 Ticks
 Alewives (Scaled)
@@ -857,29 +857,11 @@ true
 true
 "" ""
 PENS
-"Landward Counts" 1.0 0 -15040220 true "" "plot alewives-on-line-daily-total-landward"
-"Seaward Counts" 1.0 0 -955883 true "" "plot alewives-on-line-daily-total-seaward"
-"migration probability" 1.0 0 -13345367 true "" "plot mean [migration-probability] of alewives"
-"Estuary Enter" 1.0 0 -5825686 true "" "plot alewives-entering-estuary-daily-total"
-"Estuary Exit" 1.0 0 -2674135 true "" "plot alewives-exiting-estuary-daily-total"
-
-PLOT
-659
-1334
-1021
-1603
-Migration Day
-NIL
-NIL
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "histogram [migration-day] of alewives"
+"Dam Enter" 1.0 0 -15040220 true "" " if ticks mod 288 = 0 [ plot alewives-on-line-daily-total-landward ]"
+"Dam Exit" 1.0 0 -955883 true "" " if ticks mod 288 = 0 [ plot alewives-on-line-daily-total-seaward ]"
+"migration probability" 1.0 0 -13345367 true "" " if ticks mod 288 = 0 [ plot mean [migration-probability] of alewives ]"
+"Estuary Enter" 1.0 0 -5825686 true "" "if ticks mod 288 = 0 [ plot alewives-entering-estuary-daily-total ]"
+"Estuary Exit" 1.0 0 -2674135 true "" " if ticks mod 288 = 0 [ plot alewives-exiting-estuary-daily-total ]"
 
 @#$#@#$#@
 ## WHAT IS IT?

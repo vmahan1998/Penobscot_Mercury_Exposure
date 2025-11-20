@@ -131,24 +131,8 @@ to penobscot-go
    ;color-foraging-patches
   ]
   
-      ask n-of 100 alewives [
-  show (word "who:" who
-            " old-y:" [pycor] of previous-patch
-            " new-y:" pycor)
-]
-   
-        ;; now that everyone has moved this tick, count crossings
-  count-estuary-entry
-  count-fish-lift
-  count-estuary-exit
-  
 ask alewives with [age = "adult"] [
-  ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
-    if ticks mod 288 = 0 [
-    calc-migration-probability
-    ]
 
- 
     if (not start-migration?) [
       let p migration-probability
       if random-float 1 <= p [
@@ -167,6 +151,7 @@ ask alewives with [age = "adult"] [
       calculate-metabolism
       set previous-patch patch-here
       swim
+      flee-stripedbass ;; if fleeing use energy
       mercury-contamination
       methylmercury-contamination
       osmoregulate
@@ -214,19 +199,49 @@ ask alewives with [age = "adult"] [
   ]
       
 ]
-    
-]
-    
-
+  ;; now that everyone has moved this tick, count crossings
+  count-alewives    
+ 
+  ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
+  if ticks mod 288 = 0 [
+  calc-migration-probability
+  ]
+]    
+  
   ask stripedbass with [age = "adult"] [
     ;school ;align, cohere, separate, separation minimum, schoolmates
     ;migrate ;time, tidal-phase, depth preference
     ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
+    set prey-in-vision alewives in-radius vision ;; defines alewives in vision radius
 
+    ifelse any? prey-in-vision
+    [ chase-nearest-alewife ]  ;; point towards nearest prey in "nls/Chase-nearest-alewife.nls"
+    [ wander ] ;; wander if no prey in sight in "nls/Wander.nls"
 
+    adjust-stripedbass-speed  ;; predator will speed up when making an attack
+    scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
+    eat ;; eat prey if within neighbors in "nls/Eat.nls"
+    reset-daytime-prey-eaten ;; limit daily prey eaten
+    count-time-since-full ;; fish rests when full
   ]
-  
 
+  ;highlight-patches-with-prey-eaten ;; highlights patches where prey has been eaten
+  ;count-mean-daytime-prey-eaten ;; count mean daily prey eaten
+  ;report-alewife-population ;; records prey population
+   
+  ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
+  if ticks mod 288 = 0 [
+      
+  show word "LANDWARD: " alewives-on-line-daily-total-landward
+  show word "SEAWARD: " alewives-on-line-daily-total-seaward
+  show word "ENTRY: "    alewives-entering-estuary-daily-total
+  show word "EXIT: "     alewives-exiting-estuary-daily-total
+
+  set alewives-on-line-daily-total-landward 0
+  set alewives-on-line-daily-total-seaward 0
+  set alewives-entering-estuary-daily-total 0
+  set alewives-exiting-estuary-daily-total 0
+  ]
   
   ;; After all agent actions (before 'end')
 if all? alewives with [age = "adult"] [

@@ -8,3 +8,59 @@ to chase-nearest-alewife ;; predator procedure
     fd 1
   ]
 end
+
+to calculate-vision
+;; Step 1: Calculate Ion-Regulatory Stress
+    ;; Get previous salinity (safe check)
+    let previous-salinity [salinity] of previous-patch
+
+    ;; Get current patch salinity
+    let patch-salinity [salinity] of patch-here
+    let agent-salinity acclimated-salinity
+    let previous-stress ionregulatory-stress
+
+    ;; Compute scaled salinity difference (relative to acclimated level)
+    let scaled-difference abs(agent-salinity - patch-salinity)
+
+    ;; Compute base salinity-driven stress
+    let salinity-stress salinity-to-stress scaled-difference chloride-cell-density previous-stress
+    
+    ;; Apply osmoregulation-efficiency as a difficulty modifier
+    ;; Lower efficiency = higher perceived stress
+    ;set salinity-stress salinity-stress * (1 / osmoregulation-efficiency)
+  
+    ;; Acclimation logic: If salinity remains stable, adjust acclimated salinity
+    let salinity-change abs(patch-salinity - previous-salinity)
+    if salinity-change < 1 [  ;; Adjust threshold as needed
+      set stable-time stable-time + 1
+    ] 
+    if salinity-change >= 1 [
+      set stable-time 0  ;; Reset if salinity fluctuates
+    ]
+
+    ;; Delay Stress Reduction Until Chloride Cells Increase
+    if stable-time > 4 and chloride-cell-density > chloride-density-min [
+      set salinity-stress salinity-stress * 0.98  
+      set acclimated-salinity acclimated-salinity + (patch-salinity - acclimated-salinity) * 0.02  
+      ;show "Acclimation Occurring: Adjusting Acclimated Salinity"
+    ]
+
+    ;; Compute chloride cell buffering
+    let stress-reduction calculate-stress-reduction-chloride-function chloride-cell-density
+
+    ;; Stress Only Decreases When Chloride Cells Increase
+    if chloride-cell-density > chloride-density-min [
+      set ionregulatory-stress max (list 1 (salinity-stress - stress-reduction * 0.8))  
+    ] 
+    if chloride-cell-density <= chloride-density-min [
+      set ionregulatory-stress salinity-stress  ;; No stress reduction if chloride cells are too low
+    ]
+
+    ;; Debugging prints
+    ;show (word "Salinity Change: " salinity-change " | Stable Time: " stable-time)
+    ;show (word "Acclimated Salinity: " acclimated-salinity " | Patch Salinity: " patch-salinity)
+    ;show (word "Ion-Regulatory Stress: " ionregulatory-stress " | Stress Reduction: " stress-reduction)
+
+    ;; Update tracking variables
+    set previous-stress ionregulatory-stress
+end

@@ -224,7 +224,7 @@ initial-alewives
 initial-alewives
 2
 10000
-5.0
+1000.0
 1
 1
 fish
@@ -298,7 +298,7 @@ CHOOSER
 model-type
 model-type
 "penobscot" "prototype"
-1
+0
 
 PLOT
 1032
@@ -857,11 +857,11 @@ true
 true
 "" ""
 PENS
-"Landward Counts" 1.0 0 -15040220 true "" "plot alewives-on-line-daily-total-landward"
-"Seaward Counts" 1.0 0 -955883 true "" "plot alewives-on-line-daily-total-seaward"
-"migration probability" 1.0 0 -13345367 true "" "plot mean [migration-probability] of alewives"
-"Estuary Enter" 1.0 0 -5825686 true "" "plot alewives-entering-estuary-daily-total"
-"Estuary Exit" 1.0 0 -2674135 true "" "plot alewives-exiting-estuary-daily-total"
+"Dam Enter" 1.0 0 -15040220 true "" " if ticks mod 288 = 0 [ plot alewives-on-line-daily-total-landward ]"
+"Dam Exit" 1.0 0 -955883 true "" " if ticks mod 288 = 0 [ plot alewives-on-line-daily-total-seaward ]"
+"migration probability" 1.0 0 -13345367 true "" " if ticks mod 288 = 0 [ plot mean [migration-probability] of alewives ]"
+"Estuary Enter" 1.0 0 -5825686 true "" "if ticks mod 288 = 0 [ plot alewives-entering-estuary-daily-total ]"
+"Estuary Exit" 1.0 0 -2674135 true "" " if ticks mod 288 = 0 [ plot alewives-exiting-estuary-daily-total ]"
 
 @#$#@#$#@
 ## WHAT IS IT?
