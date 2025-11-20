@@ -1,1 +1,1 @@
-This repo is too small to host data needed to run the model. The purpose of this repository is to store project information, documents, references and code.
+This repo contains an open-source model the was co-developed with the Penobscot Nation and other local community members through a workshop on August 5th, 2025. The purpose of this repository is to store agent-based model workflow, functions, documents, and raw code.
