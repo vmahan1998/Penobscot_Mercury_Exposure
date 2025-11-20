@@ -88,7 +88,8 @@ to migrate-landward
     ;; slice the path to move only that far (avoid exceeding path length)
     let move-patches sublist path 0 (min list steps-to-move length path)
     
-    ;; move turtle along the path without jumping entire distance at once
+    ;; move turtle along the path without jumping entire distance at oenc
+    
     foreach move-patches [ p ->
       face p
       move-to p

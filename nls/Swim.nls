@@ -1,9 +1,8 @@
 to swim
-    set previous-patch patch-here
   ;; ==========================================================
   ;; Fish movement control integrating swimming energy metabolism
   ;; ==========================================================
-
+   set previous-patch patch-here
   ;; ------------------------------------------
   ;; LANDWARD MIGRATION (pre-spawning)
   ;; ------------------------------------------
@@ -38,6 +37,7 @@ to swim
   ;; UNIVERSAL METABOLIC COST (swimming energy)
   ;; ------------------------------------------
   calculate-swim-energy
+
 end
 
 to calculate-swim-energy

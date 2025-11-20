@@ -224,7 +224,7 @@ initial-alewives
 initial-alewives
 2
 10000
-1000.0
+5.0
 1
 1
 fish
@@ -298,7 +298,7 @@ CHOOSER
 model-type
 model-type
 "penobscot" "prototype"
-0
+1
 
 PLOT
 1032

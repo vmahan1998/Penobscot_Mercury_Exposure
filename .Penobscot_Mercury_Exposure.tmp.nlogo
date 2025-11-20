@@ -224,7 +224,7 @@ initial-alewives
 initial-alewives
 2
 10000
-1000.0
+5.0
 1
 1
 fish
@@ -298,7 +298,7 @@ CHOOSER
 model-type
 model-type
 "penobscot" "prototype"
-0
+1
 
 PLOT
 1032
@@ -788,10 +788,10 @@ Month (#)
 HORIZONTAL
 
 PLOT
-18
-1334
-289
-1596
+20
+1080
+292
+1332
 Migration Cue
 day
 NIL
@@ -842,11 +842,11 @@ cue-active?
 11
 
 PLOT
-642
-1339
-1002
-1606
-Milfor Fish Lift Validation
+24
+805
+384
+1072
+Milford Fish Lift Validation
 Ticks
 Alewives (Scaled)
 0.0
@@ -862,24 +862,6 @@ PENS
 "migration probability" 1.0 0 -13345367 true "" "plot mean [migration-probability] of alewives"
 "Estuary Enter" 1.0 0 -5825686 true "" "plot alewives-entering-estuary-daily-total"
 "Estuary Exit" 1.0 0 -2674135 true "" "plot alewives-exiting-estuary-daily-total"
-
-PLOT
-1254
-1340
-1616
-1609
-Migration Day
-NIL
-NIL
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "histogram [migration-day] of alewives"
 
 @#$#@#$#@
 ## WHAT IS IT?

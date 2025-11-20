@@ -8,11 +8,7 @@ to calendar ;;counter procedure to keep track of the hour, day, month, and year
     set minute 0
   ]
   if hour = 24 [
-    report-estuary-entry-daily
-    report-fish-lift-daily
-    report-estuary-exit-daily
-
-    ;; NOW start new day
+  ;; NOW start new day
     set day (day + 1)
 
     ;; other calendar functions

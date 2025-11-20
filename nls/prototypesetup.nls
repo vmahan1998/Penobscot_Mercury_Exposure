@@ -1,13 +1,48 @@
 to prototype-setup
   resize-world 0 200 0 350
   set-patch-size 3
+ 
   set Hg-threshold 150 ; ng/kg (National Oceanic and Atmospheric Administration (NOAA), 1990) Adjust based on NOAA data
   set MeHg-threshold 15 ; ng/kg Adjust based on NOAA data
+  set month-list ["April" "May" "June" "July" "August" "September" "October"]
+  ;set current-hour 0
+  set day 120
+  set hour 0
+  set monthnum 4
+  set month 4
+  ;draw-mehg-legend
+  load-cue-csv
+  set cue-active? false
+  set migration-trigger? false
+  set alewives-exiting-estuary-daily-total 0
+  set alewives-entering-estuary-daily-total 0
+  set alewives-on-line-daily-total-landward 0
+  set alewives-on-line-daily-total-seaward 0
+  set daylength-diff-list []
+  find-migration-days
+  update-migration-cue
+  
+  ask patches with [patch-terrain != "water"] [
+   set cost-to-home 1e9
+   set cost-to-sea 1e9
+    ;set temperature temperature + 5
+  ]
   reset-ticks
 end
 
 to prototype-parameters
-  ask patches [ 
+  
+    ask patches with [
+  pxcor = min-pxcor or
+  pxcor = max-pxcor or
+  pycor = min-pycor or
+  pycor = max-pycor
+] [
+  set patch-terrain "land"
+  set pcolor brown
+]
+  
+ ask patches with [patch-terrain != "land"] [ 
     set pcolor blue
     set velocity update-prototype-velocity ticks  ;; Random velocity between -1.5 and 1.5
     if velocity > 0 [
@@ -35,7 +70,10 @@ to prototype-parameters
     set forage-species []
     
   ] 
+  
 
+  
+  
   setup-migration
 end
 
@@ -49,17 +87,45 @@ to create-fish [fish-type num-fish]
     set breed fish-type
     set shape "fish"
     set age "adult"
-    set color one-of [blue green cyan]  ;; Assign colors per species if needed
-    move-to one-of patches  ;; Place randomly in the environment
-    set previous-patch patch-here
-    
-    ;; Assign gender to fish
-    ifelse random-float 1 < 0.5 [
-      set sex "male"
-    ] [
-      set sex "female"
-    ]
 
+    set home-patch patch 99 329
+    set migration-patch patch 100 35
+    set trail []
+    set planned-path []
+
+       ;; Landward Migration Start
+    if migration-patch != nobody [ move-to migration-patch ]
+    set previous-patch migration-patch
+    set landward-migration? false
+    set seaward-migration? false
+    set at-destination? false
+    set lipid-loss? true
+    set filter-feed? false
+    set completed-action? false
+    set start-migration? false
+    ;set migration-day 0
+
+    ; Seaward migration start
+;    if home-patch != nobody [ move-to home-patch ]
+;    set seaward-migration? false
+;    set landward-migration? true
+;    set at-destination? true
+;    set lipid-loss? true
+;    set filter-feed? false
+;    set completed-action? true
+;    set start-migration? true
+;    set acclimated-salinity [salinity] of patch-here
+;    set previous-patch patch-here
+    
+    set align-coefficient 50
+    set cohere-coefficient 50
+    set separate-coefficient 50
+    set minimum-separation 0.3
+    set color black
+
+    ;; =====================================
+    ;; --- Population Statistics (Adults) ---
+    ;; =====================================
 
     ;; ---- Age ----
     let min-age-pop 2
@@ -75,7 +141,8 @@ to create-fish [fish-type num-fish]
     let sd-length 0.012
     let min-size-pop 0.200
     let max-size-pop 0.320
-    set size truncated-normal mu-length sd-length min-size-pop max-size-pop
+    ;set size truncated-normal mu-length sd-length min-size-pop max-size-pop
+    set size 3
     set length-size size * 1000
     
     ;; ---- Weight (g) from Length (mm) ----
@@ -89,7 +156,7 @@ to create-fish [fish-type num-fish]
     ;; =====================================
     ;; --- Habitat & physiological prefs ---
     ;; =====================================
-    set optimal-temperature 17
+    set optimal-temperature 17 - ((age-num - 3) * 0.4) + random-normal 0 0.3
     set optimal-velocity 0.25 + ((size - 3) * 0.05) + random-normal 0 0.03
     set optimal-depth 1.5 + ((size - 3) * 0.7) + random-normal 0 0.2
     let min-spm 0     ;; lower migration bound
@@ -100,13 +167,22 @@ to create-fish [fish-type num-fish]
     set min-speed 0.1
     
     ;; ---- Migration Temperature Preference ----
-    let min-temp 5     ;; lower migration bound
-    let max-temp 10     ;; upper migration bound
-    let mean-temp 8    ;; optimal migration temperature (mean)
+    let min-temp 5.5     ;; lower migration bound
+    let max-temp 6.5     ;; upper migration bound
+    let mean-temp 6    ;; optimal migration temperature (mean)
     let sd-temp 1.5     ;; spread (wide enough for early & late migrants)
     
     ;set migration-temp truncated-normal mean-temp sd-temp min-temp max-temp
-    set migration-temp 10
+    ;set migration-temp 5.5
+    
+    ;; ---- Migration Photoperiod Preference (minutes) ----
+    let min-photo 10.25     ;; lower migration bound
+    let max-photo 15.25     ;; upper migration bound
+    let mean-photo 14.75    ;; optimal migration temperature (mean)
+    let sd-photo 1.5     ;; spread (wide enough for early & late migrants)
+    
+    ;set target-migration-day (random-normal cue-day sigma-days)
+    ;set migration-photo 5.5
     
     ;; ---- Metabolic Variables ----
     set swim-efficiency 1             ;; metabolic cost/benefit to swimming       
@@ -117,18 +193,19 @@ to create-fish [fish-type num-fish]
     initialize-metabolism
     
     ;; ---- Days at Large in Estuary ----
-    let min-days 1     ;; lower migration bound
-    let max-days 7     ;; upper migration bound
-    let mean-days 3.5    ;; optimal migration temperature (mean)
+    let min-days 14     ;; lower migration bound
+    let max-days 21     ;; upper migration bound
+    let mean-days 16    ;; optimal migration temperature (mean)
     let sd-days 1.5     ;; spread (wide enough for early & late migrants)
     
-    ;set days-at-large truncated-normal mean-days sd-days min-days max-days
-    set days-at-large 1
+    set days-at-large truncated-normal mean-days sd-days min-days max-days
+    ;set days-at-large 54 ;;difference between peak migration start for landward and peak seaward migration start (informed by Justin Stevens)
+    
     ;; ---- Swimming Speed (m per 5 minutes) ----
     ;; Speed = 1.5–3.0 × body length per second, converted to 5-minute step
-    let swim-multiplier (1.5 + random-float 1.5)
-    set max-speed (size * swim-multiplier * 300) ;; speed from m/s to m / 5 minutes
-    set speed max-speed / 2
+    let swim-multiplier (0.5 + random-float 0.5)
+    set max-speed (1 * swim-multiplier * 300) ;; speed from m/s to m / 5 minutes
+    set speed 0.1
     set energy 100
 
     ;; =====================================
@@ -148,7 +225,7 @@ to create-fish [fish-type num-fish]
     set mehg-total 0 ; sum of methylmercury risk
     set hg-total 0 ; sum of mercury risk
     set migration-action "spawning"
-
+    set migration-probability 0
     set migration-destination "upper estuary"
 
     set landward-migration-time 0
@@ -168,18 +245,11 @@ to create-fish [fish-type num-fish]
     ;set E-creation 0.02
     set selective-tidal-transport? false
     set foraging? false
-    set lipid-loss? true
-    set filter-feed? false
-    set start-migration? true
-    set landward-migration? true
-    set seaward-migration? false
+
     set wait-days 0
     set wait-ticks 0
     set path-index 1
-    set home-patch patch 99 329
-    set migration-patch patch 100 35
-    set trail []
-    set planned-path []
+
     ;; ---- Sex assignment ----
     ifelse random-float 1 < 0.5 [
       set sex "male"
@@ -194,24 +264,78 @@ to prototype-go
 ;; update the data
   ask patches [ 
     set velocity update-prototype-velocity ticks ;; random value between -1.5 and 1.5
+    ;set velocity (random-float 0.1 - 0.05)
     set patch-terrain "water"
     set depth random-float 5  ;; random value between 0 and 5 meters
     set temperature 17
     set salinity update-salinity ticks
     set SPM random-float 0.0004  ;; random value between 0 and 0.0004
+    set cost-to-home 1e6
+   set cost-to-sea 1e6
 
   ]
   
 ;; potential behavioral rules
    ask alewives with [age = "adult"] [
-    calculate-metabolism
-    mercury-contamination ;; track mercury contamination
-    methylmercury-contamination ;; track methylmercury contamination
-    osmoregulate ;; always osmoregulate
-    swim ;; always swim, school, and stage (built in)
-    forage
-    
+      ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
+    if ticks mod 288 = 0 [
+    calc-migration-probability
+    ]
+
+ 
+    if (not start-migration?) [
+      let p migration-probability
+      if random-float 1 <= p [
+        set start-migration? true
+        set landward-migration? true
+        set seaward-migration? false
+        set migration-day day
+      ]
+    ]
+   
+  ;; --- Migration and behavior sequence ---
+  if start-migration? [
+      
+    ;; Perform behavioral sequence only if not at home
+    if not at-destination? [
+      calculate-metabolism
+      swim
+      mercury-contamination
+      methylmercury-contamination
+      osmoregulate
+        
+      if energy <= 25 [ set foraging? true ]
+      if energy >= 75 [ 
+       set foraging? false
+       set lipid-loss? false
+       set filter-feed? false ]
+      forage
+      ]
+    ]
+
+    ;; --- Residence phase (fish is home) ---
+      if (patch-here = home-patch) and (landward-migration? = true) [
+      if wait-days < days-at-large [
+        set at-destination? true
+        set completed-action? true
+        set wait-ticks wait-ticks + 1
+        set wait-days (wait-ticks / 288) ; 5 minute time steps
+       
+     ]
+      ;; --- Departure phase ---
+      if wait-days >= days-at-large [
+        set seaward-migration? true
+        set landward-migration? false
+        set at-destination? false
+      ]
+    ]
+      
+      if (patch-here = migration-patch) and (seaward-migration? = true) [
+    set start-migration? false
   ]
+      
+]
+    
 
   ask stripedbass with [age = "adult"] [
     ;school ;align, cohere, separate, separation minimum, schoolmates
@@ -242,8 +366,8 @@ to-report update-salinity [current-tick]
 end
 
 to-report update-prototype-velocity [current-tick]
-  let min-velocity -1.5  ;; Lower bound of salinity
-  let max-velocity 1.5  ;; Upper bound of salinity
+  let min-velocity -0.5  ;; Lower bound of salinity
+  let max-velocity 0.5  ;; Upper bound of salinity
   set max-seaward-velocity 1.5
   set max-landward-velocity -1.5
   let cycle-tick (current-tick mod 200)  ;; Resets every 600 ticks

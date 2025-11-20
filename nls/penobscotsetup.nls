@@ -131,18 +131,24 @@ to penobscot-go
    ;color-foraging-patches
   ]
   
-  ;; now that everyone has moved this tick, count crossings
+      ask n-of 100 alewives [
+  show (word "who:" who
+            " old-y:" [pycor] of previous-patch
+            " new-y:" pycor)
+]
+   
+        ;; now that everyone has moved this tick, count crossings
   count-estuary-entry
   count-fish-lift
   count-estuary-exit
   
 ask alewives with [age = "adult"] [
-    
   ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
     if ticks mod 288 = 0 [
     calc-migration-probability
     ]
-    
+
+ 
     if (not start-migration?) [
       let p migration-probability
       if random-float 1 <= p [
@@ -159,6 +165,7 @@ ask alewives with [age = "adult"] [
     ;; Perform behavioral sequence only if not at home
     if not at-destination? [
       calculate-metabolism
+      set previous-patch patch-here
       swim
       mercury-contamination
       methylmercury-contamination
