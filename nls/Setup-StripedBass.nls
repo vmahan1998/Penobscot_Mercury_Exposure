@@ -159,6 +159,8 @@ to setup-stripedbass
     set stomach-capacity 
     truncated-normal mean-stomach sd-stomach min-stomach max-stomach
     set stomach-contents 0
+    set stomach-contents-Hg 0;; mercury stomach amount
+    set stomach-contents-MeHg 0;; methylmercury stomach amount
     
     ;; ---- Digestion Rate ----
     let min-d 14     ;; lower migration bound

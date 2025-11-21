@@ -257,6 +257,8 @@ StripedBass-own [
   
   digestion-time ;; counts how long the fish needs to digest before eating again
   stomach-contents
+  stomach-contents-Hg ;; mercury stomach amount
+  stomach-contents-MeHg ;; methylmercury stomach amount
   stomach-capacity ;; total prey allowance (may be dependent on size)
   stomach-contents      ;; total biomass currently in stomach (g)
   stomach-capacity      ;; max grams the stomach can hold

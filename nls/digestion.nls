@@ -3,13 +3,31 @@ to digest
   if stomach-contents != 0 [
   ;; Amount digested this tick
   let digested (stomach-contents * digestion-rate)
-
+  let digested-Hg ((digested/stomach-contents) * stomach-contents-Hg)
+  let digested-MeHg ((digested/stomach-contents) * stomach-contents-MeHg)
+    
   ;; Remove from stomach
   set stomach-contents max list 0 (stomach-contents - digested)
-
+  set stomach-contents-Hg max list 0 (stomach-contents-Hg - digested-Hg)
+  set stomach-contents-MeHg max list 0 (stomach-contents-MeHg - digested-MeHg)
+    
   ;; Convert to usable energy
   let gained-energy digested * digestion-efficiency
-    set energy energy + gained-energy ]
+  set energy energy + gained-energy 
+  
+  ;; Mercury Risk
+
+
+  ;; --- Accumulate uptake ---
+  set mehg-foraging mehg-digested-MeHg
+  set hg-foraging digested-Hg
+      
+  set mehg-foraging-total mehg-foraging-total + mehg-uptake
+  set hg-foraging-total hg-foraging-total + hg-uptake
+
+  set mehg-total mehg-total + mehg-uptake
+  set hg-total hg-total + hg-uptake
+  ]
 end
 
 to calculate-digestion-rate
