@@ -5,7 +5,7 @@ to setup-stripedbass
     if migration-patch != nobody [
       move-to migration-patch
     ]
-    
+    set previous-patch patch-here
     set align-coefficient 50
     set cohere-coefficient 50
     set separate-coefficient 50
@@ -90,6 +90,7 @@ to setup-stripedbass
     ;; ---- Metabolic Variables ----
     set swim-efficiency 1             ;; metabolic cost/benefit to swimming       
     set digestion-efficiency stripedbass-digestion-efficiency        ;; metabolic cost/benefit to digestion
+    set digestion-penalty 1        ;; metabolic cost/benefit to digestion
     set osmoregulation-efficiency 1   ;; metabolic cost/benefit to osmoregulation
     set lipid-catabolism-efficiency 1 ;; metabolic cost/benefit to lpid catabolism
     
@@ -107,6 +108,9 @@ to setup-stripedbass
     ;; =====================================
     set bursting? false
     set hunting? false
+    set foraging? false
+    set lipid-loss? false
+    set  filter-feed? false
     set hg-exposure-duration 0 ; time spect exposed
     set mehg-exposure-duration 0 ; time spect exposed
     set hg-uptake-risk 0 ; instantanious risk from exposure
@@ -132,14 +136,13 @@ to setup-stripedbass
     set chloride-max-proliferation 0.05
     set chloride-cells-this-tick 0.0
     set acclimation-rate 0.1
+    set acclimated-salinity [salinity] of patch-here
     set C-mid 0.5
     set time-since-last-osmoregulation 0
     ;set E-osmo 0
     ;set E-base 0.05
     ;set E-creation 0.02
-    set selective-tidal-transport? false
-    set foraging? false
-    
+    set start-migration? false
     set target-prey nobody
     set daytime-prey-eaten 0;; counts number of prey eaten by bass in single day
     set numAlewivesEaten 0;; total alewives eaten
@@ -161,6 +164,8 @@ to setup-stripedbass
     set stomach-contents 0
     set stomach-contents-Hg 0;; mercury stomach amount
     set stomach-contents-MeHg 0;; methylmercury stomach amount
+    
+    find-gape-size
     
     ;; ---- Digestion Rate ----
     let min-d 14     ;; lower migration bound
@@ -197,18 +202,18 @@ to setup-stripedbass
       ;set numFemales numFemales + 1
     ]
   
-    let mean-distance (length-size * 3)        ;; typical = 3 body lengths
+    let mean-distance (size * 3)        ;; typical = 3 body lengths
     let sd-distance   (mean-distance * 0.1)    ;; 10 percent variation
-    let min-distance  (length-size * 2)        ;; cannot see less than 2 body lengths
-    let max-distance  (length-size * 4)        ;; clear-water max ≈ 4 body lengths
+    let min-distance  (size * 2)        ;; cannot see less than 2 body lengths
+    let max-distance  (size * 4)        ;; clear-water max ≈ 4 body lengths
     
     let base-vision-distance-meters 
     truncated-normal mean-distance sd-distance min-distance max-distance
     
-    set base-vision-distance (base-vision-distance-meters  / 3) ;convert to patch units
-    set min-vision-distance (length-size / 3) ;convert to patch units
+    set base-vision-distance (base-vision-distance-meters / 3) ;convert to patch units
+    set min-vision-distance (size / 3) ;convert to patch units
     
-    find-gape-size
+
   ]
 end
 

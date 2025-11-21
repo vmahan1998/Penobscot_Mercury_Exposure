@@ -87,3 +87,87 @@ to debug-hydro-data
     show (word "prop. missing: " precision (ifelse-value (n-water > 0) [ cnt-missing / n-water ] [ 0 ]) 4)
   ]
 end
+
+to initialize-velocity-extremes-from-series
+  ;; Only consider water patches with valid velocity series
+  let valid-water-patches patches with [
+    patch-terrain = "water" and
+    is-list? velocity-series and
+    length velocity-series > 0 
+  ]
+
+  let all-mins []
+  let all-maxs []
+
+  ;; Collect patch-level minima and maxima (no outlier filtering)
+  foreach sort valid-water-patches [
+    p ->
+    let vs [velocity-series] of p
+    ;; remove "NA" entries if any
+    let clean-vs filter [v -> (is-number? v)] vs
+    if length clean-vs > 0 [
+      set all-mins lput min clean-vs all-mins
+      set all-maxs lput max clean-vs all-maxs
+    ]
+  ]
+
+  ;; Combine values without filtering for outliers
+  let combined-values sentence all-mins all-maxs
+  if length combined-values > 0 [
+    let seaward-values filter [v -> v < 0] combined-values
+    let landward-values filter [v -> v > 0] combined-values
+
+    ifelse length seaward-values > 0 [
+      ;; most negative (min) seaward value is the maximum seaward magnitude
+      set max-seaward-velocity min seaward-values
+    ][
+      set max-seaward-velocity -0.001
+    ]
+
+    ifelse length landward-values > 0 [
+      set max-landward-velocity max landward-values
+    ][
+      set max-landward-velocity 0.001
+    ]
+
+    ;show (word "System-wide Seaward V-max (most negative): " max-seaward-velocity)
+    ;show (word "System-wide Landward V-min (most positive): " max-landward-velocity)
+  ]
+end
+
+
+to update-patch-data
+  ask patches with [patch-terrain = "water"] [
+    if current-hour < (total-hours - 1) [
+      set velocity item current-hour velocity-series
+      set depth item current-hour depth-series
+      set salinity item current-hour salinity-series
+      set temperature item current-hour temp-series
+      set SPM random-float 0.0004  ;; random value between 0 and 0.0004
+      ;set SPM item ticks SPN-series
+      ;set temperature temperature + 5
+            ;; ---- Temperature cue for alewife migration ----
+    ;let temp-patches patches with [patchtype = "sea"]
+    ;if (count alewives with [start-migration?]) = count alewives [
+    ;set local-temp mean [temperature] of temp-patches
+        ;show (word "Local Temperature: " local-temp)]
+    ;]
+    ] ;; only update for migration cue
+    
+      if current-hour = (total-hours - 1) [
+      Update-hydro-data
+  
+  ]]
+    ask patches with [patch-terrain != "water"] [
+      set velocity 0
+      set depth 0
+      set salinity 0
+      set temperature 0
+      set SPM 0
+      ;set SPM item ticks SPN-series
+   
+  
+  ]
+  compute-SPM-range
+  initialize-velocity-extremes-from-series
+end

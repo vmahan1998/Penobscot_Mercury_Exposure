@@ -256,10 +256,8 @@ StripedBass-own [
   numAlewivesEaten ;; total alewives eaten
   
   digestion-time ;; counts how long the fish needs to digest before eating again
-  stomach-contents
   stomach-contents-Hg ;; mercury stomach amount
   stomach-contents-MeHg ;; methylmercury stomach amount
-  stomach-capacity ;; total prey allowance (may be dependent on size)
   stomach-contents      ;; total biomass currently in stomach (g)
   stomach-capacity      ;; max grams the stomach can hold
   digestion-rate        ;; fraction of stomach digested per tick
@@ -274,6 +272,12 @@ StripedBass-own [
   mehg-exposure-total ;; sum of known methylmercury contamination levels exposed to
   mehg-exposure-total-normalized ;; normalized sum of known methylmercury contamination levels exposed to
   hg-exposure-total-normalized ;; normalized sum of knownmercury contamination levels exposed to
+  hg-foraging  ; total risk from foraging
+  mehg-foraging  ; total risk from foraging
+  mehg-foraging-total  ; sum of foraging risk
+  hg-foraging-total  ; sum of foraging risk
+  mehg-total  ; sum of methylmercury risk
+  hg-total ; sum of mercury risk
   
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
@@ -281,6 +285,9 @@ StripedBass-own [
   at-destination? ;; is fish at migratory destination?
   days-at-sea ;; number of days fish is in spawning grounds
   ticks-at-sea ;; counts number of days fish has waited
+  wait-ticks
+  planned-path
+  path-index
   landward-migration-time ;; time to travel inland and complete objective
   seaward-migration-time ;; time to travel seaward after completing objective
   
@@ -324,6 +331,7 @@ StripedBass-own [
   
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
   foraging? ;; boolean to track if agent is foraging
+  filter-feed?
   lipid-loss? ;; boolean tracking energy restoration method
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
@@ -339,7 +347,10 @@ StripedBass-own [
   STST-start-tick ;; Selective tidal transport transition
   
   migration-day ;; based on alewife e
+  vision-distance
   migration-probability ;; porbability to migrate based on alewife entry
+  base-vision-distance
+  min-vision-distance
 ]
 
 breed [alewives prey] ;; defines alewives as prey

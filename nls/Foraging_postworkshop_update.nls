@@ -107,9 +107,9 @@ if filter-feed? [
     let patch-spm [SPM] of best-patch
     let prey-intake patch-spm * base-filtration * 300
     ;; digestion-efficiency reduces food assimilation in cold/low-metabolism conditions
-    let prey-assimilated prey-intake * digestion-efficiency
+    let prey-assimilated prey-intake
     set weight weight + (prey-assimilated * 1e-6)
-    set energy min list (energy + (prey-intake * digestion-efficiency)) 100
+    set energy min list (energy + prey-assimilated) 100
 
     ;; --- Contaminant uptake (SPM × Hg and MeHg) ---
     let spm-hg [mercury] of best-patch
@@ -117,8 +117,8 @@ if filter-feed? [
 
     ;; --- Biomagnification ---
     let biomag-factor (random-float 30) + 60  ;; random 60–90
-    let mehg-uptake patch-spm * spm-mehg * biomag-factor * digestion-efficiency
-    let hg-uptake patch-spm * spm-hg * (biomag-factor / 10) * digestion-efficiency
+    let mehg-uptake patch-spm * spm-mehg * biomag-factor * prey-assimilated
+    let hg-uptake patch-spm * spm-hg * (biomag-factor / 10) * prey-assimilated
 
     ;; --- Accumulate uptake ---
     set mehg-foraging mehg-uptake

@@ -78,7 +78,7 @@ to migrate-landward
   ]
  ;; STEP 2: move along path
   let travel-distance (speed / 3)
-  let path build-path-sea patch-here migration-patch
+  let path build-path patch-here home-patch
   set planned-path path
   
   ;; If path exists

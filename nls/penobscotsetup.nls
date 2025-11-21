@@ -42,90 +42,6 @@ to setup-penobscot-migration
     reset-ticks
 end
 
-to initialize-velocity-extremes-from-series
-  ;; Only consider water patches with valid velocity series
-  let valid-water-patches patches with [
-    patch-terrain = "water" and
-    is-list? velocity-series and
-    length velocity-series > 0 
-  ]
-
-  let all-mins []
-  let all-maxs []
-
-  ;; Collect patch-level minima and maxima (no outlier filtering)
-  foreach sort valid-water-patches [
-    p ->
-    let vs [velocity-series] of p
-    ;; remove "NA" entries if any
-    let clean-vs filter [v -> (is-number? v)] vs
-    if length clean-vs > 0 [
-      set all-mins lput min clean-vs all-mins
-      set all-maxs lput max clean-vs all-maxs
-    ]
-  ]
-
-  ;; Combine values without filtering for outliers
-  let combined-values sentence all-mins all-maxs
-  if length combined-values > 0 [
-    let seaward-values filter [v -> v < 0] combined-values
-    let landward-values filter [v -> v > 0] combined-values
-
-    ifelse length seaward-values > 0 [
-      ;; most negative (min) seaward value is the maximum seaward magnitude
-      set max-seaward-velocity min seaward-values
-    ][
-      set max-seaward-velocity -0.001
-    ]
-
-    ifelse length landward-values > 0 [
-      set max-landward-velocity max landward-values
-    ][
-      set max-landward-velocity 0.001
-    ]
-
-    ;show (word "System-wide Seaward V-max (most negative): " max-seaward-velocity)
-    ;show (word "System-wide Landward V-min (most positive): " max-landward-velocity)
-  ]
-end
-
-
-to update-patch-data
-  ask patches with [patch-terrain = "water"] [
-    if current-hour < (total-hours - 1) [
-      set velocity item current-hour velocity-series
-      set depth item current-hour depth-series
-      set salinity item current-hour salinity-series
-      set temperature item current-hour temp-series
-      set SPM random-float 0.0004  ;; random value between 0 and 0.0004
-      ;set SPM item ticks SPN-series
-      ;set temperature temperature + 5
-            ;; ---- Temperature cue for alewife migration ----
-    ;let temp-patches patches with [patchtype = "sea"]
-    ;if (count alewives with [start-migration?]) = count alewives [
-    ;set local-temp mean [temperature] of temp-patches
-        ;show (word "Local Temperature: " local-temp)]
-    ;]
-    ] ;; only update for migration cue
-    
-      if current-hour = (total-hours - 1) [
-      Update-hydro-data
-  
-  ]]
-    ask patches with [patch-terrain != "water"] [
-      set velocity 0
-      set depth 0
-      set salinity 0
-      set temperature 0
-      set SPM 0
-      ;set SPM item ticks SPN-series
-   
-  
-  ]
-  compute-SPM-range
-  initialize-velocity-extremes-from-series
-end
-
 to penobscot-go
 
   ;; update the simulation data
@@ -138,7 +54,7 @@ to penobscot-go
    set cost-to-home 1e6
    set cost-to-sea 1e6
    set cost-to-prey 1e6
-   set spm random-float 0.0004  ;; random value between 0 and 0.0004
+   ;set spm random-float 0.0004  ;; random value between 0 and 0.0004
    ;color-tidal-trapping-patches
    ;color-foraging-patches
   ]
@@ -162,9 +78,11 @@ ask alewives with [age = "adult"] [
     if not at-destination? [
       calculate-metabolism
       calculate-vision
-      swim
-      flee-stripedbass ;; if fleeing use energy
+      mercury-contamination
+      methylmercury-contamination 
       osmoregulate
+      swim
+
 
       ;; Energy recovery strategy
       if not ([location] of patch-here = "lower estuary" and seaward-migration? = true) [
@@ -209,10 +127,8 @@ ask alewives with [age = "adult"] [
   ]
       
 ]
-  ;; now that everyone has moved this tick, count crossings
-  count-alewives    
-  mercury-contamination
-  methylmercury-contamination
+
+  count-alewives 
     
   ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
   if ticks mod 288 = 0 [
@@ -239,14 +155,12 @@ ask alewives with [age = "adult"] [
       ;; always count waiting time once migration cue has begun
       if wait-ticks < ticks-at-sea [
         set wait-ticks wait-ticks + 1
-        set wait-days (wait-ticks / 288)
       ]
 
       ;; once waiting period is finished → start migrating
       if wait-ticks >= ticks-at-sea [
         set start-migration? true
         set wait-ticks wait-ticks + 1
-        set wait-days (wait-ticks / 288)
       ]
     ]
 
@@ -255,7 +169,9 @@ ask alewives with [age = "adult"] [
     calculate-vision
     digest
     osmoregulate
-    
+    mercury-contamination
+    methylmercury-contamination
+    set previous-patch patch-here
     set prey-in-vision alewives in-radius vision-distance ;; defines alewives in vision radius
       
       ifelse stomach-contents < stomach-capacity and patchtype != "sea" [
@@ -267,6 +183,10 @@ ask alewives with [age = "adult"] [
 
         ;count-time-since-full ;; fish rests when full
       ] [
+        if any? prey-in-vision [ ;;try to eat if you see another fish
+          set hunting? true
+        ]
+        
         set hunting? false
         let V-patch [velocity] of patch-here
         
@@ -276,26 +196,16 @@ ask alewives with [age = "adult"] [
           safe-move drift-target drift-distance
         ]
         
-        if any? prey-in-vision [ ;;try to eat if you see another fish
-          set hunting? true
-        ]
-        
       ]
-
-      mercury-contamination
-      methylmercury-contamination
     
       if ticks mod 288 = 0 [
         calc-migration-probability-stripedbass
         set daytime-prey-eaten 0
-        ;set entered-estuary-today? false
-        ;set exited-estuary-today? false
+
       ]
     ]
 ]
   ;highlight-patches-with-prey-eaten ;; highlights patches where prey has been eaten
-  ;count-mean-daytime-prey-eaten ;; count mean daily prey eaten
-  ;report-alewife-population ;; records prey population
   
   ;; Daily counters
   ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating

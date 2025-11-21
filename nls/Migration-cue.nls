@@ -11,7 +11,7 @@ end
 to calc-migration-probability
   if migration-trigger? [
 
-      set migration-probability migration-probability + random-float 0.003  ;; total 0.10
+      set migration-probability migration-probability + ( 0.0001 + random-float 0.0003)  ;; total 0.10
       if migration-probability > 1 [ set migration-probability 1 ]
   ]
 end
@@ -25,7 +25,7 @@ to calc-migration-probability-stripedbass
   ;; n = 0 → prob = 0
   ;; n = initial-alewives → prob = 1
   let ratio (n-alewives / initial-alewives)
-
+  set ratio (ratio / 288) ;; 5 minute ticks
   ;; 3. Clip to 0–1
   set migration-probability max list 0 (min list 1 ratio)
 

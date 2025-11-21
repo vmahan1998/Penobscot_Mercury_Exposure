@@ -97,7 +97,7 @@ to setup-alewives
     
     ;; ---- Swimming Speed (m per 5 minutes) ----
     ;; Speed = 1.5–3.0 × body length per second, converted to 5-minute step
-    let swim-multiplier (0.1 + random-float 0.5)
+    let swim-multiplier (0.5 + random-float 0.5)
     set max-speed (size * swim-multiplier * 300) ;; speed from m/s to m / 5 minutes
     set speed 0.1
     set energy 100
@@ -132,6 +132,7 @@ to setup-alewives
     set chloride-max-proliferation 0.05
     set chloride-cells-this-tick 0.0
     set acclimation-rate 0.1
+    set acclimated-salinity [salinity] of patch-here
     set C-mid 0.5
     set time-since-last-osmoregulation 0
     ;set E-osmo 0

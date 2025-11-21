@@ -211,7 +211,7 @@ initial-stripedbass
 initial-stripedbass
 0
 1000
-0.0
+2.0
 1
 1
 fish
@@ -226,7 +226,7 @@ initial-alewives
 initial-alewives
 2
 10000
-1000.0
+100.0
 1
 1
 fish
@@ -243,20 +243,20 @@ Species
 1
 
 TEXTBOX
-264
-434
-381
-492
-Digestion Time
+276
+424
+379
+482
+Digestion
 24
 0.0
 1
 
 SLIDER
-53
-469
-379
-502
+52
+486
+378
+519
 alewife-digestion-efficiency
 alewife-digestion-efficiency
 0
@@ -268,10 +268,10 @@ portion of food > energy
 HORIZONTAL
 
 SLIDER
-16
-509
-380
-542
+14
+526
+378
+559
 stripedbass-digestion-efficiency
 stripedbass-digestion-efficiency
 0
@@ -318,7 +318,8 @@ true
 false
 "clear-all-plots\n" ""
 PENS
-"Agent Energy" 1.0 0 -13840069 true "" "plot mean [energy] of alewives"
+"Alewife" 1.0 0 -13840069 true "" "plot mean [energy] of alewives"
+"Striped Bass" 1.0 0 -2674135 true "" "plot mean [energy] of stripedbass"
 
 PLOT
 1938
@@ -418,7 +419,7 @@ PLOT
 810
 1468
 1064
-Swimming Energy
+Swimming Energy: Alewives
 ticks
 Energy
 0.0
@@ -429,8 +430,7 @@ true
 false
 "" ""
 PENS
-"Energy" 1.0 0 -5825686 true "" "plot mean [E-swim] of turtles"
-"pen-1" 1.0 0 -7500403 true "" "plot mean [metabolism-rate] of turtles"
+"Energy" 1.0 0 -5825686 true "" "plot mean [E-swim] of alewives"
 
 PLOT
 1030
@@ -471,9 +471,11 @@ PENS
 "Filter-Feeding" 1.0 0 -7500403 true "" "plot (count turtles with [breed != stripedbass and filter-feed? = true]) / count turtles with [breed != stripedbass]"
 "Lipid-Loss" 1.0 0 -2674135 true "" "plot (count turtles with [breed != stripedbass and lipid-loss? = true]) / count turtles with [breed != stripedbass]"
 "Home Patch" 1.0 0 -955883 true "" "plot (count turtles with [breed != stripedbass and at-destination? = true]) / count turtles with [breed != stripedbass]"
-"Migration" 1.0 0 -6459832 true "" "plot (count turtles with [breed != stripedbass and start-migration? = true]) / count turtles with [breed != stripedbass]"
+"Prey-Mig" 1.0 0 -6459832 true "" "plot (count turtles with [breed != stripedbass and start-migration? = true]) / count turtles with [breed != stripedbass]"
 "Landward" 1.0 0 -1184463 true "" "plot (count turtles with [breed != stripedbass and landward-migration? = true]) / count turtles with [breed != stripedbass]"
 "Seaward" 1.0 0 -10899396 true "" "plot (count turtles with [breed != stripedbass and seaward-migration? = true]) / count turtles with [breed != stripedbass]"
+"Hunting?" 1.0 0 -13840069 true "" "plot (count turtles with [breed = stripedbass and hunting? = true]) / count turtles with [breed = stripedbass]"
+"Pred-Mig" 1.0 0 -14835848 true "" "plot (count turtles with [breed = stripedbass and start-migration? = true]) / count turtles with [breed = stripedbass]"
 
 PLOT
 1474
@@ -514,11 +516,11 @@ PENS
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [mehg-exposure-duration] of turtles"
 
 PLOT
-1476
-544
-1922
-800
-Contamination Dynamics
+529
+1342
+994
+1661
+Alewife Contamination Dynamics
 ticks
 uptake risk
 0.0
@@ -529,12 +531,12 @@ true
 true
 "" ""
 PENS
-"mercury" 1.0 0 -8630108 true "" "plot mean [hg-uptake-risk] of turtles"
-"methylmercury" 1.0 0 -13840069 true "" "plot mean [mehg-uptake-risk] of turtles"
-"Mercury total" 1.0 0 -11033397 true "" "plot mean [hg-total] of alewives"
-"Methylmercury total" 1.0 0 -5298144 true "" "plot mean [mehg-total] of alewives"
-"Mercury Foraging" 1.0 0 -7500403 true "" "plot mean [hg-foraging] of alewives"
-"Methylmercury Foraging" 1.0 0 -5825686 true "" "plot mean [mehg-foraging] of alewives"
+"Hg-Ex" 1.0 0 -8630108 true "" "plot mean [hg-uptake-risk] of alewives"
+"MeHg-Ex" 1.0 0 -13840069 true "" "plot mean [mehg-uptake-risk] of alewives"
+"Hg total" 1.0 0 -11033397 true "" "plot mean [hg-total] of alewives"
+"MeHg total" 1.0 0 -5298144 true "" "plot mean [mehg-total] of alewives"
+"Hg Foraging" 1.0 0 -7500403 true "" "plot mean [hg-foraging] of alewives"
+"MeHg Foraging" 1.0 0 -5825686 true "" "plot mean [mehg-foraging] of alewives"
 
 PLOT
 1030
@@ -608,7 +610,8 @@ true
 false
 "" ""
 PENS
-"Weight (g)" 1.0 0 -16777216 true "" "plot mean [weight] of alewives"
+"Prey" 1.0 0 -13840069 true "" "plot sum [weight] of alewives"
+"pred" 1.0 0 -5298144 true "" "plot sum [weight] of stripedbass"
 
 PLOT
 296
@@ -627,7 +630,7 @@ false
 "" ""
 PENS
 "alewives wait" 1.0 0 -5825686 true "" "plot mean [wait-ticks] of alewives"
-"bass wait" 1.0 0 -14439633 true "" "plot mean [wait-ticks] of stripedbass"
+"bass wait" 1.0 0 -14439633 true "" ";plot mean [wait-ticks] of stripedbass"
 
 MONITOR
 189
@@ -736,9 +739,6 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" ";plot mean [velocity] of patches with [any? turtles-here]"
-"pen-1" 1.0 0 -3844592 true "" ";plot mean [speed] of turtles / 300"
-"Strength" 1.0 0 -7500403 true "" "plot cue-strength"
 "cue" 1.0 0 -2674135 true "" "plot (ifelse-value cue-active? [1] [0])"
 
 MONITOR
@@ -775,10 +775,10 @@ cue-active?
 11
 
 PLOT
-25
-792
-399
-1076
+1475
+548
+1931
+803
 Milford Fish Lift Validation
 Ticks
 Alewives (Scaled)
@@ -792,9 +792,62 @@ true
 PENS
 "Dam Enter" 1.0 0 -15040220 true "" " if ticks mod 288 = 0 [ plot alewives-on-line-daily-total-landward ]"
 "Dam Exit" 1.0 0 -955883 true "" " if ticks mod 288 = 0 [ plot alewives-on-line-daily-total-seaward ]"
-"migration probability" 1.0 0 -13345367 true "" " if ticks mod 288 = 0 [ plot mean [migration-probability] of alewives ]"
+"m-prob prey" 1.0 0 -13345367 true "" " if ticks mod 288 = 0 [ plot mean [migration-probability] of alewives ]"
 "Estuary Enter" 1.0 0 -5825686 true "" "if ticks mod 288 = 0 [ plot alewives-entering-estuary-daily-total ]"
-"Estuary Exit" 1.0 0 -2674135 true "" " if ticks mod 288 = 0 [ plot alewives-exiting-estuary-daily-total ]"
+"Estuary Exit" 1.0 0 -5204280 true "" " if ticks mod 288 = 0 [ plot alewives-exiting-estuary-daily-total ]"
+"m-prob pred" 1.0 0 -8990512 true "" ";if ticks mod 288 = 0 [ plot mean [migration-probability] of stripedbass ]"
+
+TEXTBOX
+84
+458
+410
+518
+How much food becomes usable energy?
+16
+0.0
+1
+
+PLOT
+18
+1340
+523
+1660
+Striped Bass Contamination Dynamics
+ticks
+contaminant
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Hg-Exp" 1.0 0 -10141563 true "" "plot mean [hg-uptake-risk] of stripedbass"
+"MeHg-Exp" 1.0 0 -13840069 true "" "plot mean [mehg-uptake-risk] of stripedbass"
+"Hg Total" 1.0 0 -13791810 true "" "plot mean [hg-total] of stripedbass"
+"MeHg Total" 1.0 0 -5298144 true "" "plot mean [hg-total] of stripedbass"
+"Hg Forage" 1.0 0 -7500403 true "" "plot mean [hg-foraging] of stripedbass"
+"MeHg Forage" 1.0 0 -5825686 true "" "plot mean [mehg-foraging] of stripedbass"
+
+PLOT
+1005
+1340
+1417
+1662
+Predation Dynamics
+ticks
+consumption
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Consumed" 1.0 0 -13791810 true "" "plot mean [numAlewivesEaten] of stripedbass"
+"Prey Pop" 1.0 0 -7858858 true "" "plot count alewives"
 
 @#$#@#$#@
 ## WHAT IS IT?
