@@ -6,59 +6,226 @@ to setup-stripedbass
       move-to migration-patch
     ]
     
- set align-coefficient 50
- set cohere-coefficient 50
- set separate-coefficient 50
- set minimum-separation 0.5
- set size 3
- set color yellow
- set age "adult"
- set speed 1.5
- set min-speed 0.2 ;; species limit
- set max-speed 5.0 ;; species limit
- set vision 5;; sight in patches distance
- set energy 100;; energy allowance
- set rest-time stripedbass-rest-time
- set daytime-prey-eaten 0;; counts number of prey eaten by bass in single day
- set yearly-prey-eaten 0;; counts number of prey eaten by bass in a single year
- set time-since-full 0;; counts how long the fish needs to digest before eating again
- set limit-daily-prey-allowance 4 + (size / 10);; total prey allowance (may be dependent on size)
- set numAlewivesEaten 0;; total alewives eaten
- set hg-exposure-duration 0  ;; Time spent in high mercury patches
- set mehg-exposure-duration 0  ;; Time spent in high methylmercury patches
- set hg-uptake-risk 0  ;; Time spent in high sediment concentration patches
- set mehg-uptake-risk 0  ;; Time spent in high sediment concentration patches
- set hg-exposure-total 0  ;; Cumulative mercury exposure
- set mehg-exposure-total 0  ;; Cumulative methylmercury exposure
- set migration-action "predation";; defines migratory purpose
- set completed-action? false;; has migratory objective been completed?
- set migration-destination "middle estuary";; defines migratory location homing
- set at-destination? false;; is fish at migratory destination?
- set landward-migration-time 0;; time to travel inland and complete objective
- set seaward-migration-time 0;; time to travel seaward after completing objective
- set acclimated-salinity 35 ;; level of salinity fish is acclimated to currently 
- set ionregulatory-stress 1 ;; level of stress used for osmoregulation (chloride cell proliferation)
- set chloride-density-min 10 ;; minimum level of choride cells (present during low stress)
- set chloride-density-max 100 ;; maximum level of chloride cells (present during high stress)
- set chloride-cell-density 50 ;; Initial chloride cell density
- set chloride-max-proliferation 0.05  ;; Max chloride cell increase per time step (5% of max density)
- set chloride-cells-this-tick 0.0  ;; Starts at zero, adjusts dynamically per timestep
- set acclimation-rate 0.1  ;; Chloride cell density increases at 10% per unit time
- set C-mid 0.5  ;; 50% chloride cell density at which stress buffering is most effective
- set time-since-last-osmoregulation 0  ;; Starts at zero, accumulates as time progresses
- set E-osmo 0  ;; Initial osmoregulatory energy usage (scales based on chloride cell demands)
- set E-base 0.05  ;; Base energy cost per chloride cell for maintenance
- set E-creation 0.02  ;; Energy cost per new chloride cell created
- set staging? false
- set selective-tidal-transport? false
+    set align-coefficient 50
+    set cohere-coefficient 50
+    set separate-coefficient 50
+    set minimum-separation 0.3
+    set color yellow
+
+    ;; =====================================
+    ;; --- Population Statistics (Adults) ---
+    ;; =====================================
+
+    ;; ---- Age ----
+    let min-age-pop 6
+    let max-age-pop 15
+    let mean-age 10
+    let sd-age 2.5
+    set age "adult"
+    set age-num truncated-normal mean-age sd-age min-age-pop max-age-pop
     
- ;;assign gender to fish
- ifelse random-float 1 < 0.5 [
- set sex "male"
- ;set numMales numMales + 1
-  ] [
- set sex "female"
- ;set numFemales numFemales + 1
+    ;; ---- Size (m) conditional on age ----
+    ;; Derived from Table 1 striped bass age-length data
+    
+    ;; Mean length by age (linear interpolation from table midpoints)
+    ;; Age 6 ≈ 0.737 m   Age 15 ≈ 1.168 m
+    let mu-length (0.737 + ((age-num - 6) * ((1.168 - 0.737) / (15 - 6))))
+
+   ;; ---- Length bounds (meters) from striped bass age–length table ----
+
+    let min-size-pop
+    (0.0254 *
+      (ifelse-value
+        (age-num <= 6)  [24]
+        (age-num <= 7)  [24]
+        (age-num <= 8)  [24]
+        (age-num <= 9)  [28]
+        (age-num <= 10) [32]
+        (age-num <= 11) [36]
+        (age-num <= 12) [36]
+        (age-num <= 13) [40]
+        (age-num <= 14) [44]
+        [44] ))
+    
+    let max-size-pop
+    (0.0254 *
+      (ifelse-value
+        (age-num <= 6)  [35]
+        (age-num <= 7)  [39]
+        (age-num <= 8)  [43]
+        (age-num <= 9)  [43]
+        (age-num <= 10) [48]
+        (age-num <= 11) [48]
+        (age-num <= 12) [48]
+        (age-num <= 13) [48]
+        (age-num <= 14) [48]
+        [48] ))
+    
+    let sd-length 0.035        ;; ~3.5 cm variation
+    
+    set size truncated-normal mu-length sd-length min-size-pop max-size-pop
+    set length-size (size * 1000)   ;; convert m → mm just like alewife block
+ 
+    ;; ---- Weight (g) from Length ----
+    ;; From NJ regression: W(lb) = 0.00047 * L(in)^2.88
+    
+    let Lin size / 0.0254       ;; m → inches
+    let weight-lb (0.00047 * (Lin ^ 2.88))
+    set weight (weight-lb * 453.592)   ;; convert to grams
+    set original-weight weight
+    
+    ;; =====================================
+    ;; --- Habitat & physiological prefs ---
+    ;; =====================================
+    set optimal-temperature 17 - ((age-num - 3) * 0.4) + random-normal 0 0.3
+    set optimal-velocity 0.25 + ((size - 3) * 0.05) + random-normal 0 0.03
+    set optimal-depth 1.5 + ((size - 3) * 0.7) + random-normal 0 0.2
+    let min-spm-pref 0     ;; lower migration bound
+    let max-spm-pref 0.0004     ;; upper migration bound
+    let mean-spm-choice 0.0002    ;; optimal migration temperature (mean)
+    let sd-spm 1.5     ;; spread (wide enough for early & late migrants)
+    set optimal-spm truncated-normal mean-spm-choice sd-spm min-spm-pref max-spm-pref
+    set min-speed 0.1
+    
+    ;; ---- Metabolic Variables ----
+    set swim-efficiency 1             ;; metabolic cost/benefit to swimming       
+    set digestion-efficiency stripedbass-digestion-efficiency        ;; metabolic cost/benefit to digestion
+    set osmoregulation-efficiency 1   ;; metabolic cost/benefit to osmoregulation
+    set lipid-catabolism-efficiency 1 ;; metabolic cost/benefit to lpid catabolism
+    
+    initialize-metabolism
+    
+    ;; ---- Swimming Speed (m per 5 minutes) ----
+    ;; Speed = 1.5–3.0 × body length per second, converted to 5-minute step
+    let swim-multiplier (0.1 + random-float 0.5)
+    set max-speed (size * swim-multiplier * 300) ;; speed from m/s to m / 5 minutes
+    set speed 0.1
+    set energy 100
+
+    ;; =====================================
+    ;; --- Migration & exposure tracking ---
+    ;; =====================================
+    set bursting? false
+    set hunting? false
+    set hg-exposure-duration 0 ; time spect exposed
+    set mehg-exposure-duration 0 ; time spect exposed
+    set hg-uptake-risk 0 ; instantanious risk from exposure
+    set mehg-uptake-risk 0 ; instantanious risk from exposure
+    set hg-exposure-total 0 ; total risk from exposure
+    set mehg-exposure-total 0 ; total risk from exposure
+    set hg-foraging 0 ; total risk from foraging
+    set mehg-foraging 0 ; total risk from foraging
+    set mehg-foraging-total 0 ; sum of foraging risk
+    set hg-foraging-total 0 ; sum of foraging risk
+    set mehg-total 0 ; sum of methylmercury risk
+    set hg-total 0 ; sum of mercury risk
+    set migration-action "predation"
+    set migration-probability 0
+
+    set landward-migration-time 0
+    set seaward-migration-time 0
+    set thermal-stress 1
+    set ionregulatory-stress 5
+    set chloride-density-min 10
+    set chloride-density-max 100
+    set chloride-cell-density 50
+    set chloride-max-proliferation 0.05
+    set chloride-cells-this-tick 0.0
+    set acclimation-rate 0.1
+    set C-mid 0.5
+    set time-since-last-osmoregulation 0
+    ;set E-osmo 0
+    ;set E-base 0.05
+    ;set E-creation 0.02
+    set selective-tidal-transport? false
+    set foraging? false
+    
+    set target-prey nobody
+    set daytime-prey-eaten 0;; counts number of prey eaten by bass in single day
+    set numAlewivesEaten 0;; total alewives eaten
+    
+;   ;; set stomach capacity
+    ;; assumes weight is already in grams
+    let max-length-bass max [length-size] of breed
+    ;; Smoothly scale stomach capacity: 10% BW in small fish → 5% BW in large fish
+    let base-capacity (weight * (0.10 - (0.05 * (length-size / max-length-bass))))
+
+   ;; Mean expected stomach capacity
+   let mean-stomach base-capacity
+   let sd-stomach (mean-stomach * 0.15)
+   let min-stomach (weight * 0.03)
+   let max-stomach (weight * 0.12)
+;   
+    set stomach-capacity 
+    truncated-normal mean-stomach sd-stomach min-stomach max-stomach
+    set stomach-contents 0
+    
+    ;; ---- Digestion Rate ----
+    let min-d 14     ;; lower migration bound
+    let max-d 21     ;; upper migration bound
+    let mean-d 16    ;; optimal migration temperature (mean)
+    let sd-d 1.5     ;; spread (wide enough for early & late migrants)
+    
+    set digestion-rate truncated-normal mean-d sd-d min-d max-d
+    set ticks-at-sea (days-at-sea * 288) ;; convert to ticks
+    ;set days-at-large 54 ;;difference between peak migration start for landward and peak seaward migration start (informed by Justin Stevens)
+    
+    
+    ;; ---- Days at Large at Sea ----
+    let min-days 14     ;; lower migration bound
+    let max-days 21     ;; upper migration bound
+    let mean-days 16    ;; optimal migration temperature (mean)
+    let sd-days 1.5     ;; spread (wide enough for early & late migrants)
+    
+    set days-at-sea truncated-normal mean-days sd-days min-days max-days
+    set ticks-at-sea (days-at-sea * 288) ;; convert to ticks
+    ;set days-at-large 54 ;;difference between peak migration start for landward and peak seaward migration start (informed by Justin Stevens)
+    
+    set wait-ticks 0
+    set path-index 1
+    set trail []
+    set planned-path []
+    
+    ;;assign gender to fish
+    ifelse random-float 1 < 0.5 [
+      set sex "male"
+      ;set numMales numMales + 1
+    ] [
+      set sex "female"
+      ;set numFemales numFemales + 1
     ]
+  
+    let mean-distance (length-size * 3)        ;; typical = 3 body lengths
+    let sd-distance   (mean-distance * 0.1)    ;; 10 percent variation
+    let min-distance  (length-size * 2)        ;; cannot see less than 2 body lengths
+    let max-distance  (length-size * 4)        ;; clear-water max ≈ 4 body lengths
+    
+    let base-vision-distance-meters 
+    truncated-normal mean-distance sd-distance min-distance max-distance
+    
+    set base-vision-distance (base-vision-distance-meters  / 3) ;convert to patch units
+    set min-vision-distance (length-size / 3) ;convert to patch units
+    
+    find-gape-size
   ]
+end
+
+to find-gape-size
+  let L length-size  ;; mm
+  let W weight       ;; grams
+
+  ;; Base gape size from body length
+  let base-gape (L * 0.12)
+
+  ;; Condition factor K (scaled weight-for-length)
+  let Lcm (L / 10)
+  let K (W / (Lcm ^ 3))
+  let Kref 1.5
+  let condition-scale (K / Kref)
+
+  ;; Cap condition scale
+  set condition-scale max list 0.8 (min list 1.2 condition-scale)
+
+  ;; Final gape
+  set gape-size (base-gape * condition-scale)
 end

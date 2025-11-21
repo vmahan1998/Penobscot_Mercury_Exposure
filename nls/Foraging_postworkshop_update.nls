@@ -73,8 +73,8 @@ to forage-options
 if filter-feed? [
   let spm-sd 25
   ;; Base filtration capacity scales with body size *and* metabolism
-  let base-filtration ((size / 100) * digestion-efficiency)
-  
+  let base-filtration ((size / 100) * digestion-penalty)
+  set base-filtration (base-filtration * digestion-efficiency)
   let neighbors-list sort (neighbors with [patch-terrain = "water"])
   let best-patch nobody
   let best-score -999
@@ -82,8 +82,7 @@ if filter-feed? [
   foreach neighbors-list [p ->
     let spm-patch [SPM] of p
     let interest exp (- ((spm-patch - optimal-SPM) ^ 2) / (2 * (spm-sd ^ 2)))
-    ;; benefit now also reduced when metabolism is low
-    let benefit (spm-patch * interest * base-filtration * digestion-efficiency)
+    let benefit (spm-patch * interest * base-filtration)
     let comp count alewives-on p
     if comp > 0 [ set benefit benefit / comp ]
     if benefit > best-score [

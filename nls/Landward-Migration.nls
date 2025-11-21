@@ -76,28 +76,44 @@ to migrate-landward
 
     adjust-speed
   ]
-  ;; STEP 2 move along path
+ ;; STEP 2: move along path
   let travel-distance (speed / 3)
-  let path build-path patch-here home-patch
+  let path build-path-sea patch-here migration-patch
   set planned-path path
-  ;; if a valid path exists
+  
+  ;; If path exists
   if not empty? path [
-    ;; number of steps to move — e.g., how many patches to advance this tick
+    
+    ;; How many patches to move this tick
     let steps-to-move ceiling travel-distance
     
-    ;; slice the path to move only that far (avoid exceeding path length)
+    ;; Extract only the patches we will actually traverse
     let move-patches sublist path 0 (min list steps-to-move length path)
     
-    ;; move turtle along the path without jumping entire distance at oenc
+    ;; Store starting patch
+    let old-patch patch-here
     
+    ;; Move along path step-by-step
     foreach move-patches [ p ->
+      
+      ;; -------- VISIT COUNTING --------
+      if p != old-patch [
+        ask p [
+          set visits-by-alewife (visits-by-alewife + 1)
+        ]
+        set old-patch p
+      ]
+      
+      ;; -------- MOVE --------
       face p
       move-to p
+      
+      ;; -------- TIME SPENT --------
+      ask p [
+        set ticks-spent-alewife (ticks-spent-alewife + 1)
+      ]
     ]
   ]
-  ;; STEP 3 set trail and calculate energy loss
-  set energy max list 0 (energy - swim-base)  ;; Reduce energy cost of swimming
-  
   if not member? patch-here trail [
   set trail lput patch-here trail
 ]

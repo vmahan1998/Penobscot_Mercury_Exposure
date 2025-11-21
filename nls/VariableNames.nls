@@ -52,6 +52,10 @@ globals [
   alewives-on-line-daily-total-seaward ; Stores the total crossings for the current simulated day
   alewives-entering-estuary-daily-total
   alewives-exiting-estuary-daily-total
+  
+  ;; Pred prey
+  min-SPM
+  max-SPM
   ]
 
 patches-own [ 
@@ -68,8 +72,6 @@ patches-own [
   interpolated-patch? ;; was data interpolated for this area
   target-patch? ;; data needs interpolation
   prey-eaten-in-patch ;; records number of prey eaten in patch
-  spawning-events-in-patch ;; records number of spawning events in patch
-  staging-in-patch ;; records sum of number of staging agents in patch
   tidal-transport-in-patch ;; records sum of number of staging agents in patch
   forage-visits ;; number of time a patch has been visited for foraging
   forager-count ;; number of fish foraging in a patch
@@ -81,10 +83,17 @@ patches-own [
   ;SPM-series  ;; time series of depth
   cost-to-home ;; least cost to homing patch
   cost-to-sea ;; least cost back to sea
+  cost-to-prey ;; cost to find prey
   current-velocity-month ;; tracks what month the data is from
   current-depth-month ;; tracks what month the data is from
   current-temp-month ;; tracks what month the data is from
   current-salinity-month ;; tracks what month the data is from
+  
+  ;; Patch Metrics
+  ticks-spent-alewife
+  visits-by-alewife
+  ticks-spent-stripedbass
+  visits-by-stripedbass
 ]
 
 turtles-own [ trail ]
@@ -95,6 +104,7 @@ Alewives-own [
   sex ;; defines sex of fish
   length-size ;; fish length
   weight ;;
+  body-depth ;; for predation
   original-weight ;;
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
@@ -109,11 +119,9 @@ Alewives-own [
   align-coefficient ;; align coefficient for schooling
   cohere-coefficient ;; align coefficient for schooling
   separate-coefficient ;; separation coefficient for schooling
-  vision ;; sight in patches distance
   
   energy ;; energy allowance
   fleeing?  ;; boolean of whether or not prey is fleeing from predator
-  rest-time ;; time time in ticks to recoup energy (could be foraging for more energy)
   
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
@@ -167,7 +175,8 @@ Alewives-own [
   metabolism-rate
   total-metabolism
   swim-efficiency              ;; metabolic cost/benefit to swimming       
-  digestion-efficiency         ;; metabolic cost/benefit to digestion
+  digestion-efficiency         ;; biological efficiency of digestion
+  digestion-penalty            ;; temperature penalty to digestion rate
   osmoregulation-efficiency    ;; metabolic cost/benefit to osmoregulation
   lipid-catabolism-efficiency  ;; metabolic cost/benefit to lpid catabolism
   met-base
@@ -200,40 +209,61 @@ Alewives-own [
   migration-day
   migration-probability ;; porbability to migrate
   
-  ;; pred/prey 
-  vision ;;should change from spm
+  crossed-dam-landward-today?
+  crossed-dam-seaward-today?
+  entered-estuary-today?
+  exited-estuary-today?
   
+  ;; pred/prey 
+  vision-distance
+  base-vision-distance      ;; your “fully clear-water” vision
+  min-vision-distance       ;; biologically required minimum
 ]
 
 StripedBass-own [
   age ;; set age of fish
   age-num ;; numerical age of fish
   sex ;; defines sex of fish
+  length-size ;; fish length
+  weight ;;
+  original-weight ;;
+  
   min-speed ;; species lower limit of speed
   max-speed ;; species upper limit of speed
   speed ;; patches/tick
-  home-patch ;; defines home patch of estuary habitat
+  optimal-SPM ;; SPM foraging preference
+
   migration-patch ;; defines leaving patch of sea habitat
-  schoolmates  ;; agentset of nearby prey fish
+  schoolmates ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates
+  
   minimum-separation ;; minimum separation distance in patches for schooling
   align-coefficient ;; align coefficient for schooling
   cohere-coefficient ;; cohere coefficient for schooling
   separate-coefficient ;; separation coefficient for schooling
-  vision ;; sight distance in patches
   energy ;; energy allowance
+  
   bursting?  ;; boolean of whether or not predator is bursting towards prey
-  rest-time  ;; time to recharge burst energy
+  hunting? ;; is fish looking for prey
+  chase-direction
   predator-turn-coefficient ;; probability to turn towards prey in vision
   prey-in-vision ;; prey within vision radius
-  nearest-prey ;; shortest distance prey
+  target-prey ;; shortest distance prey
   prey-in-front  ;; prey within 30 degree vision cone (used to determine bursting)
-  target  ;; nearest prey within a 30 degree vision cone 
+  gape-size
+  
   daytime-prey-eaten ;; counts number of prey eaten by bass in single day
-  yearly-prey-eaten ;; counts number of prey eaten by bass in a single year
-  time-since-full ;; counts how long the fish needs to digest before eating again
-  limit-daily-prey-allowance ;; total prey allowance (may be dependent on size)
   numAlewivesEaten ;; total alewives eaten
+  
+  digestion-time ;; counts how long the fish needs to digest before eating again
+  stomach-contents
+  stomach-capacity ;; total prey allowance (may be dependent on size)
+  stomach-contents      ;; total biomass currently in stomach (g)
+  stomach-capacity      ;; max grams the stomach can hold
+  digestion-rate        ;; fraction of stomach digested per tick
+  digestion-efficiency         ;; biological efficiency of digestion
+  digestion-penalty            ;; temperature penalty to digestion rate
+  
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
   hg-uptake-risk ;; ;; bioaccumulation risk associated with mercury exposure
@@ -242,36 +272,61 @@ StripedBass-own [
   mehg-exposure-total ;; sum of known methylmercury contamination levels exposed to
   mehg-exposure-total-normalized ;; normalized sum of known methylmercury contamination levels exposed to
   hg-exposure-total-normalized ;; normalized sum of knownmercury contamination levels exposed to
+  
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
   migration-destination ;; defines migratory location homing
   at-destination? ;; is fish at migratory destination?
+  days-at-sea ;; number of days fish is in spawning grounds
+  ticks-at-sea ;; counts number of days fish has waited
   landward-migration-time ;; time to travel inland and complete objective
   seaward-migration-time ;; time to travel seaward after completing objective
+  
   acclimated-salinity ;; level of salinity fish is acclimated to currently
-  optimal-temperature   ;; preferred temp (°C)
-  optimal-depth         ;; preferred depth (m)
-  optimal-velocity      ;; preferred flow (m/s)
+  thermal-stress ;; level of temperature stress used for thermoregulation
   ionregulatory-stress ;; level of stress used for osmoregulation (chloride cell proliferation)
+  
   chloride-density-min ;; minimum level of choride cells (present during low stress)
   chloride-density-max ;; maximum level of chloride cells (present during high stress)
   chloride-cell-density  ;; Current chloride cell density
   chloride-max-proliferation  ;; The max number of chloride cells that can be expressed per time step.
   chloride-cells-this-tick  ;; The number of chloride cells created (or destroyed) in the current time step.
+  
   stress_threshold  ;; stress level determining expression of chloride cells
   acclimation-rate  ;; The rate at which chloride cell density increases over time.
+  
+  optimal-temperature   ;; preferred temp (°C)
+  migration-temp        ;; temp that fish will enter system (°C)
+  optimal-depth         ;; preferred depth (m)
+  optimal-velocity      ;; preferred flow (m/s)
+  
   C-mid  ;; The chloride cell density at which stress buffering is 50% effective.
   time-since-last-osmoregulation  ;; The time elapsed since the last chloride cell regulation event.
+  
+  ;; Metabolic Functions
+  metabolism-rate
+  total-metabolism
+  swim-efficiency              ;; metabolic cost/benefit to swimming       
+  osmoregulation-efficiency    ;; metabolic cost/benefit to osmoregulation
+  lipid-catabolism-efficiency  ;; metabolic cost/benefit to lpid catabolism
+  met-base
+  
   E-osmo  ;; Total energy used for ion regulation (osmoregulation).
   E-base  ;; Base energy cost for maintaining chloride cells
   E-creation  ;; The energy cost for producing new chloride cells.
+  
   previous-patch ;; stores previous patch
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
+  
   Met-max ;; maximum metabilic cost of new choride cell creation
-  staging? ;; boolean to track if agent is staging
+  
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
+  foraging? ;; boolean to track if agent is foraging
+  lipid-loss? ;; boolean tracking energy restoration method
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
+  start-migration? ;; boolean to track when fish should enter system
+  
   prev-speed ;; previous speed
   difficulty-factor ;; swimming difficulty
   E-swim ;; energy cost of swimming
@@ -280,6 +335,9 @@ StripedBass-own [
   stagnation-counter  ;; Tracks how long the agent has been in the same spot
   trapped?  ;; Flag indicating if the fish is stuck
   STST-start-tick ;; Selective tidal transport transition
+  
+  migration-day ;; based on alewife e
+  migration-probability ;; porbability to migrate based on alewife entry
 ]
 
 breed [alewives prey] ;; defines alewives as prey

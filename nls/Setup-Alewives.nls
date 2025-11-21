@@ -71,34 +71,16 @@ to setup-alewives
     set optimal-temperature 17 - ((age-num - 3) * 0.4) + random-normal 0 0.3
     set optimal-velocity 0.25 + ((size - 3) * 0.05) + random-normal 0 0.03
     set optimal-depth 1.5 + ((size - 3) * 0.7) + random-normal 0 0.2
-    let min-spm 0     ;; lower migration bound
-    let max-spm 0.0004     ;; upper migration bound
+    let min-spm-pref 0     ;; lower migration bound
+    let max-spm-pref 0.0004     ;; upper migration bound
     let mean-spm-choice 0.0002    ;; optimal migration temperature (mean)
     let sd-spm 1.5     ;; spread (wide enough for early & late migrants)
-    set optimal-spm truncated-normal mean-spm-choice sd-spm min-spm max-spm
+    set optimal-spm truncated-normal mean-spm-choice sd-spm min-spm-pref max-spm-pref
     set min-speed 0.1
-    
-    ;; ---- Migration Temperature Preference ----
-    let min-temp 5.5     ;; lower migration bound
-    let max-temp 6.5     ;; upper migration bound
-    let mean-temp 6    ;; optimal migration temperature (mean)
-    let sd-temp 1.5     ;; spread (wide enough for early & late migrants)
-    
-    ;set migration-temp truncated-normal mean-temp sd-temp min-temp max-temp
-    ;set migration-temp 5.5
-    
-    ;; ---- Migration Photoperiod Preference (minutes) ----
-    let min-photo 10.25     ;; lower migration bound
-    let max-photo 15.25     ;; upper migration bound
-    let mean-photo 14.75    ;; optimal migration temperature (mean)
-    let sd-photo 1.5     ;; spread (wide enough for early & late migrants)
-    
-    ;set target-migration-day (random-normal cue-day sigma-days)
-    ;set migration-photo 5.5
     
     ;; ---- Metabolic Variables ----
     set swim-efficiency 1             ;; metabolic cost/benefit to swimming       
-    set digestion-efficiency 1        ;; metabolic cost/benefit to digestion
+    set digestion-efficiency alewife-digestion-efficiency        ;; metabolic cost/benefit to digestion
     set osmoregulation-efficiency 1   ;; metabolic cost/benefit to osmoregulation
     set lipid-catabolism-efficiency 1 ;; metabolic cost/benefit to lpid catabolism
     
@@ -115,7 +97,7 @@ to setup-alewives
     
     ;; ---- Swimming Speed (m per 5 minutes) ----
     ;; Speed = 1.5–3.0 × body length per second, converted to 5-minute step
-    let swim-multiplier (0.5 + random-float 0.5)
+    let swim-multiplier (0.1 + random-float 0.5)
     set max-speed (size * swim-multiplier * 300) ;; speed from m/s to m / 5 minutes
     set speed 0.1
     set energy 100
@@ -158,6 +140,11 @@ to setup-alewives
     set selective-tidal-transport? false
     set foraging? false
 
+    set crossed-dam-landward-today? false
+    set crossed-dam-seaward-today? false
+    set entered-estuary-today? false
+    set exited-estuary-today? false
+    
     set wait-days 0
     set wait-ticks 0
     set path-index 1
@@ -169,6 +156,19 @@ to setup-alewives
     ] [
       set sex "female"
     ]
+    
+    let mean-distance (length-size * 3)        ;; typical = 3 body lengths
+    let sd-distance   (mean-distance * 0.1)    ;; 10 percent variation
+    let min-distance  (length-size * 2)        ;; cannot see less than 2 body lengths
+    let max-distance  (length-size * 4)        ;; clear-water max ≈ 4 body lengths
+    
+    let base-vision-distance-meters 
+    truncated-normal mean-distance sd-distance min-distance max-distance
+    
+    set base-vision-distance (base-vision-distance-meters  / 3) ;convert to patch units
+    set min-vision-distance (length-size / 3) ;convert to patch units
+    set vision-distance base-vision-distance
+    set body-depth length-size * 0.30
   ]
 end
 

@@ -16,6 +16,21 @@ to calc-migration-probability
   ]
 end
 
+to calc-migration-probability-stripedbass
+  
+  ;; 1. Count all alewives currently in the Penobscot
+  let n-alewives count alewives with [location = "Penobscot"]
+
+  ;; 2. Scale by initial population to convert to 0–1 probability
+  ;; n = 0 → prob = 0
+  ;; n = initial-alewives → prob = 1
+  let ratio (n-alewives / initial-alewives)
+
+  ;; 3. Clip to 0–1
+  set migration-probability max list 0 (min list 1 ratio)
+
+end
+
 to load-cue-csv
   set cue-table table:make
 

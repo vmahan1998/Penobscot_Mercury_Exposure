@@ -1,17 +1,42 @@
 to eat  ;; predator procedure
-  if daytime-prey-eaten < limit-daily-prey-allowance and location = "Penobscot" [
-  let nearby (turtle-set alewives-here alewives-on neighbors)
-  if any? nearby [ ;; if there is a catch, stop to eat the fish
-    ;set color black
-    ;;
-    ask one-of nearby [
-      die  ;alewife eaten
+
+  ;; Only hunt if not full AND not in the sea
+  if stomach-contents < stomach-capacity and patchtype != "sea" [
+
+    ;; Find prey on the same patch
+    let nearby-options alewives-on patch-here
+
+    ;; Filter for only edible prey (based on gape size)
+    let edible-prey nearby-options with [
+      body-depth <= [gape-size] of myself
     ]
-    set numAlewivesEaten numAlewivesEaten + 1
-    set daytime-prey-eaten daytime-prey-eaten + 1
-    set yearly-prey-eaten yearly-prey-eaten + 1
-    set prey-eaten-in-patch prey-eaten-in-patch + 1
+
+    ;; If no edible prey here, do nothing
+    if any? edible-prey [
+
+      ;; Choose one prey to consume
+      let nearby one-of edible-prey
+
+      ;; Digestible mass (75% of whole prey weight)
+      let meal-weight ([weight] of nearby) * 0.75
+
+      ;; Remaining capacity
+      let space-available (stomach-capacity - stomach-contents)
+
+      ;; You can only eat as much as fits
+      let intake (min (list meal-weight space-available))
+
+      ;; Add biomass to stomach
+      set stomach-contents (stomach-contents + intake)
+
+      ;; Kill prey
+      ask nearby [ die ]
+
+      ;; Update counters
+      set numAlewivesEaten numAlewivesEaten + 1
+      set daytime-prey-eaten daytime-prey-eaten + 1
+      set prey-eaten-in-patch prey-eaten-in-patch + 1
+    ]
   ]
-  
-  ]
+
 end

@@ -62,7 +62,7 @@ __includes[
   "nls/Scare-prey.nls"
   "nls/Wander.nls"
   "nls/Count-prey-eaten.nls"
-  "nls/Prey-on-Alewives.nls"
+  ;"nls/Prey-on-Alewives.nls"
   "nls/Mercury-Contamination.nls"
   "nls/Methylmercury-Contamination.nls"
   "nls/Osmoregulation.nls" ; update to salinity exposure
@@ -73,6 +73,8 @@ __includes[
   "nls/Calculate-photoperiod.nls" ; photoperiod
   "nls/Migration-cue.nls" ;; migration
   "nls/dam_counts_validation.nls"
+  "nls/Calculate-visual-distance.nls"
+  "nls/digestion.nls"
 ]
 
 to setup
@@ -266,18 +268,18 @@ portion of food > energy
 HORIZONTAL
 
 SLIDER
-89
-519
-379
-552
-stripedbass-rest-time
-stripedbass-rest-time
+16
+509
+380
+542
+stripedbass-digestion-efficiency
+stripedbass-digestion-efficiency
 0
-1000
-0.0
 1
+0.2
+0.1
 1
-tick (1 tick = 5 minutes)
+portion of food > > energy
 HORIZONTAL
 
 TEXTBOX
@@ -534,76 +536,6 @@ PENS
 "Mercury Foraging" 1.0 0 -7500403 true "" "plot mean [hg-foraging] of alewives"
 "Methylmercury Foraging" 1.0 0 -5825686 true "" "plot mean [mehg-foraging] of alewives"
 
-SLIDER
-203
-614
-376
-647
-align-coefficient
-align-coefficient
-0
-100
-50.0
-1
-1
-%
-HORIZONTAL
-
-SLIDER
-203
-660
-376
-693
-cohere-coefficient
-cohere-coefficient
-0
-100
-50.0
-1
-1
-%
-HORIZONTAL
-
-SLIDER
-204
-704
-377
-737
-separate-coefficient
-separate-coefficient
-0
-100
-50.0
-1
-1
-%
-HORIZONTAL
-
-SLIDER
-172
-747
-377
-780
-minimum-separation
-minimum-separation
-0
-3
-0.1
-.01
-1
-meters
-HORIZONTAL
-
-TEXTBOX
-263
-573
-379
-605
-Schooling
-24
-0.0
-1
-
 PLOT
 1030
 1070
@@ -694,7 +626,8 @@ true
 false
 "" ""
 PENS
-"pen-1" 1.0 0 -7500403 true "" "plot mean [wait-ticks] of alewives"
+"alewives wait" 1.0 0 -5825686 true "" "plot mean [wait-ticks] of alewives"
+"bass wait" 1.0 0 -14439633 true "" "plot mean [wait-ticks] of stripedbass"
 
 MONITOR
 189
@@ -842,10 +775,10 @@ cue-active?
 11
 
 PLOT
-24
-805
-384
-1072
+25
+792
+399
+1076
 Milford Fish Lift Validation
 Ticks
 Alewives (Scaled)

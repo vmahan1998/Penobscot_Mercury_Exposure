@@ -1,13 +1,11 @@
 to prey-on-alewives  ;; predator procedure
-set prey-in-vision alewives in-radius vision ;; defines alewives in vision radius
+set prey-in-vision alewives in-radius vision-distance ;; defines alewives in vision radius
 
     ifelse any? prey-in-vision
     [ chase-nearest-alewife ]  ;; point towards nearest prey in "nls/Chase-nearest-alewife.nls"
-    [ wander ] ;; wander if no prey in sight in "nls/Wander.nls"
-
+    [ wander] ;; wander if no prey in sight in "nls/Wander.nls"
+  
     adjust-stripedbass-speed  ;; predator will speed up when making an attack
     scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
     eat ;; eat prey if within neighbors in "nls/Eat.nls"
-    reset-daytime-prey-eaten ;; limit daily prey eaten
-    count-time-since-full ;; fish rests when full
 end

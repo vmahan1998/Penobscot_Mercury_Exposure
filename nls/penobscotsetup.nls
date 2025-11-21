@@ -17,15 +17,26 @@ to setup-penobscot-migration
   set alewives-entering-estuary-daily-total 0
   set alewives-on-line-daily-total-landward 0
   set alewives-on-line-daily-total-seaward 0
-  set daylength-diff-list []
-  find-migration-days
-  update-migration-cue
   
+  ;; Patch Metrics
   ask patches with [patch-terrain != "water"] [
    set cost-to-home 1e9
    set cost-to-sea 1e9
-    ;set temperature temperature + 5
+   set cost-to-prey 1e9
   ]
+  ask patches [
+  set ticks-spent-alewife 0
+  set visits-by-alewife 0
+  set ticks-spent-stripedbass 0
+  set visits-by-stripedbass 0
+  set prey-eaten-in-patch 0
+  ]
+  
+  ;; setup functions
+    find-migration-days
+    update-migration-cue
+    compute-SPM-range
+  
     ;set local-temp mean [temperature] of patches with [patchtype = "sea"]
     ;show (word "Local Temperature: " local-temp)
     reset-ticks
@@ -111,7 +122,7 @@ to update-patch-data
    
   
   ]
-  
+  compute-SPM-range
   initialize-velocity-extremes-from-series
 end
 
@@ -126,6 +137,7 @@ to penobscot-go
   ask patches with [ patch-terrain = "water" ][ 
    set cost-to-home 1e6
    set cost-to-sea 1e6
+   set cost-to-prey 1e6
    set spm random-float 0.0004  ;; random value between 0 and 0.0004
    ;color-tidal-trapping-patches
    ;color-foraging-patches
@@ -149,11 +161,9 @@ ask alewives with [age = "adult"] [
     ;; Perform behavioral sequence only if not at home
     if not at-destination? [
       calculate-metabolism
-      set previous-patch patch-here
+      calculate-vision
       swim
       flee-stripedbass ;; if fleeing use energy
-      mercury-contamination
-      methylmercury-contamination
       osmoregulate
 
       ;; Energy recovery strategy
@@ -201,10 +211,16 @@ ask alewives with [age = "adult"] [
 ]
   ;; now that everyone has moved this tick, count crossings
   count-alewives    
- 
+  mercury-contamination
+  methylmercury-contamination
+    
   ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
   if ticks mod 288 = 0 [
   calc-migration-probability
+  set crossed-dam-landward-today? false
+  set crossed-dam-seaward-today? false
+  set entered-estuary-today? false
+  set exited-estuary-today? false
   ]
 ]    
   
@@ -212,30 +228,83 @@ ask alewives with [age = "adult"] [
     ;school ;align, cohere, separate, separation minimum, schoolmates
     ;migrate ;time, tidal-phase, depth preference
     ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
-    set prey-in-vision alewives in-radius vision ;; defines alewives in vision radius
+    
+    ;; Migration Cue
+    if not start-migration? [
 
-    ifelse any? prey-in-vision
-    [ chase-nearest-alewife ]  ;; point towards nearest prey in "nls/Chase-nearest-alewife.nls"
-    [ wander ] ;; wander if no prey in sight in "nls/Wander.nls"
+      ;; roll the migration probability
+      if random-float 1 <= migration-probability [
+      ]
 
-    adjust-stripedbass-speed  ;; predator will speed up when making an attack
-    scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
-    eat ;; eat prey if within neighbors in "nls/Eat.nls"
-    reset-daytime-prey-eaten ;; limit daily prey eaten
-    count-time-since-full ;; fish rests when full
-  ]
+      ;; always count waiting time once migration cue has begun
+      if wait-ticks < ticks-at-sea [
+        set wait-ticks wait-ticks + 1
+        set wait-days (wait-ticks / 288)
+      ]
 
+      ;; once waiting period is finished → start migrating
+      if wait-ticks >= ticks-at-sea [
+        set start-migration? true
+        set wait-ticks wait-ticks + 1
+        set wait-days (wait-ticks / 288)
+      ]
+    ]
+
+    if start-migration? [
+    calculate-metabolism
+    calculate-vision
+    digest
+    osmoregulate
+    
+    set prey-in-vision alewives in-radius vision-distance ;; defines alewives in vision radius
+      
+      ifelse stomach-contents < stomach-capacity and patchtype != "sea" [
+        set hunting? true
+        chase-nearest-alewife
+        adjust-stripedbass-speed  ;; predator will speed up when making an attack
+        scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
+        eat ;; eat prey if within neighbors in "nls/Eat.nls"
+
+        ;count-time-since-full ;; fish rests when full
+      ] [
+        set hunting? false
+        let V-patch [velocity] of patch-here
+        
+        let drift-distance abs V-patch * (1 - swim-efficiency)
+        let drift-target one-of neighbors with [patch-terrain = "water"]
+        if drift-target != nobody [
+          safe-move drift-target drift-distance
+        ]
+        
+        if any? prey-in-vision [ ;;try to eat if you see another fish
+          set hunting? true
+        ]
+        
+      ]
+
+      mercury-contamination
+      methylmercury-contamination
+    
+      if ticks mod 288 = 0 [
+        calc-migration-probability-stripedbass
+        set daytime-prey-eaten 0
+        ;set entered-estuary-today? false
+        ;set exited-estuary-today? false
+      ]
+    ]
+]
   ;highlight-patches-with-prey-eaten ;; highlights patches where prey has been eaten
   ;count-mean-daytime-prey-eaten ;; count mean daily prey eaten
   ;report-alewife-population ;; records prey population
-   
+  
+  ;; Daily counters
   ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
   if ticks mod 288 = 0 [
       
-  show word "LANDWARD: " alewives-on-line-daily-total-landward
-  show word "SEAWARD: " alewives-on-line-daily-total-seaward
-  show word "ENTRY: "    alewives-entering-estuary-daily-total
-  show word "EXIT: "     alewives-exiting-estuary-daily-total
+;  show word "LANDWARD: " alewives-on-line-daily-total-landward
+;  show word "SEAWARD: " alewives-on-line-daily-total-seaward
+;  show word "ENTRY: "    alewives-entering-estuary-daily-total
+;  show word "EXIT: "     alewives-exiting-estuary-daily-total
 
   set alewives-on-line-daily-total-landward 0
   set alewives-on-line-daily-total-seaward 0

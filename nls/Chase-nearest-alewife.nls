@@ -1,66 +1,160 @@
 to chase-nearest-alewife ;; predator procedure
-    let alewife-prey prey-in-vision with [breed = alewives and (location = "Penobscot")] ; only chase alewives in pond and channel
-  if any? alewife-prey [
-    let nearest-alewife-prey min-one-of alewife-prey [distance myself]
-    if nearest-alewife-prey != nobody [
-      face nearest-alewife-prey
+  find-target-prey
+  decide-chase-direction
+  
+  ;; 2. Calculate travel distance in patch units
+  let travel-distance (speed / 3)
+  
+  ifelse target-prey != nobody [
+  
+  let prey-loc [patch-here] of target-prey
+  let cur-loc [patch-here] of myself
+    
+  ;; 1. Build cost map toward prey
+  calculate-cost-to-prey prey-loc
+  
+  ;; 3. Build a path toward the prey patch
+  let path build-path-to-prey cur-loc prey-loc
+  set planned-path path]
+  [
+  let cur-loc [patch-here] of myself
+  
+  ;; 3. Build a path toward the prey patch
+  wander
+    
+  ;; get the patch directly in front at that distance
+  let patch-options patches in-radius travel-distance with [
+  patch-terrain = "water" and
+  abs (subtract-headings (towards myself) [heading] of myself) < 90
+]
+
+  ;; pick the closest one in front
+  let target-patch min-one-of patch-options [ distance myself ]
+  calculate-cost-to-prey target-patch
+  let path build-path-to-prey cur-loc target-patch
+  set planned-path path
+  ]
+  
+  ;; 4. Determine how many patches to move this tick
+  let steps-to-move ceiling travel-distance
+  let move-patches sublist planned-path 0 (min list steps-to-move length planned-path)
+  
+  ;; Store where the bass started this tick
+  let old-patch patch-here
+  
+  ;; 5. Move along the planned patches IN ORDER
+  foreach move-patches [ p ->
+    
+    ;; Count patch **visits**
+    if p != old-patch [
+      ask p [
+        set visits-by-stripedbass visits-by-stripedbass + 1
+      ]
+      set old-patch p
     ]
-    fd 1
+    
+    ;; Move to the patch
+    face p
+    move-to p
+    
+    ;; Count **time spent**
+    ask p [
+      set ticks-spent-stripedbass ticks-spent-stripedbass + 1
+    ]
+  ]
+
+  ;; IMPORTANT:
+  ;; Store the final patch we actually ended up on
+    let next-step last move-patches
+  
+  ;; 6. Compute difficulty of this patch (landward vs seaward)
+  calculate-chase-difficulty next-step
+  
+  ;; 7. Deduct hydrodynamic swimming energy
+    calculate-swim-energy 
+end
+
+to decide-chase-direction
+  if [velocity] of patch-here > 0 [
+    set chase-direction "seaward"
+  ]
+  if [velocity] of patch-here <= 0 [
+    set chase-direction "landward"
   ]
 end
 
-to calculate-vision
-;; Step 1: Calculate Ion-Regulatory Stress
-    ;; Get previous salinity (safe check)
-    let previous-salinity [salinity] of previous-patch
+to find-target-prey
+  let candidates alewives with [patchtype != "sea"]
+  ifelse any? candidates [
+    set target-prey min-one-of candidates [distance myself]
+  ] [
+    set target-prey nobody
+  ]
+end
 
-    ;; Get current patch salinity
-    let patch-salinity [salinity] of patch-here
-    let agent-salinity acclimated-salinity
-    let previous-stress ionregulatory-stress
+to calculate-chase-difficulty [next-patch]
 
-    ;; Compute scaled salinity difference (relative to acclimated level)
-    let scaled-difference abs(agent-salinity - patch-salinity)
+  let vel [velocity] of next-patch
 
-    ;; Compute base salinity-driven stress
-    let salinity-stress salinity-to-stress scaled-difference chloride-cell-density previous-stress
-    
-    ;; Apply osmoregulation-efficiency as a difficulty modifier
-    ;; Lower efficiency = higher perceived stress
-    ;set salinity-stress salinity-stress * (1 / osmoregulation-efficiency)
+  if chase-direction = "landward" [
+    calculate-difficulty-landward   ;; uses vel inside logic
+  ]
+
+  if chase-direction = "seaward" [
+    calculate-difficulty-seaward
+  ]
+end
+
+to calculate-cost-to-prey [prey-patch]
+
+  ;; set initial conditions
+  ask patch-here [ set cost-to-prey 1e9 ]
+  ask prey-patch [ set cost-to-prey 0 ]
+
+  ;; Start with a list containing the home patch
+  let frontier (list prey-patch)
+  let df difficulty-factor           ;; capture it locally
+
+  while [not empty? frontier] [
+    let current first frontier
+    set frontier but-first frontier
+
+    ask current [
+      let current-cost cost-to-prey
+      
+      ask neighbors4 with [patch-terrain = "water"] [
+        let travel-cost compute-travel-cost current self df
+        let new-cost current-cost + travel-cost
+
+        if new-cost < cost-to-prey [
+          set cost-to-prey new-cost
+          set frontier lput self frontier
+        ]
+      ]
+    ]
+  ]
   
-    ;; Acclimation logic: If salinity remains stable, adjust acclimated salinity
-    let salinity-change abs(patch-salinity - previous-salinity)
-    if salinity-change < 1 [  ;; Adjust threshold as needed
-      set stable-time stable-time + 1
-    ] 
-    if salinity-change >= 1 [
-      set stable-time 0  ;; Reset if salinity fluctuates
+end
+
+to-report build-path-to-prey [start-patch prey-patch]
+  let path (list start-patch)
+  let cur start-patch
+  let max-steps 500
+
+  while [cur != prey-patch and max-steps > 0] [
+    set max-steps max-steps - 1
+
+    let candidates neighbors4 with [
+      patch-terrain = "water" and
+      cost-to-prey < [cost-to-prey] of cur
     ]
 
-    ;; Delay Stress Reduction Until Chloride Cells Increase
-    if stable-time > 4 and chloride-cell-density > chloride-density-min [
-      set salinity-stress salinity-stress * 0.98  
-      set acclimated-salinity acclimated-salinity + (patch-salinity - acclimated-salinity) * 0.02  
-      ;show "Acclimation Occurring: Adjusting Acclimated Salinity"
-    ]
+    if not any? candidates [ report path ]
 
-    ;; Compute chloride cell buffering
-    let stress-reduction calculate-stress-reduction-chloride-function chloride-cell-density
+    let next-p min-one-of candidates [cost-to-prey]
+    set path lput next-p path
+    set cur next-p
+  ]
 
-    ;; Stress Only Decreases When Chloride Cells Increase
-    if chloride-cell-density > chloride-density-min [
-      set ionregulatory-stress max (list 1 (salinity-stress - stress-reduction * 0.8))  
-    ] 
-    if chloride-cell-density <= chloride-density-min [
-      set ionregulatory-stress salinity-stress  ;; No stress reduction if chloride cells are too low
-    ]
-
-    ;; Debugging prints
-    ;show (word "Salinity Change: " salinity-change " | Stable Time: " stable-time)
-    ;show (word "Acclimated Salinity: " acclimated-salinity " | Patch Salinity: " patch-salinity)
-    ;show (word "Ion-Regulatory Stress: " ionregulatory-stress " | Stress Reduction: " stress-reduction)
-
-    ;; Update tracking variables
-    set previous-stress ionregulatory-stress
+  report path
 end

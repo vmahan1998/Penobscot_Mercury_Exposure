@@ -1,10 +1,10 @@
 to scare-up ;; prey on left side will flee left
-   ask alewives in-cone vision 180 [
-    if any? stripedbass in-cone vision 270 and energy > 0 [
+   ask alewives in-cone vision-distance 180 [
+    if any? stripedbass in-cone vision-distance 270 and energy > 0 [
       set fleeing? true
       right 0
     ]
-    if not any? stripedbass in-cone vision 270 or energy <= 0 [
+    if not any? stripedbass in-cone vision-distance 270 or energy <= 0 [
       set fleeing? false
     ]
   ]

@@ -29,7 +29,7 @@ to calculate-metabolism
   let efficiency M-total / baseline-metabolism
 
   set swim-efficiency              efficiency
-  set digestion-efficiency         efficiency
+  set digestion-penalty          efficiency
   set osmoregulation-efficiency    efficiency
   set lipid-catabolism-efficiency  efficiency
   ;print (word "lipid-catabolism-efficiency: " efficiency)
@@ -40,7 +40,7 @@ to initialize-metabolism
   let beta 0.75
   let age-sensitivity 0.5
   ;; SCALE base-constant properly:
-  let base-constant 0.07   
+  let base-constant 0.1   
   
   let M-max max [size] of breed
   let max-age max [age-num] of breed

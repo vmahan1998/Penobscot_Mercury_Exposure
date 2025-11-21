@@ -1,5 +1,5 @@
 to adjust-stripedbass-speed ;; predator procedure
-  set prey-in-front alewives in-cone vision 90 ;; find prey in front of predator (90 degrees)
+  set prey-in-front alewives in-cone vision-distance 90 ;; find prey in front of predator (90 degrees)
 
   ifelse any? prey-in-front and energy > 0 ;; burst if there is a target and have energy
   [ set bursting? true ]
@@ -7,23 +7,12 @@ to adjust-stripedbass-speed ;; predator procedure
 
   ifelse bursting?
   [ if speed <= max-speed
-    [ set speed speed + .3
-      set energy energy - 1 ]
-    set rest-time stripedbass-rest-time
+    [ set speed max-speed ] ;; swim-energy
     ;set color green
   ]
   
   [ ;; not bursting
     set speed min-speed
-    ;set color yellow
-    if energy < 100 [ ;;if not bursting and energy less than limit fish is "resting"
-     set rest-time rest-time - 1 
-    ] ;; 
-    
-    if rest-time <= 0 [
-      set energy 100
-    ] ;; reset bursting energy
-    
-    
     ]  
 end
+

@@ -72,6 +72,8 @@ to prototype-parameters
     set forage-visits 0
     set forage-species []
     
+    compute-SPM-range
+
   ] 
   
 
@@ -81,11 +83,11 @@ to prototype-parameters
 end
 
 to setup-migration
-  create-fish alewives initial-alewives  ;; Adjust number as needed
+  create-prototype-alewives alewives initial-alewives  ;; Adjust number as needed
   ;create-fish stripedbass initial-stripedbass
 end
 
-to create-fish [fish-type num-fish]
+to create-prototype-alewives [fish-type num-fish]
   create-turtles num-fish [
     set breed fish-type
     set shape "fish"
@@ -162,11 +164,11 @@ to create-fish [fish-type num-fish]
     set optimal-temperature 17 - ((age-num - 3) * 0.4) + random-normal 0 0.3
     set optimal-velocity 0.25 + ((size - 3) * 0.05) + random-normal 0 0.03
     set optimal-depth 1.5 + ((size - 3) * 0.7) + random-normal 0 0.2
-    let min-spm 0     ;; lower migration bound
-    let max-spm 0.0004     ;; upper migration bound
+    let min-spm-pref 0     ;; lower migration bound
+    let max-spm-pref 0.0004     ;; upper migration bound
     let mean-spm-choice 0.0002    ;; optimal migration temperature (mean)
     let sd-spm 1.5     ;; spread (wide enough for early & late migrants)
-    set optimal-spm truncated-normal mean-spm-choice sd-spm min-spm max-spm
+    set optimal-spm truncated-normal mean-spm-choice sd-spm min-spm-pref max-spm-pref
     set min-speed 0.1
     
     ;; ---- Migration Temperature Preference ----
@@ -277,6 +279,7 @@ ask patches with [patch-terrain != "land"] [
    set cost-to-sea 1e6
 
   ]
+   compute-SPM-range
   
 ;; potential behavioral rules
    ask alewives with [age = "adult"] [

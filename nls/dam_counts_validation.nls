@@ -13,16 +13,23 @@ let dam-line 342
 let old-y [pycor] of old-patch
 let new-y [pycor] of new-patch
 
-if (old-y < dam-line and new-y >= dam-line) [
+if (old-y < dam-line and new-y >= dam-line and
+    not crossed-dam-landward-today?) [
+  
   set alewives-on-line-daily-total-landward
       alewives-on-line-daily-total-landward + 1
+
+  set crossed-dam-landward-today? true
 ]
 
-if (old-y >= dam-line and new-y < dam-line) [
+if (old-y >= dam-line and new-y < dam-line and
+    not crossed-dam-seaward-today?) [
+
   set alewives-on-line-daily-total-seaward
       alewives-on-line-daily-total-seaward + 1
-]
 
+  set crossed-dam-seaward-today? true
+]
 
 ;; -------------------------------------------------
 ;; 2. Count estuary entry (SEA → NOT-SEA)
@@ -30,17 +37,25 @@ if (old-y >= dam-line and new-y < dam-line) [
 let old-type [patchtype] of old-patch
 let new-type [patchtype] of new-patch
 
-if (old-type = "sea" and new-type != "sea") [
+if (old-type = "sea" and new-type != "sea" and
+    not entered-estuary-today?) [
+
   set alewives-entering-estuary-daily-total
       alewives-entering-estuary-daily-total + 1
+
+  set entered-estuary-today? true
 ]
 
 ;; -------------------------------------------------
 ;; 3. Count estuary exit (NOT-SEA → SEA)
 ;; -------------------------------------------------
-if (old-type != "sea" and new-type = "sea") [
+if (old-type != "sea" and new-type = "sea" and
+    not exited-estuary-today?) [
+
   set alewives-exiting-estuary-daily-total
       alewives-exiting-estuary-daily-total + 1
+
+  set exited-estuary-today? true
 ]
 
 end
