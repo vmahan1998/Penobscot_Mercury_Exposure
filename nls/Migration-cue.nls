@@ -19,7 +19,7 @@ end
 to calc-migration-probability-stripedbass
   
   ;; 1. Count all alewives currently in the Penobscot
-  let n-alewives count alewives with [location = "Penobscot"]
+  let n-alewives count alewives with [patchtype != "sea"]
 
   ;; 2. Scale by initial population to convert to 0–1 probability
   ;; n = 0 → prob = 0

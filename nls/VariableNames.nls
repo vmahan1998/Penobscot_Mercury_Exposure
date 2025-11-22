@@ -94,6 +94,26 @@ patches-own [
   visits-by-alewife
   ticks-spent-stripedbass
   visits-by-stripedbass
+  
+  ;; Risk from Foraging
+  Hg-foraging-risk-alewife ;; mercury risk from patch
+  MeHg-foraging-risk-alewife ;; methylmercury risk from patch
+  Hg-foraging-risk-stripedbass 
+  MeHg-foraging-risk-stripedbass
+  Hg-foraging-risk-total-alewife ;; mercury risk from patch
+  MeHg-foraging-risk-total-alewife ;; methylmercury risk from patch
+  Hg-foraging-risk-total-stripedbass 
+  MeHg-foraging-risk-total-stripedbass
+  
+  ;; Risk from Exposure
+  Hg-exp-risk-alewife ;; mercury risk from patch
+  MeHg-exp-risk-alewife ;; methylmercury risk from patch
+  Hg-exp-risk-stripedbass 
+  MeHg-exp-risk-stripedbass
+  Hg-exp-risk-total-alewife ;; mercury risk from patch
+  MeHg-exp-risk-total-alewife ;; methylmercury risk from patch
+  Hg-exp-risk-total-stripedbass 
+  MeHg-exp-risk-total-stripedbass
 ]
 
 turtles-own [ trail ]

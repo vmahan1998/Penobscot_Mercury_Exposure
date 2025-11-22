@@ -30,6 +30,26 @@ to setup-penobscot-migration
   set ticks-spent-stripedbass 0
   set visits-by-stripedbass 0
   set prey-eaten-in-patch 0
+    
+  ;; Risk from Foraging
+  set Hg-foraging-risk-alewife 0;; mercury risk from patch
+  set MeHg-foraging-risk-alewife 0;; methylmercury risk from patch
+  set Hg-foraging-risk-stripedbass 0
+  set MeHg-foraging-risk-stripedbass 0
+  set Hg-foraging-risk-total-alewife 0;; mercury risk from patch
+  set MeHg-foraging-risk-total-alewife 0;; methylmercury risk from patch
+  set Hg-foraging-risk-total-stripedbass 0 
+  set MeHg-foraging-risk-total-stripedbass 0
+  
+  ;; Risk from Exposure
+  set Hg-exp-risk-alewife 0;; mercury risk from patch
+  set MeHg-exp-risk-alewife 0;; methylmercury risk from patch
+  set Hg-exp-risk-stripedbass 0
+  set MeHg-exp-risk-stripedbass 0
+  set Hg-exp-risk-total-alewife 0;; mercury risk from patch
+  set MeHg-exp-risk-total-alewife 0;; methylmercury risk from patch
+  set Hg-exp-risk-total-stripedbass 0
+  set MeHg-exp-risk-total-stripedbass 0
   ]
   
   ;; setup functions
@@ -150,7 +170,6 @@ ask alewives with [age = "adult"] [
 
       ;; roll the migration probability
       if random-float 1 <= migration-probability [
-      ]
 
       ;; always count waiting time once migration cue has begun
       if wait-ticks < ticks-at-sea [
@@ -160,7 +179,7 @@ ask alewives with [age = "adult"] [
       ;; once waiting period is finished → start migrating
       if wait-ticks >= ticks-at-sea [
         set start-migration? true
-        set wait-ticks wait-ticks + 1
+      ]
       ]
     ]
 

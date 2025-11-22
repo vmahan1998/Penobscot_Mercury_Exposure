@@ -493,8 +493,10 @@ true
 true
 "" ""
 PENS
-"mercury" 1.0 0 -10141563 true "" "plot mean [mehg-exposure-total-normalized] of turtles"
-"methylmercury" 1.0 0 -13840069 true "" "plot mean [hg-exposure-total-normalized] of turtles"
+"Hg-prey" 1.0 0 -10141563 true "" "plot mean [hg-exposure-total-normalized] of alewives"
+"MeHg-prey" 1.0 0 -13840069 true "" "plot mean [mehg-exposure-total-normalized] of alewives"
+"Hg-pred" 1.0 0 -955883 true "" "plot mean [hg-exposure-total-normalized] of alewives"
+"MeHg-pred" 1.0 0 -2674135 true "" "plot mean [mehg-exposure-total-normalized] of stripedbass"
 
 PLOT
 1476
@@ -630,7 +632,7 @@ false
 "" ""
 PENS
 "alewives wait" 1.0 0 -5825686 true "" "plot mean [wait-ticks] of alewives"
-"bass wait" 1.0 0 -14439633 true "" ";plot mean [wait-ticks] of stripedbass"
+"bass wait" 1.0 0 -14439633 true "" "plot mean [wait-ticks] of stripedbass"
 
 MONITOR
 189

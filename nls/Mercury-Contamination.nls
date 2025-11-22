@@ -22,4 +22,19 @@ to mercury-contamination
   ;; Track cumulative Hg exposure
   set hg-exposure-total hg-exposure-total + Hg-current
   set hg-exposure-total-normalized hg-exposure-total-normalized + Hg-normalized ;; normalized exposure to compare against mercury
+  
+  let patch-risk hg-uptake-risk
+  if breed = alewives [
+  ask patch-here [
+    set Hg-exp-risk-alewife patch-risk
+    set Hg-exp-risk-total-alewife (Hg-exp-risk-total-alewife + patch-risk)
+  ]
+]
+
+if breed = stripedbass [
+  ask patch-here [
+    set Hg-exp-risk-stripedbass patch-risk
+    set Hg-exp-risk-total-stripedbass (Hg-exp-risk-total-stripedbass + patch-risk)
+  ]
+]
 end

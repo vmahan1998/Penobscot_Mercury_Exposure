@@ -8,7 +8,7 @@ to chase-nearest-alewife ;; predator procedure
   ifelse target-prey != nobody [
   
   let prey-loc [patch-here] of target-prey
-  let cur-loc [patch-here] of myself
+  let cur-loc patch-here
     
   ;; 1. Build cost map toward prey
   calculate-cost-to-prey prey-loc
@@ -17,8 +17,7 @@ to chase-nearest-alewife ;; predator procedure
   let path build-path-to-prey cur-loc prey-loc
   set planned-path path]
   [
-  let cur-loc [patch-here] of myself
-  
+  let cur-loc patch-here
   ;; 3. Build a path toward the prey patch
   wander
     
