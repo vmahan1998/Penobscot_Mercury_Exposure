@@ -161,27 +161,36 @@ ask alewives with [age = "adult"] [
 ]    
   
   ask stripedbass with [age = "adult"] [
-    ;school ;align, cohere, separate, separation minimum, schoolmates
-    ;migrate ;time, tidal-phase, depth preference
-    ;mercury-contamination ;exposure duration, exposure amount, suspended sediments
     
-    ;; Migration Cue
-    if not start-migration? [
+   ;; Migration Cue
+  if not start-migration? [
 
-      ;; roll the migration probability
+    ;; once probability cue triggers once → start the waiting period
+    if not cue-started? [
       if random-float 1 <= migration-probability [
+        set cue-started? true
+      ]
+    ]
 
-      ;; always count waiting time once migration cue has begun
+    ;; if cue has started, begin waiting period (always increase)
+    if cue-started? [
+
       if wait-ticks < ticks-at-sea [
         set wait-ticks wait-ticks + 1
       ]
 
-      ;; once waiting period is finished → start migrating
+      ;; start migration after waiting window is complete
       if wait-ticks >= ticks-at-sea [
         set start-migration? true
       ]
-      ]
     ]
+      
+        if ticks mod 288 = 0 [
+        calc-migration-probability-stripedbass
+
+      ]
+  ]
+
 
     if start-migration? [
     calculate-metabolism
@@ -190,6 +199,7 @@ ask alewives with [age = "adult"] [
     osmoregulate
     mercury-contamination
     methylmercury-contamination
+    school
     set previous-patch patch-here
     set prey-in-vision alewives in-radius vision-distance ;; defines alewives in vision radius
       
@@ -218,7 +228,6 @@ ask alewives with [age = "adult"] [
       ]
     
       if ticks mod 288 = 0 [
-        calc-migration-probability-stripedbass
         set daytime-prey-eaten 0
 
       ]

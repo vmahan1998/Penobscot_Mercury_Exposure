@@ -306,6 +306,7 @@ StripedBass-own [
   days-at-sea ;; number of days fish is in spawning grounds
   ticks-at-sea ;; counts number of days fish has waited
   wait-ticks
+  cue-started?
   planned-path
   path-index
   landward-migration-time ;; time to travel inland and complete objective
