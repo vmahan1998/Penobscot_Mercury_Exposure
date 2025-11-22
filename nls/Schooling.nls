@@ -14,6 +14,6 @@ to school  ;; prey procedure
 ;      
       ;move-to target-patch
       ;set energy max list 0 (energy - swim-base)  ;; Ensure energy does not go below 0
-    ;]
-  ]
+    ]
+  ;]
 end

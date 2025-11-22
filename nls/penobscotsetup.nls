@@ -201,19 +201,22 @@ ask alewives with [age = "adult"] [
     methylmercury-contamination
     school
     set previous-patch patch-here
-    set prey-in-vision alewives in-radius vision-distance ;; defines alewives in vision radius
-      
+
       ifelse stomach-contents < stomach-capacity and patchtype != "sea" [
         set hunting? true
         chase-nearest-alewife
         adjust-stripedbass-speed  ;; predator will speed up when making an attack
         scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
         eat ;; eat prey if within neighbors in "nls/Eat.nls"
-
+        set prey-in-vision alewives in-radius vision-distance
         ;count-time-since-full ;; fish rests when full
       ] [
         if any? prey-in-vision [ ;;try to eat if you see another fish
           set hunting? true
+          chase-nearest-alewife
+          adjust-stripedbass-speed  ;; predator will speed up when making an attack
+          scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
+          eat ;; eat prey if within neighbors in "nls/Eat.nls"
         ]
         
         set hunting? false

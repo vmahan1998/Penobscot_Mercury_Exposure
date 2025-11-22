@@ -59,7 +59,7 @@ to calculate-digestion-rate
   let age-factor (1 - (A / Amax) * 0.5)
 
   ;; Species constant (tunable)
-  let dig-base 0.05   ;; adjust to scale digestion speed in model ticks
+  let dig-base metabolism-rate   ;; adjust to scale digestion speed in model ticks
 
   ;; === Final base digestion rate ===
   let base-digestion-rate dig-base * weight-factor * age-factor

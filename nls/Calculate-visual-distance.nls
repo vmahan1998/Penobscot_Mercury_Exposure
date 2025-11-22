@@ -18,9 +18,8 @@ to calculate-vision
   let new-vision (base-vision-distance - penalty)
 
   ;; Step 4: Smooth toward the new vision (adaptation)
-  let adaptation-rate 0.1
   set vision-distance (vision-distance +
-      (new-vision - vision-distance) * adaptation-rate)
+      (new-vision - vision-distance))
 end
 
 to-report scaled-SPM [spm-level]

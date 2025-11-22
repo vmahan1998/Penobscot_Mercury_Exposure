@@ -212,7 +212,7 @@ initial-stripedbass
 0
 1000
 2.0
-1
+2
 1
 fish
 HORIZONTAL

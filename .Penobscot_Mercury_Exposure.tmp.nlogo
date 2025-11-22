@@ -212,7 +212,7 @@ initial-stripedbass
 0
 1000
 2.0
-1
+2
 1
 fish
 HORIZONTAL
@@ -495,8 +495,8 @@ true
 PENS
 "Hg-prey" 1.0 0 -10141563 true "" "plot mean [hg-exposure-total-normalized] of alewives"
 "MeHg-prey" 1.0 0 -13840069 true "" "plot mean [mehg-exposure-total-normalized] of alewives"
-"Hg-pred" 1.0 0 -955883 true "" "plot mean [hg-exposure-total-normalized] of alewives"
-"MeHg-pred" 1.0 0 -2674135 true "" "plot mean [mehg-exposure-total-normalized] of alewives"
+"Hg-pred" 1.0 0 -955883 true "" "plot mean [hg-exposure-total-normalized] of stripedbass"
+"MeHg-pred" 1.0 0 -2674135 true "" "plot mean [mehg-exposure-total-normalized] of stripedbass"
 
 PLOT
 1476

@@ -110,8 +110,10 @@ to setup-stripedbass
     set hunting? false
     set foraging? false
     set lipid-loss? false
-    set  filter-feed? false
+    set filter-feed? false
     set cue-started? false
+    set landward-migration? false
+    set seaward-migration? false
     set hg-exposure-duration 0 ; time spect exposed
     set mehg-exposure-duration 0 ; time spect exposed
     set hg-uptake-risk 0 ; instantanious risk from exposure
