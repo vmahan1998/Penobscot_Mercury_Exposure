@@ -147,6 +147,7 @@ to setup-stripedbass
     ;set E-creation 0.02
     set start-migration? false
     set target-prey nobody
+    set prey-in-vision nobody
     set daytime-prey-eaten 0;; counts number of prey eaten by bass in single day
     set numAlewivesEaten 0;; total alewives eaten
     

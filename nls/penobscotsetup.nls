@@ -201,7 +201,7 @@ ask alewives with [age = "adult"] [
     methylmercury-contamination
     school
     set previous-patch patch-here
-
+      
       ifelse stomach-contents < stomach-capacity and patchtype != "sea" [
         set hunting? true
         chase-nearest-alewife
@@ -211,6 +211,7 @@ ask alewives with [age = "adult"] [
         set prey-in-vision alewives in-radius vision-distance
         ;count-time-since-full ;; fish rests when full
       ] [
+        set prey-in-vision alewives in-radius vision-distance
         if any? prey-in-vision [ ;;try to eat if you see another fish
           set hunting? true
           chase-nearest-alewife

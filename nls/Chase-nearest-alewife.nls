@@ -22,13 +22,13 @@ to chase-nearest-alewife ;; predator procedure
   wander
     
   ;; get the patch directly in front at that distance
-  let patch-options patches in-radius travel-distance with [
-  patch-terrain = "water" and
-  abs (subtract-headings (towards myself) [heading] of myself) < 90
-]
+    let patch-options patches in-radius travel-distance with [
+      patch-terrain = "water" and
+      abs (subtract-headings (towards myself) [heading] of myself) < 90 
+    ]
 
   ;; pick the closest one in front
-  let target-patch min-one-of patch-options [ distance myself ]
+  let target-patch min-one-of (patch-options with [ self != patch-here ]) [ distance myself ]
   calculate-cost-to-prey target-patch
   let path build-path-to-prey cur-loc target-patch
   set planned-path path

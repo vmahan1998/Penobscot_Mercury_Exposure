@@ -1,5 +1,5 @@
 to digest
-  calculate-digestion-rate
+  set digestion-rate metabolism-rate
   if stomach-contents != 0 [
   ;; Amount digested this tick
   let digested (stomach-contents * digestion-rate)
@@ -13,11 +13,9 @@ to digest
     
   ;; Convert to usable energy
   let gained-energy digested * digestion-efficiency
+  set gained-energy (gained-energy * 40)
   set energy energy + gained-energy 
   
-  ;; Mercury Risk
-
-
   ;; --- Accumulate uptake ---
   set mehg-foraging digested-MeHg
   set hg-foraging digested-Hg
@@ -33,35 +31,4 @@ to digest
   set lipid-loss? true
   forage-options
   ]
-end
-
-to calculate-digestion-rate
-  ;; === Extract state values ===
-  let W size
-  let A age-num
-  let Wmax max [weight] of breed
-  let Amax max [age-num] of breed
-
-  ;; Safety guards
-  if W <= 0 [ set W 1 ]
-  if A <= 0 [ set A 1 ]
-  if Wmax <= 0 [ set Wmax 1 ]
-  if Amax <= 0 [ set Amax 1 ]
-
-  ;; === BASE DIGESTION RATE COMPONENTS (no temperature) ===
-
-  ;; Weight scaling: slows digestion for large fish
-  ;; Classic metabolic scaling exponent −0.25
-  let weight-factor (W / Wmax) ^ (-0.25)
-
-  ;; Age scaling: older fish digest slower
-  ;; Range ~1.0 (young) to ~0.5 (old)
-  let age-factor (1 - (A / Amax) * 0.5)
-
-  ;; Species constant (tunable)
-  let dig-base metabolism-rate   ;; adjust to scale digestion speed in model ticks
-
-  ;; === Final base digestion rate ===
-  let base-digestion-rate dig-base * weight-factor * age-factor
-  set digestion-rate (base-digestion-rate * digestion-penalty)
 end
