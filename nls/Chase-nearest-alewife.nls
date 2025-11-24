@@ -1,78 +1,112 @@
-to chase-nearest-alewife ;; predator procedure
+to chase-nearest-alewife  ;; predator procedure
+  ;; 1. Find prey and decide direction
   find-target-prey
   decide-chase-direction
   
   ;; 2. Calculate travel distance in patch units
   let travel-distance (speed / 3)
-  ;; travel distance reduced by swim-efficiency
-  
-  ifelse target-prey != nobody [
-  
-  let prey-loc [patch-here] of target-prey
-  let cur-loc patch-here
-    
-  ;; 1. Build cost map toward prey
-  calculate-cost-to-prey prey-loc
-  
-  ;; 3. Build a path toward the prey patch
-  let path build-path-to-prey cur-loc prey-loc
-  set planned-path path]
-  [
-  let cur-loc patch-here
-  ;; 3. Build a path toward the prey patch
-  wander
-    
-  ;; get the patch directly in front at that distance
-    let patch-options patches in-radius travel-distance with [
-      patch-terrain = "water" and
-      abs (subtract-headings (towards myself) [heading] of myself) < 90 
-    ]
 
-  ;; pick the closest one in front
-  let target-patch min-one-of (patch-options with [ self != patch-here ]) [ distance myself ]
-  calculate-cost-to-prey target-patch
-  let path build-path-to-prey cur-loc target-patch
-  set planned-path path
-  ]
+  ;; Default to no path
+  set planned-path []
   
+  if target-prey != nobody and patch-here = [patch-here] of target-prey [
+  stop ;; no futher action needed
+]
+  ;; 3. Build a path only if prey exists
+  if target-prey != nobody [
+    
+    let prey-loc [patch-here] of target-prey
+    let cur-loc patch-here
+    
+    ;; Build cost map toward prey
+    calculate-cost-to-prey prey-loc
+    
+    ;; Raw path from current patch to prey patch
+    let raw-path build-path-to-prey cur-loc prey-loc
+
+    ;; If path is non empty, drop the starting patch if it is the same as current location
+    if not empty? raw-path [
+      let first-step first raw-path
+      let clean-path raw-path
+      
+      ;; If first element is current patch, skip it
+      if first-step = patch-here [
+        set clean-path but-first raw-path
+      ]
+      
+      set planned-path clean-path
+    ]
+  ]
+
+  ;; If there is no usable path, bail out for this tick
+  if empty? planned-path [
+    ;; You can still call difficulty and swim energy with current patch if you want
+    ;; or just stop chasing this tick
+    stop
+  ]
+
   ;; 4. Determine how many patches to move this tick
   let steps-to-move ceiling travel-distance
   let move-patches sublist planned-path 0 (min list steps-to-move length planned-path)
-  
+
+  ;; Extra guard in case sublist yields empty list
+  if empty? move-patches [
+    stop
+  ]
+
   ;; Store where the bass started this tick
   let old-patch patch-here
   
-  ;; 5. Move along the planned patches IN ORDER
+  ;; 5. Move along the planned patches in order
   foreach move-patches [ p ->
     
-    ;; Count patch **visits**
-    if p != old-patch [
-      ask p [
-        set visits-by-stripedbass visits-by-stripedbass + 1
+    ;; Safeguard: never face the same patch we are already on
+    if p != patch-here [
+      
+      ;; Count patch visits
+      if p != old-patch [
+        ask p [
+          set visits-by-stripedbass visits-by-stripedbass + 1
+        ]
+        set old-patch p
       ]
-      set old-patch p
-    ]
-    
-    ;; Move to the patch
-    face p
-    move-to p
-    
-    ;; Count **time spent**
-    ask p [
-      set ticks-spent-stripedbass ticks-spent-stripedbass + 1
+      
+      ;; Move to the patch
+      face p
+      move-to p
+      
+      ;; Count time spent
+      ask p [
+        set ticks-spent-stripedbass ticks-spent-stripedbass + 1
+      ]
     ]
   ]
 
-  ;; IMPORTANT:
-  ;; Store the final patch we actually ended up on
-    let next-step last move-patches
-  
-  ;; 6. Compute difficulty of this patch (landward vs seaward)
+  ;; 6. If we moved, compute difficulty of the final patch
+  let next-step last move-patches
   calculate-chase-difficulty next-step
   
   ;; 7. Deduct hydrodynamic swimming energy
-    calculate-swim-energy 
+  calculate-swim-energy
+  
+  if not member? patch-here trail [
+  set trail lput patch-here trail
+]
 end
+
+;to chase-nearest-alewife ;; predator procedure
+;    let alewife-prey prey-in-vision with [breed = alewives and (patchtype != "sea")] ; only chase alewives in outside of sea
+;  if any? alewife-prey [
+;    let nearest-alewife-prey min-one-of alewife-prey [distance myself]
+;    if nearest-alewife-prey != nobody [
+;      face nearest-alewife-prey
+;    ]
+;    
+;    let travel-distance (speed / 3)
+;;; 4. Determine how many patches to move this tick
+;   fd travel-distance
+;  ]
+;end
 
 to decide-chase-direction
   if [velocity] of patch-here > 0 [
@@ -84,7 +118,11 @@ to decide-chase-direction
 end
 
 to find-target-prey
-  let candidates alewives with [patchtype != "sea"]
+
+  let candidates alewives with [
+    [patchtype] of patch-here != "sea"
+  ]
+
   ifelse any? candidates [
     set target-prey min-one-of candidates [distance myself]
   ] [

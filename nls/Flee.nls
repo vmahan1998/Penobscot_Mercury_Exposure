@@ -1,31 +1,5 @@
-;to wander ;; only predators use
-;  let neighbor-patches neighbors with [patchtype != "sea" and salinity > 0] ;striped bass wait in herring run until alewife in vision
-;  rt (random 30) - 15
-;  if any? neighbor-patches
-;  [move-to one-of neighbor-patches]
-;  
-;end
-
-;to wander
-;    let travel-distance (speed / 3)
-;    let cur-loc patch-here
-;  ;; 3. Build a path toward the prey patch
-;  rt (random 30) - 15
-;    
-;  ;; get the patch directly in front at that distance
-;    let patch-options patches in-radius travel-distance with [
-;      (patch-terrain = "water") and (in-cone vision-distance 90)
-;    ]
-;
-;  ;; pick the closest one in front
-;  let target-patch one-of patch-options
-;  calculate-cost-to-prey target-patch
-;  let path build-path-to-prey cur-loc target-patch
-;  set planned-path path
-;end
-
-to wander
-  ;; how far can the bass travel this tick
+to flee
+    ;; how far can the bass travel this tick
   let travel-distance (speed / 3)
   let cur-loc patch-here
 
@@ -92,7 +66,7 @@ to wander
       
       ;; -------- TIME SPENT --------
       ask p [
-        set ticks-spent-stripedbass (ticks-spent-stripedbass + 1)
+        set ticks-spent-alewives (ticks-spent-alewives + 1)
       ]
     ]
 
@@ -104,5 +78,4 @@ to wander
   set trail lput patch-here trail
 ]
   ]
-
 end

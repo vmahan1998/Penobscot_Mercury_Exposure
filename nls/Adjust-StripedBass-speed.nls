@@ -5,14 +5,10 @@ to adjust-stripedbass-speed ;; predator procedure
   [ set bursting? true ]
   [ set bursting? false ]
 
-  ifelse bursting?
+  if bursting?
   [ if speed <= max-speed
-    [ set speed max-speed ] ;; swim-energy
-    ;set color green
+    [ set speed speed + 0.3
+      let burst-energy (E-swim * 0.3)
+      set energy (energy - burst-energy) ]
   ]
-  
-  [ ;; not bursting
-    set speed min-speed
-    ]  
 end
-

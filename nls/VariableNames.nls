@@ -56,6 +56,10 @@ globals [
   ;; Pred prey
   min-SPM
   max-SPM
+  
+  results-file-agents
+  results-file-patches
+  results-file-daily
   ]
 
 patches-own [ 
@@ -287,6 +291,7 @@ StripedBass-own [
   stomach-capacity      ;; max grams the stomach can hold
   digestion-rate        ;; fraction of stomach digested per tick
   digestion-efficiency         ;; biological efficiency of digestion
+  missed-prey ;; count failed attempts at eatign prey 
   
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches

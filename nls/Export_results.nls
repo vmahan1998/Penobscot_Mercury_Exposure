@@ -1,0 +1,84 @@
+to export-results
+  report-fish-results
+  report-patch-results
+  report-daily-totals
+end
+
+to initialize-results-reporter
+  
+  let stamp_1 "11_24_2025"
+
+  set results-file-agents (word "results_agents_" stamp_1 ".csv")
+  file-open results-file-agents
+  file-print "id,breed,age,length,energy,landward_migration_time,seaward_migration_time,hg_total,mehg_total,hg_exposure_total_normalized,mehg_exposure_total_normalized,trail"
+  file-close
+  
+  set results-file-patches (word "results_patches_" stamp_1 ".csv")
+  file-open results-file-patches
+  file-print "pxcor,pycor,ticks_spent_alewife,visits_by_alewife,ticks_spent_stripedbass,visits_by-stripedbass,Hg_exp_risk_alewife,MeHg_exp_risk_alewife,Hg_exp_risk_bass,MeHg_exp_risk_bass,prey_eaten_in_patch"
+  file-close
+
+  set results-file-daily (word "results_daily_" stamp_1 ".csv")
+  file-open results-file-daily
+  file-print "day,alewives_entering,alewives_exiting,landward_crossings,seaward_crossings"
+  file-close
+  
+end
+
+to report-fish-results
+  
+  file-open results-file-agents
+  
+  ask turtles [
+    file-print (word
+      who "," 
+      breed "," 
+      age-num "," 
+      length-size "," 
+      energy "," 
+      landward-migration-time "," 
+      seaward-migration-time "," 
+      hg-total "," 
+      mehg-total "," 
+      hg-exposure-total-normalized "," 
+      mehg-exposure-total-normalized)
+  ]
+  
+  file-close
+end
+
+to report-patch-results
+  
+  file-open results-file-patches
+  
+  ask patches [
+    file-print (word
+      pxcor "," pycor ","
+      ticks-spent-alewife "," 
+      visits-by-alewife ","
+      ticks-spent-stripedbass "," 
+      visits-by-stripedbass ","
+      Hg-exp-risk-total-alewife ","
+      MeHg-exp-risk-total-alewife ","
+      Hg-exp-risk-total-stripedbass ","
+      MeHg-exp-risk-total-stripedbass ","
+      prey-eaten-in-patch)
+  ]
+  
+  file-close
+end
+
+to report-daily-totals
+    
+    file-open results-file-daily
+    
+    file-print (word
+      day "," 
+      alewives-entering-estuary-daily-total "," 
+      alewives-exiting-estuary-daily-total "," 
+      alewives-on-line-daily-total-landward "," 
+      alewives-on-line-daily-total-seaward)
+    
+    file-close
+    
+end

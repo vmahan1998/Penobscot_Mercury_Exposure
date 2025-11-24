@@ -1,8 +1,5 @@
 to eat  ;; predator procedure
 
-  ;; Only hunt if not full AND not in the sea
-  if stomach-contents < stomach-capacity and patchtype != "sea" [
-
     ;; Find prey on the same patch
     let nearby-options alewives-on patch-here
 
@@ -12,10 +9,10 @@ to eat  ;; predator procedure
     ]
 
     ;; If no edible prey here, do nothing
-    if any? edible-prey [
+    ifelse any? edible-prey [
 
       ;; Choose one prey to consume
-      let nearby one-of edible-prey
+      let nearby min-one-of edible-prey [ distance myself ]
 
       ;; Digestible mass (75% of whole prey weight)
       let meal-weight ([weight] of nearby) * 0.75
@@ -44,7 +41,6 @@ to eat  ;; predator procedure
       set daytime-prey-eaten daytime-prey-eaten + 1
       set prey-eaten-in-patch prey-eaten-in-patch + 1
     ]
-  ]
+    [ set missed-prey missed-prey + 1]
  
-
 end

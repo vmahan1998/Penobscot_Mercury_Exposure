@@ -79,7 +79,7 @@ to setup-stripedbass
     ;; =====================================
     ;; --- Habitat & physiological prefs ---
     ;; =====================================
-    set optimal-temperature 17 - ((age-num - 3) * 0.4) + random-normal 0 0.3
+    set optimal-temperature 14 - ((age-num - 3) * 0.4) + random-normal 0 0.3
     set optimal-velocity 0.25 + ((size - 3) * 0.05) + random-normal 0 0.03
     set optimal-depth 1.5 + ((size - 3) * 0.7) + random-normal 0 0.2
     let min-spm-pref 0     ;; lower migration bound
@@ -115,6 +115,7 @@ to setup-stripedbass
     set cue-started? false
     set landward-migration? false
     set seaward-migration? false
+    set start-migration? false
     set hg-exposure-duration 0 ; time spect exposed
     set mehg-exposure-duration 0 ; time spect exposed
     set hg-uptake-risk 0 ; instantanious risk from exposure
@@ -146,7 +147,6 @@ to setup-stripedbass
     ;set E-osmo 0
     ;set E-base 0.05
     ;set E-creation 0.02
-    set start-migration? false
     set target-prey nobody
     set prey-in-vision 0
     set daytime-prey-eaten 0;; counts number of prey eaten by bass in single day
@@ -169,7 +169,7 @@ to setup-stripedbass
     set stomach-contents 0
     set stomach-contents-Hg 0;; mercury stomach amount
     set stomach-contents-MeHg 0;; methylmercury stomach amount
-    
+    set missed-prey 0
     find-gape-size
     
     

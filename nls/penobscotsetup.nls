@@ -56,7 +56,7 @@ to setup-penobscot-migration
     find-migration-days
     update-migration-cue
     compute-SPM-range
-  
+    initialize-results-reporter
     ;set local-temp mean [temperature] of patches with [patchtype = "sea"]
     ;show (word "Local Temperature: " local-temp)
     reset-ticks
@@ -79,7 +79,7 @@ to penobscot-go
    ;color-foraging-patches
   ]
   
-ask alewives with [age = "adult"] [
+ask alewives [
 
     if (not start-migration?) [
       let p migration-probability
@@ -159,14 +159,17 @@ ask alewives with [age = "adult"] [
   set entered-estuary-today? false
   set exited-estuary-today? false
   ]
+    
+    ;; After all agent actions (before 'end')
+    if (patch-here = migration-patch) and (seaward-migration?) [
+      stop
+    ]  
 ]    
   
-  ask stripedbass with [age = "adult"] [
-    
+  ask stripedbass [
    ;; Migration Cue
-  if not start-migration? [
-
-    ;; once probability cue triggers once → start the waiting period
+  if (not start-migration?)  [
+   ;; once probability cue triggers once → start the waiting period
     if not cue-started? [
       if random-float 1 <= migration-probability [
         set cue-started? true
@@ -186,55 +189,52 @@ ask alewives with [age = "adult"] [
       ]
     ]
       
-        if ticks mod 288 = 0 [
-        calc-migration-probability-stripedbass
+  if ticks mod 288 = 0 [
+  calc-migration-probability-stripedbass
 
-      ]
-  ]
-
+   ]
+    ]
 
     if start-migration? [
-    calculate-metabolism
+    calculate-metabolism ;; GoFish Metabolism 
     calculate-vision
-    digest
-    ;; striped bass lipid loss if no stomach contents
+    digest ;; GoFish Digestion 
+    osmoregulate ;; GoFish Salinity Exposure 
+    mercury-contamination ;; GoFish Contaminant Exposure 
+    methylmercury-contamination  ;; GoFish Contaminant Exposure
+    set previous-patch patch-here
+    set prey-in-vision alewives in-radius vision-distance ;; defines alewives in vision radius
+    ;; GoFish Predation Procedure
     if stomach-contents <= 0 [
       set foraging? true
       set lipid-loss? true
-      forage-options
+      forage-options ;; GoFish Lipid Catabolism
       ]
-    osmoregulate
-    mercury-contamination
-    methylmercury-contamination
-    school
-    set previous-patch patch-here
       
       ifelse stomach-contents < stomach-capacity and patchtype != "sea" [
         set hunting? true
-        chase-nearest-alewife
+        ifelse any? prey-in-vision
+        [ chase-nearest-alewife ]  ;; point towards nearest prey in "nls/Chase-nearest-alewife.nls"
+        [ wander ] ;; wander if no prey in sight in "nls/Wander.nls"
+        
         adjust-stripedbass-speed  ;; predator will speed up when making an attack
         scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
         eat ;; eat prey if within neighbors in "nls/Eat.nls"
         ;count-time-since-full ;; fish rests when full
       ] [
-        
+               
         set hunting? false
-        let V-patch [velocity] of patch-here
-        
-        let drift-distance abs V-patch * (1 - swim-efficiency)
-        let drift-target one-of neighbors with [patch-terrain = "water"]
-        if drift-target != nobody [
-          safe-move drift-target drift-distance
+        wander
         ]
-        
+      if count alewives with [patchtype = "sea"] = 0 [
+        stop
+      ] 
       ]
     
       if ticks mod 288 = 0 [
         set daytime-prey-eaten 0
-
       ]
     ]
-]
   ;highlight-patches-with-prey-eaten ;; highlights patches where prey has been eaten
   
   ;; Daily counters
@@ -251,19 +251,11 @@ ask alewives with [age = "adult"] [
   set alewives-entering-estuary-daily-total 0
   set alewives-exiting-estuary-daily-total 0
   ]
-  
-  ;; After all agent actions (before 'end')
-if all? alewives with [age = "adult"] [
-     (patch-here = migration-patch) and (seaward-migration?)
-] [
-  stop
-]
-;   ;; After all agent actions (before 'end')
-;if all? alewives with [age = "adult"] [
-;     (patch-here = home-patch) and (landward-migration?)
-;] [
-;  stop
-;]
+  export-results
+   ;; After all agent actions (before 'end')
+  if count alewives = 0 [
+    stop
+  ]
 ;  ask turtles [
 ;  foreach trail [
 ;    p -> ask p [ set pcolor yellow ]

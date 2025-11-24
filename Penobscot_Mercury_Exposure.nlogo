@@ -1,4 +1,4 @@
-extensions [csv gis palette table]
+extensions [csv gis palette table string]
 ;;NOTE; Counter taken from Canvas and provided by Todd Swannack
 
 ;; ==============================================================
@@ -75,6 +75,7 @@ __includes[
   "nls/dam_counts_validation.nls"
   "nls/Calculate-visual-distance.nls"
   "nls/digestion.nls"
+  "nls/Export_results.nls"
 ]
 
 to setup
@@ -337,7 +338,8 @@ true
 false
 "clear-all-plots" ""
 PENS
-"default" 1.0 0 -8630108 true "" "plot mean [chloride-cell-density] of alewives"
+"default" 1.0 0 -14439633 true "" "plot mean [chloride-cell-density] of alewives"
+"pen-1" 1.0 0 -2674135 true "" "plot mean [chloride-cell-density] of stripedbass"
 
 PLOT
 1941
@@ -355,14 +357,15 @@ true
 false
 "clear-all-plots" ""
 PENS
-"Ion-Regulatory Stress" 1.0 0 -13840069 true "" "plot mean [ionregulatory-stress] of alewives"
+"Alewives" 1.0 0 -13840069 true "" "plot mean [ionregulatory-stress] of alewives"
+"Striped Bass" 1.0 0 -2674135 true "" "plot mean [ionregulatory-stress] of stripedbass"
 
 PLOT
 1940
 20
 2364
 275
-Salinity
+Salinity Exposure Dynamics
 ticks
 Salinity
 0.0
@@ -373,8 +376,10 @@ true
 true
 "" ""
 PENS
-"Salinity (psu)" 1.0 0 -16777216 true "" "plot mean [salinity] of patches with [any? turtles-here]"
-"Acclimated-Salinity" 1.0 0 -817084 true "" "plot mean [acclimated-salinity] of turtles"
+"Prey Salinity " 1.0 0 -16777216 true "" "plot mean [salinity] of patches with [any? alewives-here]"
+"Prey Acclimated-Salinity" 1.0 0 -13840069 true "" "plot mean [acclimated-salinity] of alewives"
+"Pred Salinity" 1.0 0 -7500403 true "" "plot mean [salinity] of patches with [any? stripedbass-here]"
+"Ped Acclimated-Salinity" 1.0 0 -2674135 true "" "plot mean [acclimated-salinity] of stripedbass"
 
 PLOT
 1944
@@ -448,7 +453,8 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot mean [difficulty-factor] of turtles"
+"default" 1.0 0 -16777216 true "" "plot mean [difficulty-factor] of alewives"
+"pen-1" 1.0 0 -7500403 true "" "plot mean [difficulty-factor] of stripedbass"
 
 PLOT
 1478
@@ -631,8 +637,8 @@ true
 false
 "" ""
 PENS
-"alewives wait" 1.0 0 -5825686 true "" "plot mean [wait-ticks] of alewives"
-"bass wait" 1.0 0 -14439633 true "" "plot mean [wait-ticks] of stripedbass"
+"alewives wait" 1.0 0 -14439633 true "" "plot mean [wait-ticks] of alewives"
+"bass wait" 1.0 0 -5298144 true "" "plot mean [wait-ticks] of stripedbass"
 
 MONITOR
 189
