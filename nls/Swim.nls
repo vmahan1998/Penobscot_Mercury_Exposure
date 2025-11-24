@@ -2,7 +2,9 @@ to swim
   ;; ==========================================================
   ;; Fish movement control integrating swimming energy metabolism
   ;; ==========================================================
-   set previous-patch patch-here
+  set previous-patch patch-here
+  set previous-x xcor
+  set previous-y ycor
   flee-stripedbass ;; if fleeing use energy
   ;; ------------------------------------------
   ;; LANDWARD MIGRATION (pre-spawning)

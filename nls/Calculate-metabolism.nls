@@ -1,7 +1,7 @@
 
 to calculate-metabolism
   ;; --- Safe inputs ---
-  let M-max max [size] of breed
+  let M-max max [weight] of breed
   let max-age max [age-num] of breed
   if M-max <= 0 [ set M-max 1 ]              ;; guard against divide-by-zero
   let T-env [temperature] of patch-here
@@ -10,7 +10,7 @@ to calculate-metabolism
   ;; --- Allometric + temperature + age scaling ---
   let beta 0.75
   let Q10 1.5
-  let size-factor (size / M-max) ^ beta
+  let size-factor (weight / M-max) ^ beta
   let temp-factor Q10 ^ ((T-env - optimal-temperature) / 10)
   let age-factor 1 + (1 - (age-num / max-age)) * 0.5
 
@@ -29,7 +29,6 @@ to calculate-metabolism
   let efficiency M-total / baseline-metabolism
 
   set swim-efficiency              efficiency
-  set digestion-penalty          efficiency
   set osmoregulation-efficiency    efficiency
   set lipid-catabolism-efficiency  efficiency
   ;print (word "lipid-catabolism-efficiency: " efficiency)
@@ -42,17 +41,17 @@ to initialize-metabolism
   ;; SCALE base-constant properly:
   let base-constant 0.1   
   
-  let M-max max [size] of breed
+  let M-max max [weight] of breed
   let max-age max [age-num] of breed
   if M-max <= 0 [ set M-max 1 ]
   
-  let size-factor (size / M-max) ^ beta
+  let size-factor (weight / M-max) ^ beta
   let age-factor 1 + age-sensitivity * (1 - (age-num / max-age))
   let temp-factor (optimal-temperature / 27)
   
   set Met-base base-constant * size-factor * age-factor * temp-factor
   
-  ;; Partitioning and other code unchanged...
+  ;; Partitioning
   let motion-ratio 0.7
   let osmo-ratio   0.3
   let total-ratio (motion-ratio + osmo-ratio)

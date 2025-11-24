@@ -4,6 +4,7 @@ to chase-nearest-alewife ;; predator procedure
   
   ;; 2. Calculate travel distance in patch units
   let travel-distance (speed / 3)
+  ;; travel distance reduced by swim-efficiency
   
   ifelse target-prey != nobody [
   

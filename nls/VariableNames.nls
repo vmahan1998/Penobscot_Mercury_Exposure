@@ -194,9 +194,13 @@ Alewives-own [
   ;; Metabolic Functions
   metabolism-rate
   total-metabolism
-  swim-efficiency              ;; metabolic cost/benefit to swimming       
+  swim-efficiency              ;; metabolic cost/benefit to swimming 
+  stomach-contents-Hg ;; mercury stomach amount
+  stomach-contents-MeHg ;; methylmercury stomach amount
+  stomach-contents      ;; total biomass currently in stomach (g)
+  stomach-capacity      ;; max grams the stomach can hold
+  digestion-rate        ;; fraction of stomach digested per tick
   digestion-efficiency         ;; biological efficiency of digestion
-  digestion-penalty            ;; temperature penalty to digestion rate
   osmoregulation-efficiency    ;; metabolic cost/benefit to osmoregulation
   lipid-catabolism-efficiency  ;; metabolic cost/benefit to lpid catabolism
   met-base
@@ -206,6 +210,8 @@ Alewives-own [
   E-creation  ;; The energy cost for producing new chloride cells.
   
   previous-patch ;; stores previous patch
+  previous-x
+  previous-y
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   
   Met-max ;; maximum metabilic cost of new choride cell creation
@@ -275,14 +281,12 @@ StripedBass-own [
   daytime-prey-eaten ;; counts number of prey eaten by bass in single day
   numAlewivesEaten ;; total alewives eaten
   
-  digestion-time ;; counts how long the fish needs to digest before eating again
   stomach-contents-Hg ;; mercury stomach amount
   stomach-contents-MeHg ;; methylmercury stomach amount
   stomach-contents      ;; total biomass currently in stomach (g)
   stomach-capacity      ;; max grams the stomach can hold
   digestion-rate        ;; fraction of stomach digested per tick
   digestion-efficiency         ;; biological efficiency of digestion
-  digestion-penalty            ;; temperature penalty to digestion rate
   
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
@@ -346,6 +350,8 @@ StripedBass-own [
   E-creation  ;; The energy cost for producing new chloride cells.
   
   previous-patch ;; stores previous patch
+  previous-x
+  previous-y
   stable-time ;; counts the amount of ticks the agent remains in similar salinity areas
   
   Met-max ;; maximum metabilic cost of new choride cell creation

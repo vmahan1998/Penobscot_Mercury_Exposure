@@ -825,8 +825,8 @@ true
 true
 "" ""
 PENS
-"Hg-Exp" 1.0 0 -10141563 true "" "plot mean [hg-uptake-risk] of stripedbass"
-"MeHg-Exp" 1.0 0 -13840069 true "" "plot mean [mehg-uptake-risk] of stripedbass"
+"Hg-Exp" 1.0 0 -10141563 true "" "plot mean [hg-exp-risk] of stripedbass"
+"MeHg-Exp" 1.0 0 -13840069 true "" "plot mean [mehg-exp-risk] of stripedbass"
 "Hg Total" 1.0 0 -13791810 true "" "plot mean [hg-total] of stripedbass"
 "MeHg Total" 1.0 0 -5298144 true "" "plot mean [hg-total] of stripedbass"
 "Hg Forage" 1.0 0 -7500403 true "" "plot mean [hg-foraging] of stripedbass"

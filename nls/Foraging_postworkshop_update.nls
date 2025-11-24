@@ -60,11 +60,18 @@ to forage-options
   set weight weight - (lipid-used)
   ;print (word "weight after lipid loss: " weight)
   
-  ;; When relying on lipids, Hg uptake stops
-  set hg-uptake-risk 0
-  ;print "hg-uptake-risk set to 0"
-  set mehg-uptake-risk 0
-  ;print "mehg-uptake-risk set to 0"
+  ;; When relying on lipids, Hg mercury foraging risk stops
+    
+  ;; contaminant bookkeeping
+  let digested-MeHg 0
+  let digested-Hg 0
+  set mehg-foraging digested-MeHg
+  set hg-foraging digested-Hg
+
+  set mehg-foraging-total mehg-foraging-total + digested-MeHg
+  set hg-foraging-total hg-foraging-total + digested-Hg
+  set mehg-total mehg-total + digested-MeHg
+  set hg-total hg-total + digested-Hg
 ]
 
 ;; ------------------------------------------
@@ -73,7 +80,7 @@ to forage-options
 if filter-feed? [
   let spm-sd 25
   ;; Base filtration capacity scales with body size *and* metabolism
-  let base-filtration ((size / 100) * digestion-penalty)
+  let base-filtration ((weight / 100) * metabolism-rate)
   set base-filtration (base-filtration * digestion-efficiency)
   let neighbors-list sort (neighbors with [patch-terrain = "water"])
   let best-patch nobody
@@ -93,42 +100,38 @@ if filter-feed? [
 
   if best-patch != nobody and [patch-terrain] of best-patch = "water" [
     face best-patch
-    rt random-normal 0 10
-    ;; travel distance reduced by swim-efficiency
-    let travel-distance (min list (distance best-patch) (speed * swim-efficiency))
-    fd travel-distance
-    if [patch-terrain] of patch-here != "water" [ bk travel-distance ]
-
+    move-to best-patch
+      
+    ;; calculate ditance between best patch and previous patch 
+    let travel-distance distancexy previous-x previous-y
+      
     ;; --- Swimming energy cost (scaled by efficiency) ---
-    calculate-swim-energy
     set energy max list 0 (energy - (E-swim * travel-distance))
 
     ;; --- Feeding and digestion (temperature-dependent) ---
     let patch-spm [SPM] of best-patch
-    let prey-intake patch-spm * base-filtration * 300
-    ;; digestion-efficiency reduces food assimilation in cold/low-metabolism conditions
-    let prey-assimilated prey-intake
-    set weight weight + (prey-assimilated * 1e-6)
-    set energy min list (energy + prey-assimilated) 100
-
+    let prey-assimilated patch-spm * base-filtration * 300
+      
     ;; --- Contaminant uptake (SPM × Hg and MeHg) ---
     let spm-hg [mercury] of best-patch
     let spm-mehg [methylmercury] of best-patch
-
+      
     ;; --- Biomagnification ---
     let biomag-factor (random-float 30) + 60  ;; random 60–90
-    let mehg-uptake patch-spm * spm-mehg * biomag-factor * prey-assimilated
-    let hg-uptake patch-spm * spm-hg * (biomag-factor / 10) * prey-assimilated
-
-    ;; --- Accumulate uptake ---
-    set mehg-foraging mehg-uptake
-    set hg-foraging hg-uptake
+    let hg-assimilated (patch-spm * spm-mehg * biomag-factor * prey-assimilated)
+    let mehg-assimilated (patch-spm * spm-hg * (biomag-factor / 10) * prey-assimilated)
       
-    set mehg-foraging-total mehg-foraging-total + mehg-uptake
-    set hg-foraging-total hg-foraging-total + hg-uptake
+    ;; Remaining capacity
+    let space-available (stomach-capacity - stomach-contents)
 
-    set mehg-total mehg-total + mehg-uptake
-    set hg-total hg-total + hg-uptake
+    ;; You can only eat as much as fits
+    let intake (min (list prey-assimilated space-available))
+
+    ;; Add biomass to stomach
+    set stomach-contents (stomach-contents + intake)
+    set stomach-contents-Hg (stomach-contents-Hg + hg-assimilated);; mercury stomach amount
+    set stomach-contents-MeHg (stomach-contents-MeHg + mehg-assimilated);; methylmercury stomach amount
+
   ]
 ]
 

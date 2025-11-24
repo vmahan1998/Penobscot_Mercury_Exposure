@@ -1,8 +1,8 @@
 to calculate-difficulty-landward
   ;; Ensure required parameters exist
   ;; Ensure required parameters exist
-  let M-max max [size] of breed         ;; Maximum size among agents
-  let M-agent size                      ;; Current agent size
+  let M-max max [weight] of breed         ;; Maximum size among agents
+  let M-agent weight                      ;; Current agent size
   let V-max max-seaward-velocity        ;; Maximum observed seaward velocity
   let V-min max-landward-velocity        ;; Minimum observed seaward velocity
   let k 0.75                            ;; Scaling exponent (same as landward)
@@ -39,7 +39,8 @@ to calculate-swimming-speed-landward
 
   ;; Cap rate of change (max acceleration per tick)
   let max-speed-change 0.5  ;; Maximum allowed change per tick
-
+  set max-speed-change (max-speed-change * swim-efficiency) ;;; CHANGE THIS IF MIGRATION COUNTS ARE MESSED UP
+  
   ;; Apply capped rate of change
   if abs(desired-speed - prev-speed) > max-speed-change [
     if desired-speed > prev-speed [

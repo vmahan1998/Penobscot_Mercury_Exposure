@@ -29,10 +29,6 @@ to calculate-ionregulatory-stress
 
     ;; Compute base salinity-driven stress
     let salinity-stress salinity-to-stress scaled-difference chloride-cell-density previous-stress
-    
-    ;; Apply osmoregulation-efficiency as a difficulty modifier
-    ;; Lower efficiency = higher perceived stress
-    ;set salinity-stress salinity-stress * (1 / osmoregulation-efficiency)
   
     ;; Acclimation logic: If salinity remains stable, adjust acclimated salinity
     let salinity-change abs(patch-salinity - previous-salinity)
@@ -163,14 +159,14 @@ end
 
 to calculate-E-creation
   ;; Ensure required parameters exist
-  let M-max max [size] of breed
-  ifelse (size > 0 and M-max > 0) [
+  let M-max max [weight] of breed
+  ifelse (weight > 0 and M-max > 0) [
     
     ;; Define the scaling exponent (negative due to higher relative cost in smaller fish)
     let beta -0.75  
     
     ;; Calculate metabolic cost of chloride cell creation
-    set E-creation Met-max * ((size / M-max) ^ beta)
+    set E-creation Met-max * ((weight / M-max) ^ beta)
     
     ;; Debugging output
     ;show (word "E_creation: " E-creation " | Size: " size " | Max Size: " M-max)

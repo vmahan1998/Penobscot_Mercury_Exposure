@@ -6,6 +6,8 @@ to setup-stripedbass
       move-to migration-patch
     ]
     set previous-patch patch-here
+    set previous-x xcor
+    set previous-y ycor
     set align-coefficient 50
     set cohere-coefficient 50
     set separate-coefficient 50
@@ -90,7 +92,6 @@ to setup-stripedbass
     ;; ---- Metabolic Variables ----
     set swim-efficiency 1             ;; metabolic cost/benefit to swimming       
     set digestion-efficiency stripedbass-digestion-efficiency        ;; metabolic cost/benefit to digestion
-    set digestion-penalty 1        ;; metabolic cost/benefit to digestion
     set osmoregulation-efficiency 1   ;; metabolic cost/benefit to osmoregulation
     set lipid-catabolism-efficiency 1 ;; metabolic cost/benefit to lpid catabolism
     
@@ -147,7 +148,7 @@ to setup-stripedbass
     ;set E-creation 0.02
     set start-migration? false
     set target-prey nobody
-    set prey-in-vision nobody
+    set prey-in-vision 0
     set daytime-prey-eaten 0;; counts number of prey eaten by bass in single day
     set numAlewivesEaten 0;; total alewives eaten
     
@@ -170,16 +171,6 @@ to setup-stripedbass
     set stomach-contents-MeHg 0;; methylmercury stomach amount
     
     find-gape-size
-    
-    ;; ---- Digestion Rate ----
-    let min-d 14     ;; lower migration bound
-    let max-d 21     ;; upper migration bound
-    let mean-d 16    ;; optimal migration temperature (mean)
-    let sd-d 1.5     ;; spread (wide enough for early & late migrants)
-    
-    set digestion-rate truncated-normal mean-d sd-d min-d max-d
-    set ticks-at-sea (days-at-sea * 288) ;; convert to ticks
-    ;set days-at-large 54 ;;difference between peak migration start for landward and peak seaward migration start (informed by Justin Stevens)
     
     
     ;; ---- Days at Large at Sea ----

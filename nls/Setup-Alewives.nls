@@ -9,6 +9,8 @@ to setup-alewives
     ;; Landward Migration Start
     if migration-patch != nobody [ move-to migration-patch ]
     set previous-patch migration-patch
+    set previous-x xcor
+    set previous-y ycor
     set landward-migration? false
     set seaward-migration? false
     set at-destination? false
@@ -85,6 +87,28 @@ to setup-alewives
     set lipid-catabolism-efficiency 1 ;; metabolic cost/benefit to lpid catabolism
     
     initialize-metabolism
+    set stomach-contents-Hg 0;; mercury stomach amount
+    set stomach-contents-MeHg 0;; methylmercury stomach amount
+    set stomach-contents 0     ;; total biomass currently in stomach (g)
+    set stomach-capacity 0     ;; max grams the stomach can hold
+    
+    ;   ;; set stomach capacity
+    ;; assumes weight is already in grams
+    let max-length max [length-size] of breed
+    ;; Smoothly scale stomach capacity: 10% BW in small fish → 5% BW in large fish
+    let base-capacity (weight * (0.10 - (0.05 * (length-size / max-length))))
+
+   ;; Mean expected stomach capacity
+   let mean-stomach base-capacity
+   let sd-stomach (mean-stomach * 0.15)
+   let min-stomach (weight * 0.03)
+   let max-stomach (weight * 0.12)
+;   
+    set stomach-capacity 
+    truncated-normal mean-stomach sd-stomach min-stomach max-stomach
+    set stomach-contents 0
+    set stomach-contents-Hg 0;; mercury stomach amount
+    set stomach-contents-MeHg 0;; methylmercury stomach amount
     
     ;; ---- Days at Large in Estuary ----
     let min-days 14     ;; lower migration bound

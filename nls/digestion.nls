@@ -1,34 +1,49 @@
 to digest
   set digestion-rate metabolism-rate
-  if stomach-contents != 0 [
-  ;; Amount digested this tick
-  let digested (stomach-contents * digestion-rate)
-  let digested-Hg ((digested / stomach-contents) * stomach-contents-Hg)
-  let digested-MeHg ((digested / stomach-contents) * stomach-contents-MeHg)
-    
-  ;; Remove from stomach
-  set stomach-contents max list 0 (stomach-contents - digested)
-  set stomach-contents-Hg max list 0 (stomach-contents-Hg - digested-Hg)
-  set stomach-contents-MeHg max list 0 (stomach-contents-MeHg - digested-MeHg)
-    
-  ;; Convert to usable energy
-  let gained-energy digested * digestion-efficiency
-  set gained-energy (gained-energy * 40)
-  set energy energy + gained-energy 
-  
-  ;; --- Accumulate uptake ---
-  set mehg-foraging digested-MeHg
-  set hg-foraging digested-Hg
-      
-  set mehg-foraging-total mehg-foraging-total + digested-MeHg
-  set hg-foraging-total hg-foraging-total + digested-Hg
-  set mehg-total mehg-total + digested-MeHg
-  set hg-total hg-total + digested-Hg
-  ]
-  
-  if stomach-contents <= 0 [
-  set foraging? true
-  set lipid-loss? true
-  forage-options
+
+  if stomach-contents > 0 [
+
+    ;; Amount digested
+    let digested (stomach-contents * digestion-rate)
+    let digested-Hg ((digested / stomach-contents) * stomach-contents-Hg)
+    let digested-MeHg ((digested / stomach-contents) * stomach-contents-MeHg)
+
+    ;; Remove from stomach
+    set stomach-contents (max list 0 (stomach-contents - digested))
+    set stomach-contents-Hg (max list 0 (stomach-contents-Hg - digested-Hg))
+    set stomach-contents-MeHg (max list 0 (stomach-contents-MeHg - digested-MeHg))
+
+    ;; Convert digested biomass to energy
+    let usable-energy (digested * digestion-efficiency * 40)
+    set energy energy + usable-energy
+
+    ;; =============================================
+    ;; LIPID STORAGE ONLY IF THERE IS ENERGY SURPLUS
+    ;; =============================================
+
+    if energy > 100 [
+      let surplus (energy - 100)
+
+      ;; lipid that can be stored from surplus
+      let lipid-added (surplus / 40)
+
+      ;; apply storage efficiency
+      set lipid-added (lipid-added * lipid-catabolism-efficiency)
+
+      ;; update weight
+      set weight weight + lipid-added
+
+      ;; energy cost
+      set energy energy - (lipid-added * 40)
+    ]
+
+    ;; contaminant bookkeeping
+    set mehg-foraging digested-MeHg
+    set hg-foraging digested-Hg
+
+    set mehg-foraging-total mehg-foraging-total + digested-MeHg
+    set hg-foraging-total hg-foraging-total + digested-Hg
+    set mehg-total mehg-total + digested-MeHg
+    set hg-total hg-total + digested-Hg
   ]
 end
