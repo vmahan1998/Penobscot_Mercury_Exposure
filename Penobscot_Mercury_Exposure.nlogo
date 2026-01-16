@@ -277,7 +277,7 @@ stripedbass-digestion-efficiency
 stripedbass-digestion-efficiency
 0
 1
-0.2
+0.8
 0.1
 1
 portion of food > > energy
@@ -723,8 +723,8 @@ SLIDER
 132
 start-month
 start-month
-4
-10
+1
+12
 4.0
 1
 1
