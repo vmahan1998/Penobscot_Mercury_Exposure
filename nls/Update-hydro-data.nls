@@ -19,6 +19,9 @@ to update-hydro-data
       
       set salinity-data csv:from-file (word "inputs/monthly/salinity_" current-month "_2023.csv")
       print (word "   ✅ Salinity data loaded (" length salinity-data " cols)")
+    
+      set spm-data csv:from-file (word "inputs/monthly/spm_" current-month "_2023.csv")
+      print (word "   ✅ SPM data loaded (" length spm-data " cols)")
       
       ;; Reset counters
       let header first depth-data
@@ -49,7 +52,7 @@ to debug-hydro-data
   ;; Inspect per-patch series variables on water patches and print:
   ;; - total number of water patches
   ;; - for each series var: # length 720, # length 744, # missing / not-a-list
-  let vars ["velocity-series" "salinity-series" "depth-series" "temp-series"]
+  let vars ["velocity-series" "salinity-series" "depth-series" "temp-series" "spm-series"]
   let water-patches patches with [ patch-terrain = "water" ]
   let n-water count water-patches
   show (word "Total water patches: " n-water)
@@ -143,7 +146,8 @@ to update-patch-data
       set depth item current-hour depth-series
       set salinity item current-hour salinity-series
       set temperature item current-hour temp-series
-      set SPM random-float 0.0004  ;; random value between 0 and 0.0004
+      set SPM item current-hour spm-series
+      ;set SPM random-float 0.0004  ;; random value between 0 and 0.0004
       ;set SPM item ticks SPN-series
       ;set temperature temperature + 5
             ;; ---- Temperature cue for alewife migration ----

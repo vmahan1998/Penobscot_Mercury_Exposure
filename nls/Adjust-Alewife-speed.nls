@@ -1,7 +1,7 @@
 to adjust-speed ;; prey procedure
   ifelse max [speed] of schoolmates > speed + .1
-  [ set speed speed + .1 ] ;; speed up if any schoolmate is moving faster (potentially scared by a predator)
+  [ set speed (speed + (speed * .1)) ] ;; speed up if any schoolmate is moving faster (potentially scared by a predator)
   [ if speed > min-speed
-    [ set speed speed - .2] 
+    [ set speed (speed - (speed * .1))] 
   ] ;; else slow down (this eventually slows the school to min-speed, sort of its own emergent phenomena)
 end

@@ -11,7 +11,6 @@ to setup-stripedbass
     set align-coefficient 50
     set cohere-coefficient 50
     set separate-coefficient 50
-    set minimum-separation 0.3
     set color yellow
 
     ;; =====================================
@@ -67,7 +66,9 @@ to setup-stripedbass
     
     set size truncated-normal mu-length sd-length min-size-pop max-size-pop
     set length-size (size * 1000)   ;; convert m → mm just like alewife block
- 
+    let schooling-multiplier (0.5 + random-float 2)
+    set minimum-separation (size * schooling-multiplier) ;; sschooling distance
+
     ;; ---- Weight (g) from Length ----
     ;; From NJ regression: W(lb) = 0.00047 * L(in)^2.88
     
@@ -99,9 +100,9 @@ to setup-stripedbass
     
     ;; ---- Swimming Speed (m per 5 minutes) ----
     ;; Speed = 1.5–3.0 × body length per second, converted to 5-minute step
-    let swim-multiplier (0.1 + random-float 0.5)
+    let swim-multiplier (0.5 + random-float 0.5)
     set max-speed (size * swim-multiplier * 300) ;; speed from m/s to m / 5 minutes
-    set speed 0.1
+    set speed (max-speed / 4)
     set energy 100
 
     ;; =====================================
@@ -116,6 +117,7 @@ to setup-stripedbass
     set landward-migration? false
     set seaward-migration? false
     set start-migration? false
+    set end-migration? false
     set hg-exposure-duration 0 ; time spect exposed
     set mehg-exposure-duration 0 ; time spect exposed
     set hg-uptake-risk 0 ; instantanious risk from exposure
@@ -130,7 +132,8 @@ to setup-stripedbass
     set hg-total 0 ; sum of mercury risk
     set migration-action "predation"
     set migration-probability 0
-
+    set outmigration-probability 0
+    
     set landward-migration-time 0
     set seaward-migration-time 0
     set thermal-stress 1
@@ -169,21 +172,9 @@ to setup-stripedbass
     set stomach-contents 0
     set stomach-contents-Hg 0;; mercury stomach amount
     set stomach-contents-MeHg 0;; methylmercury stomach amount
-    set missed-prey 0
+    
     find-gape-size
-    
-    
-    ;; ---- Days at Large at Sea ----
-    let min-days 14     ;; lower migration bound
-    let max-days 21     ;; upper migration bound
-    let mean-days 16    ;; optimal migration temperature (mean)
-    let sd-days 1.5     ;; spread (wide enough for early & late migrants)
-    
-    set days-at-sea truncated-normal mean-days sd-days min-days max-days
-    set ticks-at-sea (days-at-sea * 288) ;; convert to ticks
-    ;set days-at-large 54 ;;difference between peak migration start for landward and peak seaward migration start (informed by Justin Stevens)
-    
-    set wait-ticks 0
+  
     set path-index 1
     set trail []
     set planned-path []
@@ -206,9 +197,8 @@ to setup-stripedbass
     truncated-normal mean-distance sd-distance min-distance max-distance
     
     set base-vision-distance (base-vision-distance-meters / 3) ;convert to patch units
-    set min-vision-distance (size / 3) ;convert to patch units
-    
-
+    set min-vision-distance 1 ;convert to patch units
+    set vision-distance base-vision-distance
   ]
 end
 

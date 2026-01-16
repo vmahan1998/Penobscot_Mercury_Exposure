@@ -1,7 +1,6 @@
 to flee-stripedbass
       if speed <= max-speed [
         set speed max-speed
-        set color red
           ;; how far can the bass travel this tick
       let travel-distance (speed / 3)
       let cur-loc patch-here
@@ -10,12 +9,11 @@ to flee-stripedbass
       rt (random 30) - 15
       
       ;; patches in a cone in front, out to vision-distance
-      let forward-patches patches in-cone vision-distance 90
+      let forward-patches patches in-radius travel-distance
       
       ;; keep only water patches that are within travel-distance
       let patch-options forward-patches with [
-        patch-terrain = "water" and
-        distance myself <= travel-distance
+        patch-terrain = "water"
       ]
       
       ;; if no patch available → don't move

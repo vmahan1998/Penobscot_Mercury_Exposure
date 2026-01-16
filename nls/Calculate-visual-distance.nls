@@ -4,22 +4,17 @@ to compute-SPM-range
 end
 
 to calculate-vision
-  let prev-spm [SPM] of patch-here
+  let turbidity (scaled-SPM [SPM] of patch-here)  ;; 0–1
 
-  ;; Step 1: Get relative turbidity
-  let turbidity scaled-SPM prev-spm   ;; value 0–1
+  ;; max reduction is 60 percent of the range
+  let max-reduction 0.6  
 
-  ;; Step 2: Compute penalty
-  ;; turbidity = 0 → penalty = 0
-  ;; turbidity = 1 → penalty = full range
-  let penalty turbidity * (base-vision-distance - min-vision-distance)
+  let penalty (turbidity * max-reduction) * 
+              (base-vision-distance - min-vision-distance)
 
-  ;; Step 3: Apply penalty to get final vision distance
-  let new-vision (base-vision-distance - penalty)
+  let new-vision base-vision-distance - penalty
 
-  ;; Step 4: Smooth toward the new vision (adaptation)
-  set vision-distance (vision-distance +
-      (new-vision - vision-distance))
+  set vision-distance vision-distance + (new-vision - vision-distance) * 0.25
 end
 
 to-report scaled-SPM [spm-level]

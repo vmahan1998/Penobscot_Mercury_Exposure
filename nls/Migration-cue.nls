@@ -16,6 +16,14 @@ to calc-migration-probability
   ]
 end
 
+to calc-outmigration-probability
+  if migration-trigger? [
+
+      set outmigration-probability outmigration-probability + ( 0.00001 + random-float 0.00004)  ;; total 0.10
+      if outmigration-probability > 1 [ set outmigration-probability 1 ]
+  ]
+end
+
 to calc-migration-probability-stripedbass
   
   ;; 1. Count all alewives currently in the Penobscot

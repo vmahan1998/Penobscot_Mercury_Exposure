@@ -16,7 +16,7 @@ globals [
   depth-data ;; depth data
   salinity-data ;; salinity data
   temp-data
-  SPM-data ;; Suspended Sediments data
+  spm-data ;; Suspended Sediments data
   mean-SPM ;; mean SPM in the system
   mercury-data ;; mercury contamination data
   tide-phase ;; tracks tidal phase
@@ -43,6 +43,7 @@ globals [
   cue-days
   cue-table
   migration-trigger? ;; checks if cue has occured
+  end-migration-trigger?
   day_in_month ;; month day
   cue-strength
   cue-strength-index
@@ -60,6 +61,7 @@ globals [
   results-file-agents
   results-file-patches
   results-file-daily
+  stamp_1
   ]
 
 patches-own [ 
@@ -84,7 +86,7 @@ patches-own [
   depth-series  ;; time series of depth
   temp-series  ;; time series of temperature
   salinity-series  ;; time series of salinty
-  ;SPM-series  ;; time series of depth
+  spm-series  ;; time series of depth
   cost-to-home ;; least cost to homing patch
   cost-to-sea ;; least cost back to sea
   cost-to-prey ;; cost to find prey
@@ -92,7 +94,7 @@ patches-own [
   current-depth-month ;; tracks what month the data is from
   current-temp-month ;; tracks what month the data is from
   current-salinity-month ;; tracks what month the data is from
-  
+  current-spm-month ;; tracks what month the data is from
   ;; Patch Metrics
   ticks-spent-alewife
   visits-by-alewife
@@ -291,7 +293,6 @@ StripedBass-own [
   stomach-capacity      ;; max grams the stomach can hold
   digestion-rate        ;; fraction of stomach digested per tick
   digestion-efficiency         ;; biological efficiency of digestion
-  missed-prey ;; count failed attempts at eatign prey 
   
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
@@ -368,6 +369,7 @@ StripedBass-own [
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
   start-migration? ;; boolean to track when fish should enter system
+  end-migration? ;; boolean to track when fish should leave system
   
   prev-speed ;; previous speed
   difficulty-factor ;; swimming difficulty
@@ -378,9 +380,11 @@ StripedBass-own [
   trapped?  ;; Flag indicating if the fish is stuck
   STST-start-tick ;; Selective tidal transport transition
   
+  end-migration-day 
   migration-day ;; based on alewife e
   vision-distance
   migration-probability ;; porbability to migrate based on alewife entry
+  outmigration-probability
   base-vision-distance
   min-vision-distance
 ]

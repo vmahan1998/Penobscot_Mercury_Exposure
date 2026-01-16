@@ -1,10 +1,17 @@
-;to wander ;; only predators use
-;  let neighbor-patches neighbors with [patchtype != "sea" and salinity > 0] ;striped bass wait in herring run until alewife in vision
-;  rt (random 30) - 15
-;  if any? neighbor-patches
-;  [move-to one-of neighbor-patches]
-;  
-;end
+to wander ;; only predators use
+    let travel-distance (speed / 3)
+    let neighbor-patches neighbors with [patchtype != "sea"]
+    if neighbor-patches != nobody [
+      let target-patch one-of neighbor-patches
+      face target-patch 
+      let d distance target-patch 
+      let step min list travel-distance d  ;; clamp
+      fd step
+    ]
+  fd travel-distance
+  decide-chase-direction ; dynamic swimming difficulty
+  calculate-swim-energy ; based on travel direction
+end
 
 ;to wander
 ;    let travel-distance (speed / 3)
@@ -24,16 +31,30 @@
 ;  set planned-path path
 ;end
 
-to wander
+to wander_old
+  let debug-wander? false
+  if debug-wander? [ show "---- WANDER START ----" ]
+  ;set speed (max-speed / 2)
   ;; how far can the bass travel this tick
+  decide-chase-direction
   let travel-distance (speed / 3)
   let cur-loc patch-here
+  
+  if debug-wander? [
+    show (word "Speed: " speed
+         "  Travel-distance: " travel-distance
+         "  Current patch: " cur-loc)
+  ]
 
   ;; random small turn
   rt (random 30) - 15
   
-  ;; patches in a cone in front, out to vision-distance
-  let forward-patches patches in-cone vision-distance 90
+  ;; patches in a cone in front, out to travel distance
+  let forward-patches patches in-radius travel-distance with [patchtype != "sea"]
+
+  if debug-wander? [
+    show (word "Forward patches count: " count forward-patches)
+  ]
   
   ;; keep only water patches that are within travel-distance
   let patch-options forward-patches with [
@@ -41,8 +62,14 @@ to wander
     distance myself <= travel-distance
   ]
 
+  if debug-wander? [
+    show (word "Patch-options count: " count patch-options)
+  ]
+
   ;; if no patch available → don't move
   if not any? patch-options [
+    if debug-wander? [ show "No forward patch options → using neighbors" ]
+
     set planned-path [] 
     set patch-options neighbors with [patch-terrain = "water"]
   ]
@@ -50,33 +77,74 @@ to wander
   ;; pick a random forward patch
   let target-patch one-of patch-options
 
-  ;; Determine shortest direct path (1-step or multi-step)
+  if debug-wander? [
+    show (word "Target patch chosen: " target-patch)
+  ]
+  ;; compute cost field for this target
+  calculate-cost-to-prey target-patch
+  
+  ;; build shortest path
   let path build-path-to-prey cur-loc target-patch
 
-  ;; remove the starting patch if it equals current position
-  if first path = cur-loc [
+  if debug-wander? [
+    if empty? path [
+      show "PATH EMPTY!"
+    ] 
+    show (word "Path length: " length path)
+  ]
+
+  ;; remove the starting patch if duplicated
+  if not empty? path and first path = cur-loc [
     set path but-first path
+    if debug-wander? [ show "Removed first patch (was current location)" ]
   ]
 
   set planned-path path
   
-    ;; If path exists
+  ;; If path exists
   if not empty? path [
     
     ;; How many patches to move this tick
     let steps-to-move ceiling travel-distance
+
+    if debug-wander? [
+      show (word "Steps-to-move: " steps-to-move)
+    ]
     
     ;; Extract only the patches we will actually traverse
     let move-patches sublist path 0 (min list steps-to-move length path)
-     ;; 6. If we moved, compute difficulty of the final patch
+
+    if debug-wander? [
+      show (word "Move-patches count: " length move-patches)
+      show (word "Move-patches: " move-patches)
+    ]
+
+    ;; Safety: avoid errors if empty
+    if empty? move-patches [
+      if debug-wander? [ show "Move-patches EMPTY → stopping early" ]
+      stop
+    ]
+
+    ;; 6. Difficulty of the final patch
     let next-step last move-patches
-    calculate-chase-difficulty next-step
     
+    ;calculate-chase-difficulty next-step
+
+    if debug-wander? [
+      show (word "Next-step: " next-step)
+      show (word "Difficulty factor: " difficulty-factor)
+     show (word "Speed: " speed)
+    ]
+
     ;; Store starting patch
     let old-patch patch-here
     
     ;; Move along path step-by-step
     foreach move-patches [ p ->
+
+      if debug-wander? [
+        show (word " -> Moving to patch: " p)
+      ]
       
       ;; -------- VISIT COUNTING --------
       if p != old-patch [
@@ -96,13 +164,21 @@ to wander
       ]
     ]
 
-  
-  ;; 7. Deduct hydrodynamic swimming energy
-  calculate-swim-energy
-  
+    ;; 7. Deduct swimming energy
+    calculate-swim-energy
+
+    if debug-wander? [
+      show (word "Energy after swim: " energy 
+                 "  E-swim: " E-swim 
+                 "  difficulty: " difficulty-factor)
+    ]
+    
+    ;; Update trail
     if not member? patch-here trail [
-  set trail lput patch-here trail
-]
+      set trail lput patch-here trail
+    ]
   ]
+
+  if debug-wander? [ show "---- WANDER END ----" ]
 
 end

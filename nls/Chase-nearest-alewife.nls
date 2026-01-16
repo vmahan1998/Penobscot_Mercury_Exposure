@@ -1,4 +1,18 @@
-to chase-nearest-alewife  ;; predator procedure
+to chase-nearest-alewife ;; predator procedure
+    let travel-distance (speed / 3)
+    let nearest-alewife-prey min-one-of prey-in-vision [distance myself]
+    if nearest-alewife-prey != nobody [
+      face nearest-alewife-prey
+      let d distance nearest-alewife-prey
+      let step min list travel-distance d  ;; clamp
+      fd step
+    ]
+  fd travel-distance
+  decide-chase-direction ; dynamic swimming difficulty
+  calculate-swim-energy ; based on travel direction
+end
+
+to chase-nearest-alewife_old  ;; predator procedure
   ;; 1. Find prey and decide direction
   find-target-prey
   decide-chase-direction
@@ -84,7 +98,7 @@ to chase-nearest-alewife  ;; predator procedure
 
   ;; 6. If we moved, compute difficulty of the final patch
   let next-step last move-patches
-  calculate-chase-difficulty next-step
+  ;calculate-chase-difficulty next-step
   
   ;; 7. Deduct hydrodynamic swimming energy
   calculate-swim-energy
@@ -111,9 +125,13 @@ end
 to decide-chase-direction
   if [velocity] of patch-here > 0 [
     set chase-direction "seaward"
+    calculate-difficulty-seaward   ;; uses vel inside logic
+    calculate-swimming-speed-seaward
   ]
   if [velocity] of patch-here <= 0 [
     set chase-direction "landward"
+    calculate-difficulty-landward
+    calculate-swimming-speed-landward
   ]
 end
 
@@ -124,6 +142,10 @@ to find-target-prey
   ]
 
   ifelse any? candidates [
+    ;; Filter for only edible prey (based on gape size)
+    let edible-prey candidates with [
+      body-depth <= [gape-size] of myself
+    ]
     set target-prey min-one-of candidates [distance myself]
   ] [
     set target-prey nobody
@@ -136,10 +158,12 @@ to calculate-chase-difficulty [next-patch]
 
   if chase-direction = "landward" [
     calculate-difficulty-landward   ;; uses vel inside logic
+    calculate-swimming-speed-landward
   ]
 
   if chase-direction = "seaward" [
     calculate-difficulty-seaward
+    calculate-swimming-speed-seaward
   ]
 end
 

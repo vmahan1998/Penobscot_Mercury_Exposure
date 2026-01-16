@@ -35,7 +35,6 @@ to setup-alewives
     set align-coefficient 50
     set cohere-coefficient 50
     set separate-coefficient 50
-    set minimum-separation 0.3
     set color black
 
     ;; =====================================
@@ -58,6 +57,8 @@ to setup-alewives
     let max-size-pop 0.320
     set size truncated-normal mu-length sd-length min-size-pop max-size-pop
     set length-size size * 1000
+    let schooling-multiplier (0.5 + random-float 2)
+    set minimum-separation (size * schooling-multiplier) ;; sschooling distance
     
     ;; ---- Weight (g) from Length (mm) ----
     ;; FishBase equation for Alewife (W = a * L_cm ^ b)
@@ -191,7 +192,7 @@ to setup-alewives
     truncated-normal mean-distance sd-distance min-distance max-distance
     
     set base-vision-distance (base-vision-distance-meters  / 3) ;convert to patch units
-    set min-vision-distance (length-size / 3) ;convert to patch units
+    set min-vision-distance 1 ;convert to patch units
     set vision-distance base-vision-distance
     set body-depth length-size * 0.30
   ]

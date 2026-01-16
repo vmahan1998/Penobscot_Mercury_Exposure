@@ -5,8 +5,6 @@ to export-results
 end
 
 to initialize-results-reporter
-  
-  let stamp_1 "11_24_2025"
 
   set results-file-agents (word "results_agents_" stamp_1 ".csv")
   file-open results-file-agents
@@ -20,7 +18,7 @@ to initialize-results-reporter
 
   set results-file-daily (word "results_daily_" stamp_1 ".csv")
   file-open results-file-daily
-  file-print "day,alewives_entering,alewives_exiting,landward_crossings,seaward_crossings"
+  file-print "ticks, day,alewives_entering,alewives_exiting,landward_crossings,seaward_crossings"
   file-close
   
 end
@@ -73,6 +71,7 @@ to report-daily-totals
     file-open results-file-daily
     
     file-print (word
+      ticks "," 
       day "," 
       alewives-entering-estuary-daily-total "," 
       alewives-exiting-estuary-daily-total "," 

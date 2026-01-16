@@ -52,6 +52,7 @@ to setup-patch-timeseries
   let depth-rows but-first depth-data
   let temp-rows but-first temp-data
   let salinity-rows but-first salinity-data
+  let spm-rows but-first spm-data
   
   ;; Velocity time series
   foreach velocity-rows [
@@ -105,18 +106,18 @@ to setup-patch-timeseries
     ]
   ]
 
-;; SPM time series
-;  foreach SPM-rows [
-;    row ->
-;    let x item 0 row
-;    let y item 1 row
-;    let series sublist row 2 length row
-;    ask patch x y [
-;      set SPM-series series
-;      set SPM item 0 series  ;; ✅ Initialize to first timeste4
-;       set current-SPM-month current-month ;; mark month of this series on the patcp
-;    ]
-;  ]  
+; SPM time series
+  foreach spm-rows [
+    row ->
+    let x item 0 row
+    let y item 1 row
+    let series sublist row 2 length row
+    ask patch x y [
+      set spm-series series
+      set spm item 0 series  ;; ✅ Initialize to first timeste4
+       set current-spm-month current-month ;; mark month of this series on the patcp
+    ]
+  ]  
   print "✅ Simulation patch data updated."
   ask patch 75 167 [
     print (word "velocity-series length: " length velocity-series)
@@ -127,7 +128,7 @@ end
 
 to penobscot-parameters
   ;; Guard: ensure valid month
-  if not member? current-month ["April" "May" "June" "July" "August" "September" "October"] [
+  if not member? current-month ["January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December"] [
     set current-month "April"
   ]
   
@@ -142,13 +143,17 @@ to penobscot-parameters
 
     set salinity-data csv:from-file (word "inputs/monthly/salinity_" current-month "_2023.csv")
     print (word "   ✅ Salinity data loaded (" length salinity-data " rows)")
-
+  
+    set spm-data csv:from-file (word "inputs/monthly/spm_" current-month "_2023.csv")
+    print (word "   ✅ SPM data loaded (" length spm-data " rows)")
+  
     ;; --- Remove extreme outliers (IQR-based filter) ---
     print "🧹 Cleaning extreme outliers before interpolation..."
     set velocity-data remove-outliers velocity-data "velocity"
     set depth-data remove-outliers depth-data "depth"
     set temp-data remove-outliers temp-data "temperature"
     set salinity-data remove-outliers salinity-data "salinity"
+    set spm-data remove-outliers spm-data "spm"
     print "   ✅ Outlier filtering complete."
 
   ;; Initialize patch-level time series and interpolation
@@ -314,12 +319,12 @@ to interpolate-missing-time-series
       ifelse nearest != nobody [
         set temp-series [temp-series] of nearest
         set temperature item 0 temp-series
-        show (word "(patch " pxcor ", " pycor "): copied depth from patch " [pxcor] of nearest ", " [pycor] of nearest)
+        show (word "(patch " pxcor ", " pycor "): copied temperature from patch " [pxcor] of nearest ", " [pycor] of nearest)
       ][
         show (word "(patch " pxcor ", " pycor "): FAILED to interpolate or copy temperature")
         set temp-series []
         set temperature 0
-        set pcolor yellow
+        ;set pcolor yellow
       ]
     ]
   ]
@@ -332,7 +337,7 @@ to interpolate-missing-time-series
     length salinity-series != total-hours or
     length salinity-series = 0 or
     current-salinity-month != current-month or
-    length filter [ v -> v = "NA" ] temp-series > 1
+    length filter [ v -> v = "NA" ] salinity-series > 1
   )
 ] [
     let interpolated average-series-from-neighbors "salinity-series"
@@ -348,12 +353,46 @@ to interpolate-missing-time-series
       ifelse nearest != nobody [
         set salinity-series [salinity-series] of nearest
         set salinity item 0 salinity-series
-        show (word "(patch " pxcor ", " pycor "): copied depth from patch " [pxcor] of nearest ", " [pycor] of nearest)
+        show (word "(patch " pxcor ", " pycor "): copied salnity from patch " [pxcor] of nearest ", " [pycor] of nearest)
       ][
         show (word "(patch " pxcor ", " pycor "): FAILED to interpolate or copy salinity")
         set salinity-series []
         set salinity 0
-        set pcolor yellow
+        ;set pcolor yellow
+      ]
+    ]
+  ]
+  
+  ;; Interpolate or copy SPM-series
+  ask patches with [
+  patch-terrain = "water" and
+  (
+    not is-list? spm-series or
+    length spm-series != total-hours or
+    length spm-series = 0 or
+    current-spm-month != current-month or
+    length filter [ v -> v = "NA" ] spm-series > 1
+  )
+] [
+    let interpolated average-series-from-neighbors "spm-series"
+    ifelse is-list? interpolated and length interpolated > 0 [
+      set spm-series interpolated
+      set spm item 0 spm-series
+    ][
+      ;; fallback: copy nearest valid series
+      let nearest one-of patches with [
+        is-list? spm-series and length spm-series > 0
+      ] with-min [distance myself]
+
+      ifelse nearest != nobody [
+        set spm-series [spm-series] of nearest
+        set spm item 0 spm-series
+        show (word "(patch " pxcor ", " pycor "): copied spm from patch " [pxcor] of nearest ", " [pycor] of nearest)
+      ][
+        show (word "(patch " pxcor ", " pycor "): FAILED to interpolate or copy spm")
+        set spm-series []
+        set spm 0
+        ;set pcolor yellow
       ]
     ]
   ]

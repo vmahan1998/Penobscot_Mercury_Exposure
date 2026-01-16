@@ -5,11 +5,11 @@ to swim
   set previous-patch patch-here
   set previous-x xcor
   set previous-y ycor
-  flee-stripedbass ;; if fleeing use energy
   ;; ------------------------------------------
   ;; LANDWARD MIGRATION (pre-spawning)
   ;; ------------------------------------------
   if not fleeing? [
+    set color grey
   if landward-migration? [
     calculate-cost-to-home home-patch
     calculate-difficulty-landward
@@ -40,6 +40,7 @@ to swim
 
   if fleeing? [
   flee-stripedbass
+    set color red
 ]
   ;; ------------------------------------------
   ;; UNIVERSAL METABOLIC COST (swimming energy)
