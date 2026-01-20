@@ -76,6 +76,7 @@ __includes[
   "nls/Calculate-visual-distance.nls"
   "nls/digestion.nls"
   "nls/Export_results.nls"
+  "nls/Sample-size.nls"
 ]
 
 to setup
@@ -204,21 +205,6 @@ NIL
 1
 
 SLIDER
-208
-380
-380
-413
-initial-stripedbass
-initial-stripedbass
-0
-1000
-2.0
-2
-1
-fish
-HORIZONTAL
-
-SLIDER
 209
 334
 381
@@ -226,8 +212,8 @@ SLIDER
 initial-alewives
 initial-alewives
 2
-10000
-100.0
+50000
+11999.0
 1
 1
 fish
@@ -262,7 +248,7 @@ alewife-digestion-efficiency
 alewife-digestion-efficiency
 0
 1
-0.2
+0.5
 0.1
 1
 portion of food > energy
@@ -277,7 +263,7 @@ stripedbass-digestion-efficiency
 stripedbass-digestion-efficiency
 0
 1
-0.8
+0.5
 0.1
 1
 portion of food > > energy
@@ -543,8 +529,8 @@ PENS
 "MeHg-Ex" 1.0 0 -13840069 true "" "plot mean [mehg-uptake-risk] of alewives"
 "Hg total" 1.0 0 -11033397 true "" "plot mean [hg-total] of alewives"
 "MeHg total" 1.0 0 -5298144 true "" "plot mean [mehg-total] of alewives"
-"Hg Foraging" 1.0 0 -7500403 true "" "plot mean [hg-foraging] of alewives"
-"MeHg Foraging" 1.0 0 -5825686 true "" "plot mean [mehg-foraging] of alewives"
+"Hg Foraging" 1.0 0 -7500403 true "" "plot mean [hg-foraging-undigested] of alewives"
+"MeHg Foraging" 1.0 0 -5825686 true "" "plot mean [mehg-foraging-undigested] of alewives"
 
 PLOT
 1030
@@ -809,7 +795,7 @@ TEXTBOX
 84
 458
 410
-518
+480
 How much food becomes usable energy?
 16
 0.0
@@ -835,8 +821,8 @@ PENS
 "MeHg-Exp" 1.0 0 -13840069 true "" "plot mean [mehg-uptake-risk] of stripedbass"
 "Hg Total" 1.0 0 -13791810 true "" "plot mean [hg-total] of stripedbass"
 "MeHg Total" 1.0 0 -5298144 true "" "plot mean [hg-total] of stripedbass"
-"Hg Forage" 1.0 0 -7500403 true "" "plot mean [hg-foraging] of stripedbass"
-"MeHg Forage" 1.0 0 -5825686 true "" "plot mean [mehg-foraging] of stripedbass"
+"Hg Forage" 1.0 0 -7500403 true "" "plot mean [hg-foraging-undigested] of stripedbass"
+"MeHg Forage" 1.0 0 -5825686 true "" "plot mean [mehg-foraging-undigested] of stripedbass"
 
 PLOT
 1005
@@ -856,6 +842,16 @@ true
 PENS
 "Consumed" 1.0 0 -13791810 true "" "plot mean [numAlewivesEaten] of stripedbass"
 "Prey Pop" 1.0 0 -7858858 true "" "plot count alewives"
+
+TEXTBOX
+142
+377
+390
+428
+Striped Bass Population Proportionate to River Herring Population
+14
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
