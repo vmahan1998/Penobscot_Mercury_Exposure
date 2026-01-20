@@ -1,7 +1,7 @@
 to flee-stripedbass
       if speed <= max-speed [
         set speed max-speed
-          ;; how far can the bass travel this tick
+          ;; how far can the fish travel this tick
       let travel-distance (speed / 3)
       let cur-loc patch-here
       

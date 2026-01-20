@@ -1,52 +1,116 @@
 to export-results
   report-fish-results
-  report-patch-results
   report-daily-totals
+end
+
+to export-end-results
+  report-patch-results
 end
 
 to initialize-results-reporter
 
+  ;; clear export flags
+  ask turtles [ set export? false ]
+
+  ;; pick export subsample once per breed
+  let alewife-sample-size optimal-alewife-sample-size
+  let stripedbass-sample-size optimal-stripedbass-sample-size
+
+  if alewife-sample-size > 0 [
+    ask n-of alewife-sample-size alewives [ set export? true ]
+  ]
+
+  if stripedbass-sample-size > 0 [
+    ask n-of stripedbass-sample-size stripedbass [ set export? true ]
+  ]
+
+  print (word
+    "Export subsample selected. Alewives: "
+    count alewives
+    " total, "
+    alewife-sample-size
+    " exported. Striped bass: "
+    count stripedbass
+    " total, "
+    stripedbass-sample-size
+    " exported."
+  )
+
+  ;; agents file
   set results-file-agents (word "results_agents_" stamp_1 ".csv")
   file-open results-file-agents
-  file-print "id,breed,age,length,energy,landward_migration_time,seaward_migration_time,hg_total,mehg_total,hg_exposure_total_normalized,mehg_exposure_total_normalized,trail"
+  file-print "ticks,day,month,hour,minute,night,tide_phase,id,breed,age,length,xcor,ycor,pxcor,pycor,energy,landward_migration_time,seaward_migration_time,hg_exposure_duration,mehg_exposure_duration,hg_uptake_risk,mehg_uptake_risk,hg_exposure_total,mehg_exposure_total,hg_exposure_total_normalized,mehg_exposure_total_normalized,hg_foraging_undigested,mehg_foraging_undigested,hg_foraging_total,mehg_foraging_total,hg_total,mehg_total,selective_tidal_transport,foraging,lipid_loss,filter_feed,landward_migration,seaward_migration,start_migration,migration_day,daytime_prey_eaten,numAlewivesEaten,patch_velocity,patch_depth,patch_salinity,patch_temperature,patch_SPM,patch_mercury,patch_methylmercury"
   file-close
-  
+
+  ;; patches file (you will write this at end of simulation)
   set results-file-patches (word "results_patches_" stamp_1 ".csv")
   file-open results-file-patches
   file-print "pxcor,pycor,ticks_spent_alewife,visits_by_alewife,ticks_spent_stripedbass,visits_by-stripedbass,Hg_exp_risk_alewife,MeHg_exp_risk_alewife,Hg_exp_risk_bass,MeHg_exp_risk_bass,prey_eaten_in_patch"
   file-close
 
+  ;; daily totals file
   set results-file-daily (word "results_daily_" stamp_1 ".csv")
   file-open results-file-daily
-  file-print "ticks, day,alewives_entering,alewives_exiting,landward_crossings,seaward_crossings"
+  file-print "ticks,day,alewives_entering,alewives_exiting,landward_crossings,seaward_crossings"
   file-close
-  
+
 end
 
+
 to report-fish-results
-  
+  ;; only export every export-interval ticks
+  ;if ticks mod export-interval != 0 [ stop ]
+
   file-open results-file-agents
-  
-  ask turtles [
+
+  ask turtles with [ export? ] [
+    let p patch-here
+
+    ;; cache patch fields (faster and cleaner)
+    let p_px [pxcor] of p
+    let p_py [pycor] of p
+    let p_velocity [velocity] of p
+    let p_depth [depth] of p
+    let p_salinity [salinity] of p
+    let p_temperature [temperature] of p
+    let p_SPM [SPM] of p
+    let p_mercury [mercury] of p
+    let p_methylmercury [methylmercury] of p
+
+    ;; striped bass-only fields (blank for alewives)
+    let sb_daytime_prey ""
+    let sb_num_alewives_eaten ""
+    if breed = stripedbass [
+      set sb_daytime_prey daytime-prey-eaten
+      set sb_num_alewives_eaten numAlewivesEaten
+    ]
+
     file-print (word
-      who "," 
-      breed "," 
-      age-num "," 
-      length-size "," 
-      energy "," 
-      landward-migration-time "," 
-      seaward-migration-time "," 
-      hg-total "," 
-      mehg-total "," 
-      hg-exposure-total-normalized "," 
-      mehg-exposure-total-normalized)
+      ticks "," day "," month "," hour "," minute "," night? "," tide-phase ","
+      who "," breed "," age-num "," length-size ","
+      xcor "," ycor "," p_px "," p_py ","
+      energy "," landward-migration-time "," seaward-migration-time ","
+      hg-exposure-duration "," mehg-exposure-duration ","
+      hg-uptake-risk "," mehg-uptake-risk ","
+      hg-exposure-total "," mehg-exposure-total ","
+      hg-exposure-total-normalized "," mehg-exposure-total-normalized ","
+      hg-foraging-undigested "," mehg-foraging-undigested ","
+      hg-foraging-total "," mehg-foraging-total ","
+      hg-total "," mehg-total ","
+      selective-tidal-transport? "," foraging? "," lipid-loss? "," filter-feed? ","
+      landward-migration? "," seaward-migration? "," start-migration? "," migration-day ","
+      sb_daytime_prey "," sb_num_alewives_eaten ","
+      p_velocity "," p_depth "," p_salinity "," p_temperature ","
+      p_SPM "," p_mercury "," p_methylmercury
+    )
   ]
-  
+
   file-close
 end
 
 to report-patch-results
-  
+  if ticks mod 288 != 0 [ stop ]
+
   file-open results-file-patches
   
   ask patches [
@@ -67,7 +131,8 @@ to report-patch-results
 end
 
 to report-daily-totals
-    
+     if ticks mod 288 != 0 [ stop ]
+
     file-open results-file-daily
     
     file-print (word

@@ -38,8 +38,8 @@ to digest
     ]
 
     ;; contaminant bookkeeping
-    set mehg-foraging digested-MeHg
-    set hg-foraging digested-Hg
+    ;set mehg-foraging digested-MeHg
+    ;set hg-foraging digested-Hg
 
     set mehg-foraging-total mehg-foraging-total + digested-MeHg
     set hg-foraging-total hg-foraging-total + digested-Hg

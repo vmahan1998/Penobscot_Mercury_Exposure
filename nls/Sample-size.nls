@@ -1,0 +1,70 @@
+to-report optimal-alewife-sample-size
+  let alewife-population count alewives
+
+  if alewife-population <= 0 [
+    print "Alewife sample size: population = 0, sample = 0"
+    report 0
+  ]
+
+  ;; statistical assumptions
+  let confidence-z-value 1.96
+  let assumed-proportion 0.5
+  let margin-of-error 0.05
+
+  let initial-sample-size
+    ((confidence-z-value * confidence-z-value *
+      assumed-proportion * (1 - assumed-proportion)) /
+     (margin-of-error * margin-of-error))
+
+  let corrected-sample-size
+    (initial-sample-size /
+     (1 + ((initial-sample-size - 1) / alewife-population)))
+
+  let final-sample-size
+    max list 1
+      (min list alewife-population round corrected-sample-size)
+
+  print (word
+    "Alewife sampling: population = "
+    alewife-population
+    ", sample = "
+    final-sample-size)
+
+  report final-sample-size
+end
+
+to-report optimal-stripedbass-sample-size
+  let stripedbass-population count stripedbass
+
+  if stripedbass-population <= 0 [
+    print "Striped bass sample size: population = 0, sample = 0"
+    report 0
+  ]
+
+  ;; statistical assumptions
+  let confidence-z-value 1.96
+  let assumed-proportion 0.5
+  let margin-of-error 0.05
+
+  let initial-sample-size
+    ((confidence-z-value * confidence-z-value *
+      assumed-proportion * (1 - assumed-proportion)) /
+     (margin-of-error * margin-of-error))
+
+  let corrected-sample-size
+    (initial-sample-size /
+     (1 + ((initial-sample-size - 1) / stripedbass-population)))
+
+  let final-sample-size
+    max list 1
+      (min list stripedbass-population round corrected-sample-size)
+
+  print (word
+    "Striped bass sampling: population = "
+    stripedbass-population
+    ", sample = "
+    final-sample-size)
+
+  report final-sample-size
+end
+

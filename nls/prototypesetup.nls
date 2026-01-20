@@ -223,8 +223,8 @@ to create-prototype-alewives [fish-type num-fish]
     set mehg-uptake-risk 0 ; instantanious risk from exposure
     set hg-exposure-total 0 ; total risk from exposure
     set mehg-exposure-total 0 ; total risk from exposure
-    set hg-foraging 0 ; total risk from foraging
-    set mehg-foraging 0 ; total risk from foraging
+    set hg-foraging-undigested 0 ; total risk from foraging
+    set mehg-foraging-undigested 0 ; total risk from foraging
     set mehg-foraging-total 0 ; sum of foraging risk
     set hg-foraging-total 0 ; sum of foraging risk
     set mehg-total 0 ; sum of methylmercury risk

@@ -1,10 +1,11 @@
 to setup-penobscot-migration
   set stamp_1 "1_13_2026" ;; test pred vision-distance
+  set export-interval 12  ;; example: export every 12 ticks
   setup-alewives
   setup-stripedbass
   set Hg-threshold 150 ; ng/kg (National Oceanic and Atmospheric Administration (NOAA), 1990) Adjust based on NOAA data
   set MeHg-threshold 15 ; ng/kg Adjust based on NOAA data
-  set month-list ["April" "May" "June" "July" "August" "September" "October"]
+  set month-list ["January" "February" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December"]
   set current-hour 0
   ;set day 0
   ;set current-hour 240
@@ -14,6 +15,7 @@ to setup-penobscot-migration
   load-cue-csv
   set cue-active? false
   set migration-trigger? false
+  set end-migration-trigger? false
   set alewives-exiting-estuary-daily-total 0
   set alewives-entering-estuary-daily-total 0
   set alewives-on-line-daily-total-landward 0
@@ -25,6 +27,7 @@ to setup-penobscot-migration
    set cost-to-sea 1e9
    set cost-to-prey 1e9
   ]
+  
   ask patches [
   set ticks-spent-alewife 0
   set visits-by-alewife 0
@@ -33,24 +36,24 @@ to setup-penobscot-migration
   set prey-eaten-in-patch 0
     
   ;; Risk from Foraging
-  set Hg-foraging-risk-alewife 0;; mercury risk from patch
-  set MeHg-foraging-risk-alewife 0;; methylmercury risk from patch
-  set Hg-foraging-risk-stripedbass 0
-  set MeHg-foraging-risk-stripedbass 0
-  set Hg-foraging-risk-total-alewife 0;; mercury risk from patch
-  set MeHg-foraging-risk-total-alewife 0;; methylmercury risk from patch
-  set Hg-foraging-risk-total-stripedbass 0 
-  set MeHg-foraging-risk-total-stripedbass 0
+    set Hg-foraging-risk-alewife [];; mercury risk from patch
+    set MeHg-foraging-risk-alewife [];; methylmercury risk from patch
+    set Hg-foraging-risk-stripedbass []
+    set MeHg-foraging-risk-stripedbass []
+    set Hg-foraging-risk-total-alewife 0;; mercury risk from patch
+    set MeHg-foraging-risk-total-alewife 0;; methylmercury risk from patch
+    set Hg-foraging-risk-total-stripedbass 0 
+    set MeHg-foraging-risk-total-stripedbass 0
   
   ;; Risk from Exposure
-  set Hg-exp-risk-alewife 0;; mercury risk from patch
-  set MeHg-exp-risk-alewife 0;; methylmercury risk from patch
-  set Hg-exp-risk-stripedbass 0
-  set MeHg-exp-risk-stripedbass 0
-  set Hg-exp-risk-total-alewife 0;; mercury risk from patch
-  set MeHg-exp-risk-total-alewife 0;; methylmercury risk from patch
-  set Hg-exp-risk-total-stripedbass 0
-  set MeHg-exp-risk-total-stripedbass 0
+    set Hg-exp-risk-alewife [];; mercury risk from patch
+    set MeHg-exp-risk-alewife [];; methylmercury risk from patch
+    set Hg-exp-risk-stripedbass []
+    set MeHg-exp-risk-stripedbass []
+    set Hg-exp-risk-total-alewife 0;; mercury risk from patch
+    set MeHg-exp-risk-total-alewife 0;; methylmercury risk from patch
+    set Hg-exp-risk-total-stripedbass 0
+    set MeHg-exp-risk-total-stripedbass 0
   ]
   
   ;; setup functions
@@ -82,14 +85,7 @@ to penobscot-go
   
 ask alewives [
 
-    if ticks mod 288 = 0 [
-    calc-migration-probability
-    set crossed-dam-landward-today? false
-    set crossed-dam-seaward-today? false
-    set entered-estuary-today? false
-    set exited-estuary-today? false  
-    
-    if (not start-migration?) [
+  if (not start-migration?) [
       let p migration-probability
       if random-float 1 <= p [
         set start-migration? true
@@ -98,7 +94,7 @@ ask alewives [
         set migration-day day
       ]
     ]
-    ]
+    
   ;; --- Migration and behavior sequence ---
   if start-migration? [
       
@@ -157,40 +153,48 @@ ask alewives [
       
 ]
 
-  count-alewives 
+  count-alewives
+   
+    if ticks mod 288 = 0 [
+    calc-migration-probability
+    set crossed-dam-landward-today? false
+    set crossed-dam-seaward-today? false
+    set entered-estuary-today? false
+    set exited-estuary-today? false  
+    ] 
     
     ;; After all agent actions (before 'end')
     if (patch-here = migration-patch) and (seaward-migration?) [
-      stop
+      set seaward-migration? false
     ]  
 ]    
   
   ask stripedbass [ ;; in system May-October with max in June-july
    ;; Migration Cue
-
-    if ticks mod 288 = 0 [
-    calc-migration-probability
     
-    if (not start-migration?) [
+   if (not start-migration?) [
       let p migration-probability
       if random-float 1 <= p [
         set start-migration? true
+        set seaward-migration? false
+        set landward-migration? true
         set migration-day day
       ]
     ]
-    ]
+    
+
 
     if start-migration? [
     let travel-distance (speed / 3)
     calculate-metabolism ;; GoFish Metabolism 
-    calculate-vision
+    ;calculate-vision
     school
     digest ;; GoFish Digestion 
     osmoregulate ;; GoFish Salinity Exposure 
     mercury-contamination ;; GoFish Contaminant Exposure 
     methylmercury-contamination  ;; GoFish Contaminant Exposure
     set previous-patch patch-here
-    set prey-in-vision (alewives with [patchtype != "sea" or patch-here != home-patch]) in-radius travel-distance ;; defines alewives in reachable proximity
+    set prey-in-vision (alewives with [patchtype != "sea" or patch-here != home-patch]) in-radius vision-distance ;; defines alewives in reachable proximity
     
       ;; GoFish Predation Procedure
     if stomach-contents <= 0 [ ;; if no prey in stomach to gain energy, use lipid loss to use fat stores
@@ -228,7 +232,8 @@ ask alewives [
         set end-migration-day day
       ]
     ]
-
+      set seaward-migration? true
+      set landward-migration? false
       calculate-cost-to-sea migration-patch
       calculate-difficulty-seaward
       calculate-swimming-speed-seaward
@@ -236,6 +241,11 @@ ask alewives [
       ]
 
   ]
+    if ticks mod 288 = 0 [
+    calc-migration-probability
+    
+
+    ]
   ]
   ;highlight-patches-with-prey-eaten ;; highlights patches where prey has been eaten
   
@@ -253,28 +263,26 @@ ask alewives [
   set alewives-entering-estuary-daily-total 0
   set alewives-exiting-estuary-daily-total 0
   ]
-  export-results
   
-  ;; Stop conditions
-  if count alewives = 0 [
-    stop
-  ]
-          
-  let a-count-sea count alewives with [
-    patchtype = "sea" and seaward-migration?
-  ]
-  
-  let a-count count alewives
-  
-  if a-count > 0 and a-count-sea = a-count [
-    stop
-  ]
-  
-;  ask turtles [
+;  ;; trail
+;    ask turtles [
 ;  foreach trail [
 ;    p -> ask p [ set pcolor yellow ]
 ;  ]
 ;]
+  export-results
+          
+  let a-count-sea count alewives with [
+    [patchtype] of patch-here = "sea" and
+    completed-action?
+  ]
+  
+  let a-count count alewives
+  
+  if a-count = 0 or a-count-sea = a-count [
+    export-end-results
+    stop
+  ]
 
 end
 

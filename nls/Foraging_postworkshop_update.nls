@@ -65,8 +65,6 @@ to forage-options
   ;; contaminant bookkeeping
   let digested-MeHg 0
   let digested-Hg 0
-  set mehg-foraging digested-MeHg
-  set hg-foraging digested-Hg
 
   set mehg-foraging-total mehg-foraging-total + digested-MeHg
   set hg-foraging-total hg-foraging-total + digested-Hg
@@ -101,7 +99,7 @@ if filter-feed? [
   if best-patch != nobody and [patch-terrain] of best-patch = "water" [
     face best-patch
     move-to best-patch
-      
+  
     ;; calculate ditance between best patch and previous patch 
     let travel-distance distancexy previous-x previous-y
       
@@ -120,7 +118,10 @@ if filter-feed? [
     let biomag-factor (random-float 30) + 60  ;; random 60–90
     let hg-assimilated (patch-spm * spm-mehg * biomag-factor * prey-assimilated)
     let mehg-assimilated (patch-spm * spm-hg * (biomag-factor / 10) * prey-assimilated)
+    set mehg-foraging-undigested mehg-assimilated
+    set hg-foraging-undigested hg-assimilated  
       
+    mark-foraging-event ;; track foraging  
     ;; Remaining capacity
     let space-available (stomach-capacity - stomach-contents)
 
@@ -136,13 +137,55 @@ if filter-feed? [
 ]
 
 end
+to mark-foraging-event  ;; turtle context
+  let sp [breed] of self
+  let hg-risk [hg-foraging-undigested] of self
+  let mehg-risk [mehg-foraging-undigested] of self
 
-to opporunistic-forage
-  ; define probability function where each fish has individual preference for foraging (bell curve) based on SPM or turbidity
-  ; if probability = True for patch opportunistic forage = true
-  ; contamination uptake = SPM x contaminat
-  
-  
+  ask patch-here [
+    ;; ----------------------------------
+    ;; basic foraging bookkeeping
+    ;; ----------------------------------
+    set forage-visits forage-visits + 1
+    set forager-count forager-count + 1
+
+    ;set forage-species lput sp forage-species
+
+    ;; ----------------------------------
+    ;; species-specific Hg / MeHg risk
+    ;; ----------------------------------
+    if sp = alewives [
+      ;; spatio-temporal lists
+      set Hg-foraging-risk-alewife
+        lput (list ticks hg-risk) Hg-foraging-risk-alewife
+
+      set MeHg-foraging-risk-alewife
+        lput (list ticks mehg-risk) MeHg-foraging-risk-alewife
+
+      ;; cumulative spatial totals
+      set Hg-foraging-risk-total-alewife
+        Hg-foraging-risk-total-alewife + hg-risk
+
+      set MeHg-foraging-risk-total-alewife
+        MeHg-foraging-risk-total-alewife + mehg-risk
+    ]
+
+    if sp = stripedbass [
+      ;; spatio-temporal lists
+      set Hg-foraging-risk-stripedbass
+        lput (list ticks hg-risk) Hg-foraging-risk-stripedbass
+
+      set MeHg-foraging-risk-stripedbass
+        lput (list ticks mehg-risk) MeHg-foraging-risk-stripedbass
+
+      ;; cumulative spatial totals
+      set Hg-foraging-risk-total-stripedbass
+        Hg-foraging-risk-total-stripedbass + hg-risk
+
+      set MeHg-foraging-risk-total-stripedbass
+        MeHg-foraging-risk-total-stripedbass + mehg-risk
+    ]
+  ]
 end
 
 to update-SPM-mean-1

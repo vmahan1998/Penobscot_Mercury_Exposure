@@ -1,5 +1,9 @@
 to setup-stripedbass
-  create-stripedbass initial-stripedbass ; create striped bass
+  ;; based on 2020 proportions of 1,952,567 alwives and 324 striped bass 
+  let stripedbass-per-alewife (324 / 1952567)
+  let initial-stripedbass round (initial-alewives * stripedbass-per-alewife)
+  print (word "   Striped Bass Population (" initial-stripedbass " fish)")
+  create-stripedbass initial-stripedbass
   [
     set migration-patch one-of patches with [patchtype = "sea" ]
     if migration-patch != nobody [
@@ -118,14 +122,15 @@ to setup-stripedbass
     set seaward-migration? false
     set start-migration? false
     set end-migration? false
+    set completed-action? false
     set hg-exposure-duration 0 ; time spect exposed
     set mehg-exposure-duration 0 ; time spect exposed
     set hg-uptake-risk 0 ; instantanious risk from exposure
     set mehg-uptake-risk 0 ; instantanious risk from exposure
     set hg-exposure-total 0 ; total risk from exposure
     set mehg-exposure-total 0 ; total risk from exposure
-    set hg-foraging 0 ; total risk from foraging
-    set mehg-foraging 0 ; total risk from foraging
+    set hg-foraging-undigested 0 ; total risk from foraging
+    set mehg-foraging-undigested 0 ; total risk from foraging
     set mehg-foraging-total 0 ; sum of foraging risk
     set hg-foraging-total 0 ; sum of foraging risk
     set mehg-total 0 ; sum of methylmercury risk

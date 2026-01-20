@@ -49,7 +49,7 @@ end
 
 to setup-patch-timeseries
   let velocity-rows but-first velocity-data
-  let depth-rows but-first depth-data
+;  let depth-rows but-first depth-data
   let temp-rows but-first temp-data
   let salinity-rows but-first salinity-data
   let spm-rows but-first spm-data
@@ -67,18 +67,18 @@ to setup-patch-timeseries
     ]
   ]
   
-  ;; Depth time series
-  foreach depth-rows [
-    row ->
-    let x item 0 row
-    let y item 1 row
-    let series sublist row 4 length row
-    ask patch x y [
-      set depth-series series
-      set depth item 0 series  ;; ✅ Initialize to first timestep
-      set current-depth-month current-month ;; mark month of this series on the patch
-    ]
-  ]
+;  ;; Depth time series
+;  foreach depth-rows [
+;    row ->
+;    let x item 0 row
+;    let y item 1 row
+;    let series sublist row 4 length row
+;    ask patch x y [
+;      set depth-series series
+;      set depth item 0 series  ;; ✅ Initialize to first timestep
+;      set current-depth-month current-month ;; mark month of this series on the patch
+;    ]
+;  ]
   
 ;; Temperature time series
   foreach temp-rows [
@@ -135,8 +135,8 @@ to penobscot-parameters
     set velocity-data csv:from-file (word "inputs/monthly/velocity_" current-month "_2023.csv")
     print (word "   ✅ Velocity data loaded (" length velocity-data " rows)")
 
-    set depth-data csv:from-file (word "inputs/monthly/depth_" current-month "_2023.csv")
-    print (word "   ✅ Depth data loaded (" length depth-data " rows)")
+;    set depth-data csv:from-file (word "inputs/monthly/depth_" current-month "_2023.csv")
+;    print (word "   ✅ Depth data loaded (" length depth-data " rows)")
 
     set temp-data csv:from-file (word "inputs/monthly/temperature_" current-month "_2023.csv")
     print (word "   ✅ Temperature data loaded (" length temp-data " rows)")
@@ -150,7 +150,7 @@ to penobscot-parameters
     ;; --- Remove extreme outliers (IQR-based filter) ---
     print "🧹 Cleaning extreme outliers before interpolation..."
     set velocity-data remove-outliers velocity-data "velocity"
-    set depth-data remove-outliers depth-data "depth"
+;    set depth-data remove-outliers depth-data "depth"
     set temp-data remove-outliers temp-data "temperature"
     set salinity-data remove-outliers salinity-data "salinity"
     set spm-data remove-outliers spm-data "spm"
@@ -261,39 +261,39 @@ to interpolate-missing-time-series
     ]
   ]
 
-  ;; Interpolate or copy depth-series
-  ask patches with [
-  patch-terrain = "water" and
-  (
-    not is-list? depth-series or
-    length depth-series = 0 or
-    length depth-series != total-hours or
-    current-depth-month != current-month or
-    length filter [ v -> v = "NA" ] depth-series > 1
-  )
-] [
-    let interpolated average-series-from-neighbors "depth-series"
-    ifelse is-list? interpolated and length interpolated > 0 [
-      set depth-series interpolated
-      set depth item 0 depth-series
-    ][
-      ;; fallback: copy nearest valid series
-      let nearest one-of patches with [
-        is-list? depth-series and length depth-series > 0
-      ] with-min [distance myself]
-
-      ifelse nearest != nobody [
-        set depth-series [depth-series] of nearest
-        set depth item 0 depth-series
-        show (word "(patch " pxcor ", " pycor "): copied depth from patch " [pxcor] of nearest ", " [pycor] of nearest)
-      ][
-        show (word "(patch " pxcor ", " pycor "): FAILED to interpolate or copy depth")
-        set depth-series []
-        set depth 0
-        set pcolor yellow
-      ]
-    ]
-  ]
+;  ;; Interpolate or copy depth-series
+;  ask patches with [
+;  patch-terrain = "water" and
+;  (
+;    not is-list? depth-series or
+;    length depth-series = 0 or
+;    length depth-series != total-hours or
+;    current-depth-month != current-month or
+;    length filter [ v -> v = "NA" ] depth-series > 1
+;  )
+;] [
+;    let interpolated average-series-from-neighbors "depth-series"
+;    ifelse is-list? interpolated and length interpolated > 0 [
+;      set depth-series interpolated
+;      set depth item 0 depth-series
+;    ][
+;      ;; fallback: copy nearest valid series
+;      let nearest one-of patches with [
+;        is-list? depth-series and length depth-series > 0
+;      ] with-min [distance myself]
+;
+;      ifelse nearest != nobody [
+;        set depth-series [depth-series] of nearest
+;        set depth item 0 depth-series
+;        show (word "(patch " pxcor ", " pycor "): copied depth from patch " [pxcor] of nearest ", " [pycor] of nearest)
+;      ][
+;        show (word "(patch " pxcor ", " pycor "): FAILED to interpolate or copy depth")
+;        set depth-series []
+;        set depth 0
+;        set pcolor yellow
+;      ]
+;    ]
+;  ]
   
 ;; Interpolate or copy temperature-series
   ask patches with [
@@ -441,6 +441,7 @@ to-report average-series-from-neighbors [varname]
   if varname = "depth-series"    [ set month-var "current-depth-month" ]
   if varname = "temp-series"     [ set month-var "current-temp-month" ]
   if varname = "salinity-series" [ set month-var "current-salinity-month" ]
+  if varname = "spm-series" [ set month-var "current-spm-month" ]
   ;; if month-var still empty, fall back to a conservative default that will prevent matches
   if month-var = "" [ set month-var "current-unknown-month" ]
 

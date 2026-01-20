@@ -1,12 +1,13 @@
-to wander ;; only predators use
+to wander ;; only predators use ;; NEED to contrict to water
     let travel-distance (speed / 3)
-    let neighbor-patches neighbors with [patchtype != "sea"]
+    let neighbor-patches neighbors with [patchtype != "sea" and patch-terrain = "water"]
     if neighbor-patches != nobody [
       let target-patch one-of neighbor-patches
       face target-patch 
-      let d distance target-patch 
-      let step min list travel-distance d  ;; clamp
-      fd step
+      ;let d distance target-patch 
+      ;let step min list travel-distance d  ;; clamp
+      ;fd step
+       fd 1
     ]
   fd travel-distance
   decide-chase-direction ; dynamic swimming difficulty

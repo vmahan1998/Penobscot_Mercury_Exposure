@@ -9,9 +9,9 @@ to eat  ;; predator procedure
     ]
 
     if any? edible-prey [
-      
+      let meal one-of edible-prey
       ;; Digestible mass (75% of whole prey weight)
-      let meal-weight ([weight] of edible-prey) * 0.75
+      let meal-weight ([weight] of meal) * 0.75
 
       ;; Remaining capacity
       let space-available (stomach-capacity - stomach-contents)
@@ -24,8 +24,10 @@ to eat  ;; predator procedure
       
       ;; add mercury
       ;; accumulates from prey eaten
-      let mehg-prey-risk [mehg-total] of edible-prey
-      let hg-prey-risk [hg-total] of edible-prey
+      let mehg-prey-risk [mehg-total] of meal
+      let hg-prey-risk [hg-total] of meal
+      set mehg-foraging-undigested mehg-prey-risk
+      set hg-foraging-undigested hg-prey-risk
       set stomach-contents-Hg (stomach-contents-Hg + hg-prey-risk);; mercury stomach amount
       set stomach-contents-MeHg (stomach-contents-MeHg + mehg-prey-risk);; methylmercury stomach amount
       
@@ -33,9 +35,11 @@ to eat  ;; predator procedure
         die
       ]
             ;; Update counters
+      set completed-action? true
       set numAlewivesEaten numAlewivesEaten + 1
       set daytime-prey-eaten daytime-prey-eaten + 1
       set prey-eaten-in-patch prey-eaten-in-patch + 1
+      mark-foraging-event
     ]
 
   ]

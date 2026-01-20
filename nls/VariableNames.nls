@@ -20,8 +20,6 @@ globals [
   mean-SPM ;; mean SPM in the system
   mercury-data ;; mercury contamination data
   tide-phase ;; tracks tidal phase
-  mean-daytime-prey-eaten ;; records mean number of daily prey eaten
-  numAlewivesEaten ;; records number of alewives eaten by Striped Bass
   max-seaward-velocity ;; tracks maximum velocity experienced for the habitat
   max-landward-velocity ;; tracks maximum velocity experienced for the habitat
   max-Hg ;; max contamination observed
@@ -58,10 +56,17 @@ globals [
   min-SPM
   max-SPM
   
+  ;;EXPORT THESE
+  mean-daytime-prey-eaten ;; records mean number of daily prey eaten
+  numAlewivesEaten ;; records number of alewives eaten by Striped Bass
+  
+  ;; file names
   results-file-agents
   results-file-patches
   results-file-daily
   stamp_1
+  export-interval
+  sample-n
   ]
 
 patches-own [ 
@@ -77,11 +82,7 @@ patches-own [
   SPM ;; records levels of suspended sediment concentration in patch
   interpolated-patch? ;; was data interpolated for this area
   target-patch? ;; data needs interpolation
-  prey-eaten-in-patch ;; records number of prey eaten in patch
-  tidal-transport-in-patch ;; records sum of number of staging agents in patch
-  forage-visits ;; number of time a patch has been visited for foraging
-  forager-count ;; number of fish foraging in a patch
-  forage-species ;; fish species foraging in the patch
+  
   velocity-series ;; time series of velocity
   depth-series  ;; time series of depth
   temp-series  ;; time series of temperature
@@ -95,36 +96,44 @@ patches-own [
   current-temp-month ;; tracks what month the data is from
   current-salinity-month ;; tracks what month the data is from
   current-spm-month ;; tracks what month the data is from
+  
+  ;;EXPORT THESE
   ;; Patch Metrics
+  forage-visits ;; number of time a patch has been visited for foraging
+  forager-count ;; number of fish foraging in a patch
+  forage-species ;; fish species foraging in the patch
+  prey-eaten-in-patch ;; records number of prey eaten in patch
+  tidal-transport-in-patch ;; records sum of number of staging agents in patch (rest areas)
   ticks-spent-alewife
   visits-by-alewife
   ticks-spent-stripedbass
   visits-by-stripedbass
   
   ;; Risk from Foraging
-  Hg-foraging-risk-alewife ;; mercury risk from patch
-  MeHg-foraging-risk-alewife ;; methylmercury risk from patch
-  Hg-foraging-risk-stripedbass 
-  MeHg-foraging-risk-stripedbass
-  Hg-foraging-risk-total-alewife ;; mercury risk from patch
-  MeHg-foraging-risk-total-alewife ;; methylmercury risk from patch
-  Hg-foraging-risk-total-stripedbass 
-  MeHg-foraging-risk-total-stripedbass
+  Hg-foraging-risk-alewife;; spatio-temporal risk
+  MeHg-foraging-risk-alewife;; spatio-temporal risk
+  Hg-foraging-risk-stripedbass ;; spatio-temporal risk
+  MeHg-foraging-risk-stripedbass ;; spatio-temporal risk
+  Hg-foraging-risk-total-alewife ;; summary spatial risk
+  MeHg-foraging-risk-total-alewife ;; summary spatial risk
+  Hg-foraging-risk-total-stripedbass ;; summary spatial risk
+  MeHg-foraging-risk-total-stripedbass ;; summary spatial risk
   
   ;; Risk from Exposure
-  Hg-exp-risk-alewife ;; mercury risk from patch
-  MeHg-exp-risk-alewife ;; methylmercury risk from patch
-  Hg-exp-risk-stripedbass 
-  MeHg-exp-risk-stripedbass
-  Hg-exp-risk-total-alewife ;; mercury risk from patch
-  MeHg-exp-risk-total-alewife ;; methylmercury risk from patch
-  Hg-exp-risk-total-stripedbass 
-  MeHg-exp-risk-total-stripedbass
+  Hg-exp-risk-alewife;; spatio-temporal risk
+  MeHg-exp-risk-alewife;; spatio-temporal risk
+  Hg-exp-risk-stripedbass ;; spatio-temporal risk
+  MeHg-exp-risk-stripedbass ;; spatio-temporal risk
+  Hg-exp-risk-total-alewife ;; summary spatial risk
+  MeHg-exp-risk-total-alewife ;; summary spatial risk
+  Hg-exp-risk-total-stripedbass ;; summary spatial risk
+  MeHg-exp-risk-total-stripedbass ;; summary spatial risk
 ]
 
 turtles-own [ trail ]
 
 Alewives-own [
+  export?
   age ;; set age of fish
   age-num ;; numerical age of fish
   sex ;; defines sex of fish
@@ -149,6 +158,7 @@ Alewives-own [
   energy ;; energy allowance
   fleeing?  ;; boolean of whether or not prey is fleeing from predator
   
+  ;;EXPORT THESE
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
   hg-uptake-risk ;; ;; bioaccumulation risk associated with mercury exposure
@@ -157,12 +167,13 @@ Alewives-own [
   mehg-exposure-total ;; sum of known mercury contamination levels exposed to
   mehg-exposure-total-normalized ;; normalized sum of known methylmercury contamination levels exposed to
   hg-exposure-total-normalized ;; normalized sum of knownmercury contamination levels exposed to
-  hg-foraging  ; total risk from foraging
-  mehg-foraging  ; total risk from foraging
+  hg-foraging-undigested  ; total risk from foraging
+  mehg-foraging-undigested  ; total risk from foraging
   mehg-foraging-total  ; sum of foraging risk
   hg-foraging-total  ; sum of foraging risk
   mehg-total  ; sum of methylmercury risk
   hg-total ; sum of mercury risk
+  
   migration-action ;; defines migratory purpose
   completed-action? ;; has migratory objective been completed?
   migration-destination ;;
@@ -173,6 +184,8 @@ Alewives-own [
   wait-ticks
   planned-path
   path-index
+   
+  ;;EXPORT THESE
   landward-migration-time ;; time to travel inland and complete objective
   seaward-migration-time ;; time to travel seaward after completing objective
   
@@ -222,6 +235,7 @@ Alewives-own [
   
   Met-max ;; maximum metabilic cost of new choride cell creation
   
+  ;;EXPORT THESE
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
   foraging? ;; boolean to track if agent is foraging
   lipid-loss? ;; boolean tracking energy restoration method
@@ -229,16 +243,14 @@ Alewives-own [
   landward-migration? ;; boolean to track if agent is migrating landward
   seaward-migration? ;; boolean to track if agent is migrating seaward
   start-migration? ;; boolean to track when fish should enter system
-  
+  migration-day
+
   prev-speed ;; previous speed
   difficulty-factor ;; swimming difficulty
   E-swim ;; energy cost of swimming
   swim-base ;; base energy cost of swimming
   previous-patches  ;; List of recently visited patches (path memory)
-  stagnation-counter  ;; Tracks how long the agent has been in the same spot
-  trapped?  ;; Flag indicating if the fish is stuck
   STST-start-tick ;; Selective tidal transport transition
-  migration-day
   migration-probability ;; porbability to migrate
   
   crossed-dam-landward-today?
@@ -253,6 +265,7 @@ Alewives-own [
 ]
 
 StripedBass-own [
+  export?
   age ;; set age of fish
   age-num ;; numerical age of fish
   sex ;; defines sex of fish
@@ -276,16 +289,12 @@ StripedBass-own [
   energy ;; energy allowance
   
   bursting?  ;; boolean of whether or not predator is bursting towards prey
-  hunting? ;; is fish looking for prey
   chase-direction
   predator-turn-coefficient ;; probability to turn towards prey in vision
   prey-in-vision ;; prey within vision radius
   target-prey ;; shortest distance prey
   prey-in-front  ;; prey within 30 degree vision cone (used to determine bursting)
   gape-size
-  
-  daytime-prey-eaten ;; counts number of prey eaten by bass in single day
-  numAlewivesEaten ;; total alewives eaten
   
   stomach-contents-Hg ;; mercury stomach amount
   stomach-contents-MeHg ;; methylmercury stomach amount
@@ -294,6 +303,9 @@ StripedBass-own [
   digestion-rate        ;; fraction of stomach digested per tick
   digestion-efficiency         ;; biological efficiency of digestion
   
+  ;; EXPORT THESE
+  daytime-prey-eaten ;; counts number of prey eaten by bass in single day
+  numAlewivesEaten ;; total alewives eaten
   hg-exposure-duration ;; time spent highly contaminated mercury patches
   mehg-exposure-duration ;; time spent highly contaminated methylmercury patches
   hg-uptake-risk ;; ;; bioaccumulation risk associated with mercury exposure
@@ -302,8 +314,8 @@ StripedBass-own [
   mehg-exposure-total ;; sum of known methylmercury contamination levels exposed to
   mehg-exposure-total-normalized ;; normalized sum of known methylmercury contamination levels exposed to
   hg-exposure-total-normalized ;; normalized sum of knownmercury contamination levels exposed to
-  hg-foraging  ; total risk from foraging
-  mehg-foraging  ; total risk from foraging
+  hg-foraging-undigested  ; total risk from foraging
+  mehg-foraging-undigested  ; total risk from foraging
   mehg-foraging-total  ; sum of foraging risk
   hg-foraging-total  ; sum of foraging risk
   mehg-total  ; sum of methylmercury risk
@@ -362,6 +374,8 @@ StripedBass-own [
   
   Met-max ;; maximum metabilic cost of new choride cell creation
   
+  ;; EXPORT THESE
+  hunting?
   selective-tidal-transport? ;; boolean to track if agent is experiencing selective tidal transport
   foraging? ;; boolean to track if agent is foraging
   filter-feed?

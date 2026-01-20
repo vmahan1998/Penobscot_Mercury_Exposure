@@ -11,8 +11,8 @@ to update-hydro-data
       set velocity-data csv:from-file (word "inputs/monthly/velocity_" current-month "_2023.csv")
       print (word "   ✅ Velocity data loaded (" length velocity-data " cols)")
       
-      set depth-data csv:from-file (word "inputs/monthly/depth_" current-month "_2023.csv")
-      print (word "   ✅ Depth data loaded (" length depth-data " cols)")
+;      set depth-data csv:from-file (word "inputs/monthly/depth_" current-month "_2023.csv")
+;      print (word "   ✅ Depth data loaded (" length depth-data " cols)")
       
       set temp-data csv:from-file (word "inputs/monthly/temperature_" current-month "_2023.csv")
       print (word "   ✅ Temperature data loaded (" length temp-data " cols)")
@@ -24,7 +24,7 @@ to update-hydro-data
       print (word "   ✅ SPM data loaded (" length spm-data " cols)")
       
       ;; Reset counters
-      let header first depth-data
+      let header first velocity-data
       set total-hours (length header - 4)
       set current-hour 0
      ;; Rebuild patch time series for the new month
@@ -143,7 +143,7 @@ to update-patch-data
   ask patches with [patch-terrain = "water"] [
     if current-hour < (total-hours - 1) [
       set velocity item current-hour velocity-series
-      set depth item current-hour depth-series
+;      set depth item current-hour depth-series
       set salinity item current-hour salinity-series
       set temperature item current-hour temp-series
       set SPM item current-hour spm-series
@@ -164,7 +164,7 @@ to update-patch-data
   ]]
     ask patches with [patch-terrain != "water"] [
       set velocity 0
-      set depth 0
+;      set depth 0
       set salinity 0
       set temperature 0
       set SPM 0
