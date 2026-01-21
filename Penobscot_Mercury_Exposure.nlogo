@@ -147,8 +147,8 @@ GRAPHICS-WINDOW
 200
 0
 350
-0
-0
+1
+1
 1
 ticks
 60.0
@@ -212,8 +212,8 @@ SLIDER
 initial-alewives
 initial-alewives
 2
-50000
-12000.0
+10000
+4000.0
 1
 1
 fish
@@ -842,16 +842,6 @@ PENS
 "Consumed" 1.0 0 -13791810 true "" "plot mean [numAlewivesEaten] of stripedbass"
 "Prey Pop" 1.0 0 -7858858 true "" "plot count alewives"
 
-TEXTBOX
-88
-377
-390
-428
-Striped Bass Population Proportionate to River Herring Population (Based on 2020 data)
-14
-0.0
-1
-
 PLOT
 1477
 809
@@ -873,6 +863,21 @@ PENS
 "m-prob pred" 1.0 0 -13345367 true "" "if ticks mod 288 = 0 [ plot mean [migration-probability] of stripedbass ]"
 "Estuary Enter" 1.0 0 -7858858 true "" "if ticks mod 288 = 0 [ plot stripedbass-entering-estuary-daily-total ]"
 "Estuary Exit" 1.0 0 -7500403 true "" "if ticks mod 288 = 0 [ plot stripedbass-exiting-estuary-daily-total ]"
+
+SLIDER
+206
+381
+378
+414
+initial-stripedbass
+initial-stripedbass
+0
+100
+4.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
