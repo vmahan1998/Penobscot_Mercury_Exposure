@@ -1,8 +1,4 @@
 to setup-stripedbass
-  ;; based on 2020 proportions of 1,952,567 alwives and 324 striped bass 
-  let stripedbass-per-alewife (324 / 1952567)
-  let initial-stripedbass round (initial-alewives * stripedbass-per-alewife)
-  print (word "   Striped Bass Population (" initial-stripedbass " fish)")
   create-stripedbass initial-stripedbass
   [
     set migration-patch one-of patches with [patchtype = "sea" ]

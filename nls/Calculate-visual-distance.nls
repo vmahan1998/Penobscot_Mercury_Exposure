@@ -1,23 +1,35 @@
-to compute-SPM-range
-  set min-SPM min [SPM] of patches
-  set max-SPM max [SPM] of patches
-end
-
+;; scale encounters to real population dynamics -- realistic encounters to penobscot despite population levels
 to calculate-vision
-  let turbidity (scaled-SPM [SPM] of patch-here)  ;; 0–1
+  ;; baseline rho from 2020 proportions
+  let rho_i (324 / 1952567)
 
-  ;; max reduction is 60 percent of the range
-  let max-reduction 0.6  
+  ;; current simulated rho
+  let H count alewives
+  let B count stripedbass
 
-  let penalty (turbidity * max-reduction) * 
-              (base-vision-distance - min-vision-distance)
+  ;; if one species is absent, do not scale
+  if H = 0 or B = 0 [
+    set vision-distance base-vision-distance
+    stop
+  ]
 
-  let new-vision base-vision-distance - penalty
+  let rho (B / H)
 
-  set vision-distance vision-distance + (new-vision - vision-distance) * 0.25
-end
+  ;; density multiplier relative to baseline
+  let m (rho / rho_i)
 
-to-report scaled-SPM [spm-level]
-  if max-SPM = min-SPM [ report 0 ]  ;; avoid divide-by-zero
-  report (spm-level - min-SPM) / (max-SPM - min-SPM)
+  ;; vision scaling factor, area scales with distance squared
+  let s (1 / sqrt m)
+
+  ;; optional clamps so things do not get weird
+  if s > 1 [ set s 1 ]          ;; never increase vision above base
+  if s < 0.05 [ set s 0.05 ]    ;; floor, adjust if needed
+
+  ;; apply scaling
+  set vision-distance (base-vision-distance * s)
+
+  ;; also respect your minimum
+  if vision-distance < min-vision-distance [
+    set vision-distance min-vision-distance
+  ]
 end

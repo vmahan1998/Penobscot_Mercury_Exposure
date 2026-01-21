@@ -172,6 +172,5 @@ to update-patch-data
    
   
   ]
-  compute-SPM-range
   initialize-velocity-extremes-from-series
 end

@@ -72,7 +72,6 @@ to prototype-parameters
     set forage-visits 0
     set forage-species []
     
-    compute-SPM-range
 
   ] 
   
@@ -279,7 +278,6 @@ ask patches with [patch-terrain != "land"] [
    set cost-to-sea 1e6
 
   ]
-   compute-SPM-range
   
 ;; potential behavioral rules
    ask alewives with [age = "adult"] [

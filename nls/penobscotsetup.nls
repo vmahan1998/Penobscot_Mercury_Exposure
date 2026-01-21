@@ -63,7 +63,6 @@ to setup-penobscot-migration
   ;; setup functions
     find-migration-days
     update-migration-cue
-    compute-SPM-range
     initialize-results-reporter
     ;set local-temp mean [temperature] of patches with [patchtype = "sea"]
     ;show (word "Local Temperature: " local-temp)
@@ -105,6 +104,7 @@ ask alewives [
     ;; Perform behavioral sequence only if not at home
     if not at-destination? [
       calculate-metabolism
+      calculate-vision
       mercury-contamination
       methylmercury-contamination 
       osmoregulate
@@ -190,7 +190,7 @@ ask alewives [
     if start-migration? [
     let travel-distance (speed / 3)
     calculate-metabolism ;; GoFish Metabolism 
-    ;calculate-vision
+    calculate-vision
     school
     digest ;; GoFish Digestion 
     osmoregulate ;; GoFish Salinity Exposure 
