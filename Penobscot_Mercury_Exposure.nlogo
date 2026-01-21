@@ -213,7 +213,7 @@ initial-alewives
 initial-alewives
 2
 50000
-11999.0
+12000.0
 1
 1
 fish
@@ -368,10 +368,10 @@ PENS
 "Ped Acclimated-Salinity" 1.0 0 -2674135 true "" "plot mean [acclimated-salinity] of stripedbass"
 
 PLOT
-1944
-808
-2364
-1064
+1945
+810
+2365
+1066
 Metabolic Rate
 ticks
 Energy Consumed
@@ -444,9 +444,9 @@ PENS
 
 PLOT
 1478
-808
+1074
 1927
-1066
+1332
 Behaviors
 ticks
 behavior type
@@ -510,10 +510,10 @@ PENS
 "methylmercury" 1.0 0 -13840069 true "" "plot mean [mehg-exposure-duration] of turtles"
 
 PLOT
-529
-1342
-994
-1661
+555
+1078
+1020
+1331
 Alewife Contamination Dynamics
 ticks
 uptake risk
@@ -552,9 +552,9 @@ PENS
 
 PLOT
 1477
-1069
+1335
 1926
-1328
+1594
 Weight Distribution (g)
 Weight (g)
 Number of Alewives
@@ -570,9 +570,9 @@ PENS
 
 PLOT
 1938
-1069
+1335
 2368
-1329
+1595
 Adult Age Distribution (years)
 Age (years)
 Number of Alewives
@@ -589,10 +589,10 @@ PENS
 "Photoperiod" 1.0 0 -13345367 true "" "histogram [migration-photo] of alewives"
 
 PLOT
-642
-1078
-1020
-1330
+1935
+1073
+2368
+1332
 Weight over Time (g)
 time
 mean weight (g)
@@ -608,10 +608,10 @@ PENS
 "pred" 1.0 0 -5298144 true "" "plot sum [weight] of stripedbass"
 
 PLOT
-296
-1079
-631
-1332
+690
+1335
+1025
+1599
 Wait Time
 ticks
 Wait Time (ticks)
@@ -718,10 +718,10 @@ Month (#)
 HORIZONTAL
 
 PLOT
-20
-1080
-292
-1332
+409
+1337
+682
+1599
 Migration Cue
 day
 NIL
@@ -773,7 +773,7 @@ PLOT
 548
 1931
 803
-Milford Fish Lift Validation
+Milford Fish Lift Validation: Alewives
 Ticks
 Alewives (Scaled)
 0.0
@@ -789,7 +789,6 @@ PENS
 "m-prob prey" 1.0 0 -13345367 true "" " if ticks mod 288 = 0 [ plot mean [migration-probability] of alewives ]"
 "Estuary Enter" 1.0 0 -5825686 true "" "if ticks mod 288 = 0 [ plot alewives-entering-estuary-daily-total ]"
 "Estuary Exit" 1.0 0 -5204280 true "" " if ticks mod 288 = 0 [ plot alewives-exiting-estuary-daily-total ]"
-"m-prob pred" 1.0 0 -8990512 true "" ";if ticks mod 288 = 0 [ plot mean [migration-probability] of stripedbass ]"
 
 TEXTBOX
 84
@@ -802,10 +801,10 @@ How much food becomes usable energy?
 1
 
 PLOT
-18
-1340
-523
-1660
+43
+1079
+548
+1333
 Striped Bass Contamination Dynamics
 ticks
 contaminant
@@ -825,10 +824,10 @@ PENS
 "MeHg Forage" 1.0 0 -5825686 true "" "plot mean [mehg-foraging-undigested] of stripedbass"
 
 PLOT
-1005
-1340
-1417
-1662
+1032
+1333
+1469
+1600
 Predation Dynamics
 ticks
 consumption
@@ -844,14 +843,36 @@ PENS
 "Prey Pop" 1.0 0 -7858858 true "" "plot count alewives"
 
 TEXTBOX
-142
+88
 377
 390
 428
-Striped Bass Population Proportionate to River Herring Population
+Striped Bass Population Proportionate to River Herring Population (Based on 2020 data)
 14
 0.0
 1
+
+PLOT
+1477
+809
+1936
+1066
+Milford Fish Lift Validation: Striped Bass
+ticks
+Striped Bass (Scaled)
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Dam Enter" 1.0 0 -14439633 true "" "if ticks mod 288 = 0 [ plot stripedbass-on-line-daily-total-landward ]"
+"Dam Exit" 1.0 0 -955883 true "" "if ticks mod 288 = 0 [ plot stripedbass-on-line-daily-total-seaward ]"
+"m-prob pred" 1.0 0 -13345367 true "" "if ticks mod 288 = 0 [ plot mean [migration-probability] of stripedbass ]"
+"Estuary Enter" 1.0 0 -7858858 true "" "if ticks mod 288 = 0 [ plot stripedbass-entering-estuary-daily-total ]"
+"Estuary Exit" 1.0 0 -7500403 true "" "if ticks mod 288 = 0 [ plot stripedbass-exiting-estuary-daily-total ]"
 
 @#$#@#$#@
 ## WHAT IS IT?
