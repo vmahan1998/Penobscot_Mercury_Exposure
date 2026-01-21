@@ -20,6 +20,10 @@ to setup-penobscot-migration
   set alewives-entering-estuary-daily-total 0
   set alewives-on-line-daily-total-landward 0
   set alewives-on-line-daily-total-seaward 0
+  set stripedbass-exiting-estuary-daily-total 0
+  set stripedbass-entering-estuary-daily-total 0
+  set stripedbass-on-line-daily-total-landward 0
+  set stripedbass-on-line-daily-total-seaward 0
   
   ;; Patch Metrics
   ask patches with [patch-terrain != "water"] [
@@ -101,7 +105,6 @@ ask alewives [
     ;; Perform behavioral sequence only if not at home
     if not at-destination? [
       calculate-metabolism
-      calculate-vision
       mercury-contamination
       methylmercury-contamination 
       osmoregulate
@@ -241,6 +244,8 @@ ask alewives [
       ]
 
   ]
+  count-stripedbass
+    
     if ticks mod 288 = 0 [
     calc-migration-probability
     
@@ -262,6 +267,11 @@ ask alewives [
   set alewives-on-line-daily-total-seaward 0
   set alewives-entering-estuary-daily-total 0
   set alewives-exiting-estuary-daily-total 0
+  
+  set stripedbass-on-line-daily-total-landward 0
+  set stripedbass-on-line-daily-total-seaward 0
+  set stripedbass-entering-estuary-daily-total 0
+  set stripedbass-exiting-estuary-daily-total 0
   ]
   
 ;  ;; trail

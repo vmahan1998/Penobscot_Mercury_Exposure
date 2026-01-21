@@ -51,6 +51,10 @@ globals [
   alewives-on-line-daily-total-seaward ; Stores the total crossings for the current simulated day
   alewives-entering-estuary-daily-total
   alewives-exiting-estuary-daily-total
+  stripedbass-on-line-daily-total-landward ; Stores the total crossings for the current simulated day
+  stripedbass-on-line-daily-total-seaward ; Stores the total crossings for the current simulated day
+  stripedbass-entering-estuary-daily-total
+  stripedbass-exiting-estuary-daily-total
   
   ;; Pred prey
   min-SPM

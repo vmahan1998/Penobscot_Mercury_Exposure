@@ -60,6 +60,67 @@ if (old-type != "sea" and new-type = "sea" and
 
 end
 
+to count-stripedbass
+  ;; --------------------------------------------
+;; AFTER THE ALEWIFE MOVES
+;; --------------------------------------------
+
+let old-patch previous-patch
+let new-patch patch-here
+
+;; -------------------------------------------------
+;; 1. Count dam crossing (landward / seaward)
+;; -------------------------------------------------
+let dam-line 342
+let old-y [pycor] of old-patch
+let new-y [pycor] of new-patch
+
+if (old-y < dam-line and new-y >= dam-line and
+    not crossed-dam-landward-today?) [
+  
+  set stripedbass-on-line-daily-total-landward
+      stripedbass-on-line-daily-total-landward + 1
+
+  set crossed-dam-landward-today? true
+]
+
+if (old-y >= dam-line and new-y < dam-line and
+    not crossed-dam-seaward-today?) [
+
+  set stripedbass-on-line-daily-total-seaward
+      stripedbass-on-line-daily-total-seaward + 1
+
+  set crossed-dam-seaward-today? true
+]
+
+;; -------------------------------------------------
+;; 2. Count estuary entry (SEA → NOT-SEA)
+;; -------------------------------------------------
+let old-type [patchtype] of old-patch
+let new-type [patchtype] of new-patch
+
+if (old-type = "sea" and new-type != "sea" and
+    not entered-estuary-today?) [
+
+  set stripedbass-entering-estuary-daily-total
+      stripedbass-entering-estuary-daily-total + 1
+
+  set entered-estuary-today? true
+]
+
+;; -------------------------------------------------
+;; 3. Count estuary exit (NOT-SEA → SEA)
+;; -------------------------------------------------
+if (old-type != "sea" and new-type = "sea" and
+    not exited-estuary-today?) [
+
+  set stripedbass-exiting-estuary-daily-total
+      stripedbass-exiting-estuary-daily-total + 1
+
+  set exited-estuary-today? true
+]
+
+end
 
 
 to count-fish-lift
