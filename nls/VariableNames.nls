@@ -284,7 +284,7 @@ StripedBass-own [
   max-speed ;; species upper limit of speed
   speed ;; patches/tick
   optimal-SPM ;; SPM foraging preference
-
+  home-patch ;; defines home patch of estuary habitat
   migration-patch ;; defines leaving patch of sea habitat
   schoolmates ;; agentset of nearby prey fish
   nearest-neighbor  ;; closest one of schoolmates

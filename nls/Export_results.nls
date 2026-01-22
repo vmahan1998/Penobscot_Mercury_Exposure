@@ -45,7 +45,7 @@ to ensure-stripedbass-month-header [fname]
     file-print (word
       "ticks,day,month,hour,minute,"
       "id,breed,"
-      "migration_day,end_migration_day,weight,age,age_num,sex,length,body_depth,speed,energy,"
+      "migration_day,end_migration_day,weight,age,age_num,sex,length,speed,energy,"
       "stomach_contents_Hg,stomach_contents_MeHg,stomach_contents,stomach_capacity,digestion_rate,metabolism_rate,"
       "landward_migration_time,seaward_migration_time,"
       "bursting,completed_action,at_destination,hunting,"
@@ -194,7 +194,7 @@ to report-fish-results
       file-print (word
         ticks "," day "," month "," hour "," minute ","
         who "," breed ","
-        migration-day "," end-migration-day "," weight "," age "," age-num "," sex "," length-size "," body-depth "," speed "," energy ","
+        migration-day "," end-migration-day "," weight "," age "," age-num "," sex "," length-size "," speed "," energy ","
         stomach-contents-Hg "," stomach-contents-MeHg "," stomach-contents "," stomach-capacity "," digestion-rate "," metabolism-rate ","
         landward-migration-time "," seaward-migration-time ","
         bursting? "," completed-action? "," at-destination? "," hunting? ","
