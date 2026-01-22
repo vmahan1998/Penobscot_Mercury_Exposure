@@ -67,8 +67,9 @@ globals [
   ;; file names
   initialized-alewife-month-files
   initialized-stripedbass-month-files
-  results-file-agents
+  initialized-patch-month-files
   results-file-patches
+  last-exported-patch-monthnum
   results-file-daily
   stamp_1
   export-interval

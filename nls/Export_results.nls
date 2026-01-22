@@ -1,6 +1,7 @@
 to export-results
   report-fish-results
   report-daily-totals
+  maybe-export-patches-at-month-change
 end
 
 to export-end-results
@@ -62,10 +63,47 @@ to ensure-stripedbass-month-header [fname]
   ]
 end
 
+to-report patches-month-file
+  report (word "results_patches_" stamp_1 "_" month ".csv")
+end
+
+to ensure-patches-month-header [fname]
+  if not member? fname initialized-patch-month-files [
+    file-open fname
+    file-print (word
+      "monthnum,month,day,ticks,"
+      "pxcor,pycor,"
+      "forage_visits,forager_count,forage_species,"
+      "prey_eaten_in_patch,tidal_transport_in_patch,"
+      "ticks_spent_alewife,visits_by_alewife,"
+      "ticks_spent_stripedbass,visits_by_stripedbass,"
+      "hg_foraging_risk_alewife,mehg_foraging_risk_alewife,"
+      "hg_foraging_risk_stripedbass,mehg_foraging_risk_stripedbass,"
+      "hg_foraging_risk_total_alewife,mehg_foraging_risk_total_alewife,"
+      "hg_foraging_risk_total_stripedbass,mehg_foraging_risk_total_stripedbass,"
+      "hg_exp_risk_alewife,mehg_exp_risk_alewife,"
+      "hg_exp_risk_stripedbass,mehg_exp_risk_stripedbass,"
+      "hg_exp_risk_total_alewife,mehg_exp_risk_total_alewife,"
+      "hg_exp_risk_total_stripedbass,mehg_exp_risk_total_stripedbass"
+    )
+    file-close
+    set initialized-patch-month-files lput fname initialized-patch-month-files
+  ]
+end
+
+to maybe-export-patches-at-month-change
+  if monthnum != last-exported-patch-monthnum [
+    export-patch-results-monthly
+    set last-exported-patch-monthnum monthnum
+  ]
+end
 
 to initialize-results-reporter
   set initialized-alewife-month-files []
   set initialized-stripedbass-month-files [] 
+    set initialized-patch-month-files []
+
+  set last-exported-patch-monthnum monthnum  ;; start at current month
   
   ask turtles [ set export? false ]
 
@@ -90,26 +128,6 @@ to initialize-results-reporter
     stripedbass-sample-size
     " exported."
   )
-
-  ;; patches file (you will write this at end of simulation)
-  set results-file-patches (word "results_patches_" stamp_1 ".csv")
-  file-open results-file-patches
-  file-print (word
-    "pxcor,pycor,"
-    "forage_visits,forager_count,forage_species,"
-    "prey_eaten_in_patch,tidal_transport_in_patch,"
-    "ticks_spent_alewife,visits_by_alewife,"
-    "ticks_spent_stripedbass,visits_by_stripedbass,"
-    "hg_foraging_risk_alewife,mehg_foraging_risk_alewife,"
-    "hg_foraging_risk_stripedbass,mehg_foraging_risk_stripedbass,"
-    "hg_foraging_risk_total_alewife,mehg_foraging_risk_total_alewife,"
-    "hg_foraging_risk_total_stripedbass,mehg_foraging_risk_total_stripedbass,"
-    "hg_exp_risk_alewife,mehg_exp_risk_alewife,"
-    "hg_exp_risk_stripedbass,mehg_exp_risk_stripedbass,"
-    "hg_exp_risk_total_alewife,mehg_exp_risk_total_alewife,"
-    "hg_exp_risk_total_stripedbass,mehg_exp_risk_total_stripedbass"
-  )
-  file-close
 
   ;; daily totals file
   set results-file-daily (word "results_daily_" stamp_1 ".csv")
@@ -197,6 +215,33 @@ to report-fish-results
 end
 
 
+to export-patch-results-monthly
+  let fname patches-month-file
+  ensure-patches-month-header fname
+  file-open fname
+
+  ask patches [
+    file-print (word
+      monthnum "," month "," day "," ticks ","
+      pxcor "," pycor ","
+      forage-visits "," forager-count "," forage-species ","
+      prey-eaten-in-patch "," tidal-transport-in-patch ","
+      ticks-spent-alewife "," visits-by-alewife ","
+      ticks-spent-stripedbass "," visits-by-stripedbass ","
+      Hg-foraging-risk-alewife "," MeHg-foraging-risk-alewife ","
+      Hg-foraging-risk-stripedbass "," MeHg-foraging-risk-stripedbass ","
+      Hg-foraging-risk-total-alewife "," MeHg-foraging-risk-total-alewife ","
+      Hg-foraging-risk-total-stripedbass "," MeHg-foraging-risk-total-stripedbass ","
+      Hg-exp-risk-alewife "," MeHg-exp-risk-alewife ","
+      Hg-exp-risk-stripedbass "," MeHg-exp-risk-stripedbass ","
+      Hg-exp-risk-total-alewife "," MeHg-exp-risk-total-alewife ","
+      Hg-exp-risk-total-stripedbass "," MeHg-exp-risk-total-stripedbass
+    )
+  ]
+
+  file-close
+end
+
 to export-patch-results
   file-open results-file-patches
 
@@ -220,7 +265,6 @@ to export-patch-results
 
   file-close
 end
-
 
 to report-daily-totals
   if ticks mod 288 != 0 [ stop ]

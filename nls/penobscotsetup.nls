@@ -86,8 +86,36 @@ to penobscot-go
    ;color-foraging-patches
   ]
   
-ask alewives [
+  
+    ;; Daily counters
+  ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
+  if ticks mod 288 = 0 [
+      
+;  show word "LANDWARD: " alewives-on-line-daily-total-landward
+;  show word "SEAWARD: " alewives-on-line-daily-total-seaward
+;  show word "ENTRY: "    alewives-entering-estuary-daily-total
+;  show word "EXIT: "     alewives-exiting-estuary-daily-total
 
+  set alewives-on-line-daily-total-landward 0
+  set alewives-on-line-daily-total-seaward 0
+  set alewives-entering-estuary-daily-total 0
+  set alewives-exiting-estuary-daily-total 0
+  
+  set stripedbass-on-line-daily-total-landward 0
+  set stripedbass-on-line-daily-total-seaward 0
+  set stripedbass-entering-estuary-daily-total 0
+  set stripedbass-exiting-estuary-daily-total 0
+  ]
+  
+ask alewives [
+  if ticks mod 288 = 0 [
+  calc-migration-probability
+  set crossed-dam-landward-today? false
+  set crossed-dam-seaward-today? false
+  set entered-estuary-today? false
+  set exited-estuary-today? false  
+    ]
+    
   if (not start-migration?) [
       let p migration-probability
       if random-float 1 <= p [
@@ -155,25 +183,26 @@ ask alewives [
       
 ]
 
-  count-alewives
-   
-    if ticks mod 288 = 0 [
-    calc-migration-probability
-    set crossed-dam-landward-today? false
-    set crossed-dam-seaward-today? false
-    set entered-estuary-today? false
-    set exited-estuary-today? false  
-    ] 
+  count-alewives 
     
     ;; After all agent actions (before 'end')
     if (patch-here = migration-patch) and (seaward-migration?) [
       set seaward-migration? false
+      ;set end-migration-day day
     ]  
 ]    
   
   ask stripedbass [ ;; in system May-October with max in June-july
    ;; Migration Cue
+       if ticks mod 288 = 0 [
+    calc-migration-probability
+    set daytime-prey-eaten 0
+    set crossed-dam-landward-today? false
+    set crossed-dam-seaward-today? false
+    set entered-estuary-today? false
+    set exited-estuary-today? false 
     
+    ] 
    if (not start-migration?) [
       let p migration-probability
       if random-float 1 <= p [
@@ -209,7 +238,7 @@ ask alewives [
     if patchtype != "sea" [
     set seaward-migration? false
     set landward-migration? false
-    set prey-in-vision (alewives with [patchtype != "sea" or patch-here != patch 199 346]) in-radius vision-distance ;; defines alewives in reachable proximity
+    set prey-in-vision (alewives with [patchtype != "sea" and patch-here != patch 199 346]) in-radius vision-distance ;; defines alewives in reachable proximity
     
       ;; GoFish Predation Procedure
     if stomach-contents <= 0 [ ;; if no prey in stomach to gain energy, use lipid loss to use fat stores
@@ -227,10 +256,6 @@ ask alewives [
       adjust-stripedbass-speed  ;; predator will speed up when making an attack
       scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
       eat ;; eat prey if within neighbors in "nls/Eat.nls"
-      ]
-      
-      if ticks mod 288 = 0 [
-        set daytime-prey-eaten 0
       ]
       
      ;; Migrate Seaward when migration ends
@@ -260,11 +285,6 @@ ask alewives [
   ]
   count-stripedbass
     
-    if ticks mod 288 = 0 [
-    calc-migration-probability
-    
-
-    ]
   ]
   ;highlight-patches-with-prey-eaten ;; highlights patches where prey has been eaten
   
@@ -288,25 +308,6 @@ ask alewives [
     stop
   ]
 
-    ;; Daily counters
-  ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
-  if ticks mod 288 = 0 [
-      
-;  show word "LANDWARD: " alewives-on-line-daily-total-landward
-;  show word "SEAWARD: " alewives-on-line-daily-total-seaward
-;  show word "ENTRY: "    alewives-entering-estuary-daily-total
-;  show word "EXIT: "     alewives-exiting-estuary-daily-total
-
-  set alewives-on-line-daily-total-landward 0
-  set alewives-on-line-daily-total-seaward 0
-  set alewives-entering-estuary-daily-total 0
-  set alewives-exiting-estuary-daily-total 0
-  
-  set stripedbass-on-line-daily-total-landward 0
-  set stripedbass-on-line-daily-total-seaward 0
-  set stripedbass-entering-estuary-daily-total 0
-  set stripedbass-exiting-estuary-daily-total 0
-  ]
 end
 
 
