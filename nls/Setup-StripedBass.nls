@@ -5,6 +5,7 @@ to setup-stripedbass
     if migration-patch != nobody [
       move-to migration-patch
     ]
+    set home-patch patch 199 346
     set previous-patch patch-here
     set previous-x xcor
     set previous-y ycor
@@ -119,6 +120,12 @@ to setup-stripedbass
     set start-migration? false
     set end-migration? false
     set completed-action? false
+    set selective-tidal-transport? false
+    set crossed-dam-landward-today? false
+    set crossed-dam-seaward-today? false
+    set entered-estuary-today? false
+    set exited-estuary-today? false
+    
     set hg-exposure-duration 0 ; time spect exposed
     set mehg-exposure-duration 0 ; time spect exposed
     set hg-uptake-risk 0 ; instantanious risk from exposure
@@ -221,4 +228,5 @@ to find-gape-size
 
   ;; Final gape
   set gape-size (base-gape * condition-scale)
+  calculate-vision
 end

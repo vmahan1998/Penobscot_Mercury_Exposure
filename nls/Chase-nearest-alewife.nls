@@ -7,7 +7,6 @@ to chase-nearest-alewife ;; predator procedure
       let step min list travel-distance d  ;; clamp
       fd step
     ]
-  fd travel-distance
   decide-chase-direction ; dynamic swimming difficulty
   calculate-swim-energy ; based on travel direction
 end

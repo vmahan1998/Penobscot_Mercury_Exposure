@@ -195,6 +195,7 @@ to setup-alewives
     set min-vision-distance 1 ;convert to patch units
     set vision-distance base-vision-distance
     set body-depth length-size * 0.30
+    calculate-vision
   ]
 end
 

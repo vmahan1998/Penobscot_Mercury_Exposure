@@ -65,6 +65,8 @@ globals [
   numAlewivesEaten ;; records number of alewives eaten by Striped Bass
   
   ;; file names
+  initialized-alewife-month-files
+  initialized-stripedbass-month-files
   results-file-agents
   results-file-patches
   results-file-daily
@@ -388,6 +390,11 @@ StripedBass-own [
   seaward-migration? ;; boolean to track if agent is migrating seaward
   start-migration? ;; boolean to track when fish should enter system
   end-migration? ;; boolean to track when fish should leave system
+  
+  crossed-dam-landward-today?
+  crossed-dam-seaward-today?
+  entered-estuary-today?
+  exited-estuary-today?
   
   prev-speed ;; previous speed
   difficulty-factor ;; swimming difficulty

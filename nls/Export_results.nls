@@ -4,22 +4,77 @@ to export-results
 end
 
 to export-end-results
-  report-patch-results
+  export-patch-results
 end
 
-to initialize-results-reporter
+to-report alewife-month-file
+  report (word "results_alewives_" stamp_1 "_" month ".csv")
+end
 
-  ;; clear export flags
+to-report stripedbass-month-file
+  report (word "results_stripedbass_" stamp_1 "_" month ".csv")
+end
+
+to ensure-alewife-month-header [fname]
+  if not member? fname initialized-alewife-month-files [
+    file-open fname
+    file-print (word
+      "ticks,day,month,hour,minute,"
+      "id,breed,"
+      "migration_day,weight,age,age_num,sex,length,body_depth,speed,energy,"
+      "stomach_contents_Hg,stomach_contents_MeHg,stomach_contents,stomach_capacity,digestion_rate,metabolism_rate,"
+      "landward_migration_time,seaward_migration_time,"
+      "fleeing,completed_action,at_destination,"
+      "selective_tidal_transport,foraging,filter_feed,lipid_loss,landward_migration,seaward_migration,start_migration,"
+      "crossed_dam_landward_today,crossed_dam_seaward_today,entered_estuary_today,exited_estuary_today,"
+      "hg_exposure_duration,mehg_exposure_duration,hg_uptake_risk,mehg_uptake_risk,"
+      "hg_exposure_total,mehg_exposure_total,hg_exposure_total_normalized,mehg_exposure_total_normalized,"
+      "hg_foraging_undigested,mehg_foraging_undigested,hg_foraging_total,mehg_foraging_total,hg_total,mehg_total,"
+      "xcor,ycor,pxcor,pycor,"
+      "patch_velocity,patch_depth,patch_salinity,patch_temperature,patch_SPM,patch_mercury,patch_methylmercury"
+    )
+    file-close
+    set initialized-alewife-month-files lput fname initialized-alewife-month-files
+  ]
+end
+
+to ensure-stripedbass-month-header [fname]
+  if not member? fname initialized-stripedbass-month-files [
+    file-open fname
+    file-print (word
+      "ticks,day,month,hour,minute,"
+      "id,breed,"
+      "migration_day,end_migration_day,weight,age,age_num,sex,length,body_depth,speed,energy,"
+      "stomach_contents_Hg,stomach_contents_MeHg,stomach_contents,stomach_capacity,digestion_rate,metabolism_rate,"
+      "landward_migration_time,seaward_migration_time,"
+      "bursting,completed_action,at_destination,hunting,"
+      "selective_tidal_transport,foraging,filter_feed,lipid_loss,landward_migration,seaward_migration,start_migration,end_migration,"
+      "crossed_dam_landward_today,crossed_dam_seaward_today,entered_estuary_today,exited_estuary_today,"
+      "daytime_prey_eaten,numAlewivesEaten,"
+      "hg_exposure_duration,mehg_exposure_duration,hg_uptake_risk,mehg_uptake_risk,"
+      "hg_exposure_total,mehg_exposure_total,hg_exposure_total_normalized,mehg_exposure_total_normalized,"
+      "hg_foraging_undigested,mehg_foraging_undigested,hg_foraging_total,mehg_foraging_total,hg_total,mehg_total,"
+      "xcor,ycor,pxcor,pycor,"
+      "patch_velocity,patch_depth,patch_salinity,patch_temperature,patch_SPM,patch_mercury,patch_methylmercury"
+    )
+    file-close
+    set initialized-stripedbass-month-files lput fname initialized-stripedbass-month-files
+  ]
+end
+
+
+to initialize-results-reporter
+  set initialized-alewife-month-files []
+  set initialized-stripedbass-month-files [] 
+  
   ask turtles [ set export? false ]
 
-  ;; pick export subsample once per breed
   let alewife-sample-size optimal-alewife-sample-size
   let stripedbass-sample-size optimal-stripedbass-sample-size
 
   if alewife-sample-size > 0 [
     ask n-of alewife-sample-size alewives [ set export? true ]
   ]
-
   if stripedbass-sample-size > 0 [
     ask n-of stripedbass-sample-size stripedbass [ set export? true ]
   ]
@@ -36,37 +91,49 @@ to initialize-results-reporter
     " exported."
   )
 
-  ;; agents file
-  set results-file-agents (word "results_agents_" stamp_1 ".csv")
-  file-open results-file-agents
-  file-print "ticks,day,month,hour,minute,night,tide_phase,id,breed,age,length,xcor,ycor,pxcor,pycor,energy,landward_migration_time,seaward_migration_time,hg_exposure_duration,mehg_exposure_duration,hg_uptake_risk,mehg_uptake_risk,hg_exposure_total,mehg_exposure_total,hg_exposure_total_normalized,mehg_exposure_total_normalized,hg_foraging_undigested,mehg_foraging_undigested,hg_foraging_total,mehg_foraging_total,hg_total,mehg_total,selective_tidal_transport,foraging,lipid_loss,filter_feed,landward_migration,seaward_migration,start_migration,migration_day,daytime_prey_eaten,numAlewivesEaten,patch_velocity,patch_depth,patch_salinity,patch_temperature,patch_SPM,patch_mercury,patch_methylmercury"
-  file-close
-
   ;; patches file (you will write this at end of simulation)
   set results-file-patches (word "results_patches_" stamp_1 ".csv")
   file-open results-file-patches
-  file-print "pxcor,pycor,ticks_spent_alewife,visits_by_alewife,ticks_spent_stripedbass,visits_by-stripedbass,Hg_exp_risk_alewife,MeHg_exp_risk_alewife,Hg_exp_risk_bass,MeHg_exp_risk_bass,prey_eaten_in_patch"
+  file-print (word
+    "pxcor,pycor,"
+    "forage_visits,forager_count,forage_species,"
+    "prey_eaten_in_patch,tidal_transport_in_patch,"
+    "ticks_spent_alewife,visits_by_alewife,"
+    "ticks_spent_stripedbass,visits_by_stripedbass,"
+    "hg_foraging_risk_alewife,mehg_foraging_risk_alewife,"
+    "hg_foraging_risk_stripedbass,mehg_foraging_risk_stripedbass,"
+    "hg_foraging_risk_total_alewife,mehg_foraging_risk_total_alewife,"
+    "hg_foraging_risk_total_stripedbass,mehg_foraging_risk_total_stripedbass,"
+    "hg_exp_risk_alewife,mehg_exp_risk_alewife,"
+    "hg_exp_risk_stripedbass,mehg_exp_risk_stripedbass,"
+    "hg_exp_risk_total_alewife,mehg_exp_risk_total_alewife,"
+    "hg_exp_risk_total_stripedbass,mehg_exp_risk_total_stripedbass"
+  )
   file-close
 
   ;; daily totals file
   set results-file-daily (word "results_daily_" stamp_1 ".csv")
   file-open results-file-daily
-  file-print "ticks,day,alewives_entering,alewives_exiting,landward_crossings,seaward_crossings"
+  file-print (word
+    "ticks,day,"
+    "alewives_entering_estuary,alewives_exiting_estuary,"
+    "alewives_on_line_landward,alewives_on_line_seaward,"
+    "stripedbass_entering_estuary,stripedbass_exiting_estuary,"
+    "stripedbass_on_line_landward,stripedbass_on_line_seaward,"
+    "mean_daytime_prey_eaten,"
+    "numAlewivesEaten_total"
+  )
   file-close
 
 end
 
 
 to report-fish-results
-  ;; only export every export-interval ticks
-  ;if ticks mod export-interval != 0 [ stop ]
-
-  file-open results-file-agents
 
   ask turtles with [ export? ] [
     let p patch-here
 
-    ;; cache patch fields (faster and cleaner)
+    ;; cache patch fields
     let p_px [pxcor] of p
     let p_py [pycor] of p
     let p_velocity [velocity] of p
@@ -77,72 +144,111 @@ to report-fish-results
     let p_mercury [mercury] of p
     let p_methylmercury [methylmercury] of p
 
-    ;; striped bass-only fields (blank for alewives)
-    let sb_daytime_prey ""
-    let sb_num_alewives_eaten ""
-    if breed = stripedbass [
-      set sb_daytime_prey daytime-prey-eaten
-      set sb_num_alewives_eaten numAlewivesEaten
+    if breed = alewives [
+      let fname alewife-month-file
+      ensure-alewife-month-header fname
+      file-open fname
+
+      file-print (word
+        ticks "," day "," month "," hour "," minute ","
+        who "," breed ","
+        migration-day "," weight "," age "," age-num "," sex "," length-size "," body-depth "," speed "," energy ","
+        stomach-contents-Hg "," stomach-contents-MeHg "," stomach-contents "," stomach-capacity "," digestion-rate "," metabolism-rate ","
+        landward-migration-time "," seaward-migration-time ","
+        fleeing? "," completed-action? "," at-destination? ","
+        selective-tidal-transport? "," foraging? "," filter-feed? "," lipid-loss? "," landward-migration? "," seaward-migration? "," start-migration? ","
+        crossed-dam-landward-today? "," crossed-dam-seaward-today? "," entered-estuary-today? "," exited-estuary-today? ","
+        hg-exposure-duration "," mehg-exposure-duration "," hg-uptake-risk "," mehg-uptake-risk ","
+        hg-exposure-total "," mehg-exposure-total "," hg-exposure-total-normalized "," mehg-exposure-total-normalized ","
+        hg-foraging-undigested "," mehg-foraging-undigested "," hg-foraging-total "," mehg-foraging-total "," hg-total "," mehg-total ","
+        xcor "," ycor "," p_px "," p_py ","
+        p_velocity "," p_depth "," p_salinity "," p_temperature "," p_SPM "," p_mercury "," p_methylmercury
+      )
+
+      file-close
     ]
 
+    if breed = stripedbass [
+      let fname stripedbass-month-file
+      ensure-stripedbass-month-header fname
+      file-open fname
+
+      file-print (word
+        ticks "," day "," month "," hour "," minute ","
+        who "," breed ","
+        migration-day "," end-migration-day "," weight "," age "," age-num "," sex "," length-size "," body-depth "," speed "," energy ","
+        stomach-contents-Hg "," stomach-contents-MeHg "," stomach-contents "," stomach-capacity "," digestion-rate "," metabolism-rate ","
+        landward-migration-time "," seaward-migration-time ","
+        bursting? "," completed-action? "," at-destination? "," hunting? ","
+        selective-tidal-transport? "," foraging? "," filter-feed? "," lipid-loss? "," landward-migration? "," seaward-migration? "," start-migration? "," end-migration? ","
+        crossed-dam-landward-today? "," crossed-dam-seaward-today? "," entered-estuary-today? "," exited-estuary-today? ","
+        daytime-prey-eaten "," numAlewivesEaten ","
+        hg-exposure-duration "," mehg-exposure-duration "," hg-uptake-risk "," mehg-uptake-risk ","
+        hg-exposure-total "," mehg-exposure-total "," hg-exposure-total-normalized "," mehg-exposure-total-normalized ","
+        hg-foraging-undigested "," mehg-foraging-undigested "," hg-foraging-total "," mehg-foraging-total "," hg-total "," mehg-total ","
+        xcor "," ycor "," p_px "," p_py ","
+        p_velocity "," p_depth "," p_salinity "," p_temperature "," p_SPM "," p_mercury "," p_methylmercury
+      )
+
+      file-close
+    ]
+  ]
+
+end
+
+
+to export-patch-results
+  file-open results-file-patches
+
+  ask patches [
     file-print (word
-      ticks "," day "," month "," hour "," minute "," night? "," tide-phase ","
-      who "," breed "," age-num "," length-size ","
-      xcor "," ycor "," p_px "," p_py ","
-      energy "," landward-migration-time "," seaward-migration-time ","
-      hg-exposure-duration "," mehg-exposure-duration ","
-      hg-uptake-risk "," mehg-uptake-risk ","
-      hg-exposure-total "," mehg-exposure-total ","
-      hg-exposure-total-normalized "," mehg-exposure-total-normalized ","
-      hg-foraging-undigested "," mehg-foraging-undigested ","
-      hg-foraging-total "," mehg-foraging-total ","
-      hg-total "," mehg-total ","
-      selective-tidal-transport? "," foraging? "," lipid-loss? "," filter-feed? ","
-      landward-migration? "," seaward-migration? "," start-migration? "," migration-day ","
-      sb_daytime_prey "," sb_num_alewives_eaten ","
-      p_velocity "," p_depth "," p_salinity "," p_temperature ","
-      p_SPM "," p_mercury "," p_methylmercury
+      pxcor "," pycor ","
+      forage-visits "," forager-count "," forage-species ","
+      prey-eaten-in-patch "," tidal-transport-in-patch ","
+      ticks-spent-alewife "," visits-by-alewife ","
+      ticks-spent-stripedbass "," visits-by-stripedbass ","
+      Hg-foraging-risk-alewife "," MeHg-foraging-risk-alewife ","
+      Hg-foraging-risk-stripedbass "," MeHg-foraging-risk-stripedbass ","
+      Hg-foraging-risk-total-alewife "," MeHg-foraging-risk-total-alewife ","
+      Hg-foraging-risk-total-stripedbass "," MeHg-foraging-risk-total-stripedbass ","
+      Hg-exp-risk-alewife "," MeHg-exp-risk-alewife ","
+      Hg-exp-risk-stripedbass "," MeHg-exp-risk-stripedbass ","
+      Hg-exp-risk-total-alewife "," MeHg-exp-risk-total-alewife ","
+      Hg-exp-risk-total-stripedbass "," MeHg-exp-risk-total-stripedbass
     )
   ]
 
   file-close
 end
 
-to report-patch-results
-  if ticks mod 288 != 0 [ stop ]
-
-  file-open results-file-patches
-  
-  ask patches [
-    file-print (word
-      pxcor "," pycor ","
-      ticks-spent-alewife "," 
-      visits-by-alewife ","
-      ticks-spent-stripedbass "," 
-      visits-by-stripedbass ","
-      Hg-exp-risk-total-alewife ","
-      MeHg-exp-risk-total-alewife ","
-      Hg-exp-risk-total-stripedbass ","
-      MeHg-exp-risk-total-stripedbass ","
-      prey-eaten-in-patch)
-  ]
-  
-  file-close
-end
 
 to report-daily-totals
-     if ticks mod 288 != 0 [ stop ]
+  if ticks mod 288 != 0 [ stop ]
 
-    file-open results-file-daily
-    
-    file-print (word
-      ticks "," 
-      day "," 
-      alewives-entering-estuary-daily-total "," 
-      alewives-exiting-estuary-daily-total "," 
-      alewives-on-line-daily-total-landward "," 
-      alewives-on-line-daily-total-seaward)
-    
-    file-close
-    
+  ;; mean daily prey eaten across bass
+  ;; if there are no bass exporting or no bass present, set to 0
+  let mean_daytime_prey 0
+  if any? stripedbass [
+    set mean_daytime_prey mean [daytime-prey-eaten] of stripedbass
+  ]
+
+  ;; total alewives eaten (choose interpretation)
+  ;; Option A: cumulative total across bass at this time
+  let total_alewives_eaten 0
+  if any? stripedbass [
+    set total_alewives_eaten sum [numAlewivesEaten] of stripedbass
+  ]
+
+  file-open results-file-daily
+
+  file-print (word
+    ticks "," day ","
+    alewives-entering-estuary-daily-total "," alewives-exiting-estuary-daily-total ","
+    alewives-on-line-daily-total-landward "," alewives-on-line-daily-total-seaward ","
+    stripedbass-entering-estuary-daily-total "," stripedbass-exiting-estuary-daily-total ","
+    stripedbass-on-line-daily-total-landward "," stripedbass-on-line-daily-total-seaward ","
+    mean_daytime_prey "," total_alewives_eaten
+  )
+
+  file-close
 end

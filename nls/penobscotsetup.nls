@@ -1,5 +1,5 @@
 to setup-penobscot-migration
-  set stamp_1 "1_13_2026" ;; test pred vision-distance
+  set stamp_1 "1_22_2026" ;; test pred vision-distance
   set export-interval 12  ;; example: export every 12 ticks
   setup-alewives
   setup-stripedbass
@@ -104,7 +104,6 @@ ask alewives [
     ;; Perform behavioral sequence only if not at home
     if not at-destination? [
       calculate-metabolism
-      calculate-vision
       mercury-contamination
       methylmercury-contamination 
       osmoregulate
@@ -190,14 +189,27 @@ ask alewives [
     if start-migration? [
     let travel-distance (speed / 3)
     calculate-metabolism ;; GoFish Metabolism 
-    calculate-vision
     school
     digest ;; GoFish Digestion 
     osmoregulate ;; GoFish Salinity Exposure 
     mercury-contamination ;; GoFish Contaminant Exposure 
     methylmercury-contamination  ;; GoFish Contaminant Exposure
     set previous-patch patch-here
-    set prey-in-vision (alewives with [patchtype != "sea" or patch-here != home-patch]) in-radius vision-distance ;; defines alewives in reachable proximity
+      
+      if patchtype = "sea" and not end-migration-trigger? [
+        set seaward-migration? false
+        set landward-migration? true
+        ;set selective-tidal-transport? false
+        calculate-cost-to-home home-patch
+        calculate-difficulty-landward
+        calculate-swimming-speed-landward
+        selective-tidal-stream-transport-landward
+      ]
+      
+    if patchtype != "sea" [
+    set seaward-migration? false
+    set landward-migration? false
+    set prey-in-vision (alewives with [patchtype != "sea" or patch-here != patch 199 346]) in-radius vision-distance ;; defines alewives in reachable proximity
     
       ;; GoFish Predation Procedure
     if stomach-contents <= 0 [ ;; if no prey in stomach to gain energy, use lipid loss to use fat stores
@@ -215,6 +227,7 @@ ask alewives [
       adjust-stripedbass-speed  ;; predator will speed up when making an attack
       scare-prey  ;; prey fleeing starts at predator because of control flow (scare-right, scare-left)
       eat ;; eat prey if within neighbors in "nls/Eat.nls"
+      ]
       
       if ticks mod 288 = 0 [
         set daytime-prey-eaten 0
@@ -237,6 +250,7 @@ ask alewives [
     ]
       set seaward-migration? true
       set landward-migration? false
+      ;set selective-tidal-transport? false
       calculate-cost-to-sea migration-patch
       calculate-difficulty-seaward
       calculate-swimming-speed-seaward
@@ -253,26 +267,6 @@ ask alewives [
     ]
   ]
   ;highlight-patches-with-prey-eaten ;; highlights patches where prey has been eaten
-  
-  ;; Daily counters
-  ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
-  if ticks mod 288 = 0 [
-      
-;  show word "LANDWARD: " alewives-on-line-daily-total-landward
-;  show word "SEAWARD: " alewives-on-line-daily-total-seaward
-;  show word "ENTRY: "    alewives-entering-estuary-daily-total
-;  show word "EXIT: "     alewives-exiting-estuary-daily-total
-
-  set alewives-on-line-daily-total-landward 0
-  set alewives-on-line-daily-total-seaward 0
-  set alewives-entering-estuary-daily-total 0
-  set alewives-exiting-estuary-daily-total 0
-  
-  set stripedbass-on-line-daily-total-landward 0
-  set stripedbass-on-line-daily-total-seaward 0
-  set stripedbass-entering-estuary-daily-total 0
-  set stripedbass-exiting-estuary-daily-total 0
-  ]
   
 ;  ;; trail
 ;    ask turtles [
@@ -294,6 +288,25 @@ ask alewives [
     stop
   ]
 
+    ;; Daily counters
+  ;; If environmental temp meets or exceeds the fish's migration threshold, start migrating
+  if ticks mod 288 = 0 [
+      
+;  show word "LANDWARD: " alewives-on-line-daily-total-landward
+;  show word "SEAWARD: " alewives-on-line-daily-total-seaward
+;  show word "ENTRY: "    alewives-entering-estuary-daily-total
+;  show word "EXIT: "     alewives-exiting-estuary-daily-total
+
+  set alewives-on-line-daily-total-landward 0
+  set alewives-on-line-daily-total-seaward 0
+  set alewives-entering-estuary-daily-total 0
+  set alewives-exiting-estuary-daily-total 0
+  
+  set stripedbass-on-line-daily-total-landward 0
+  set stripedbass-on-line-daily-total-seaward 0
+  set stripedbass-entering-estuary-daily-total 0
+  set stripedbass-exiting-estuary-daily-total 0
+  ]
 end
 
 
