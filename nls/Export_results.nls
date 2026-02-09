@@ -63,8 +63,9 @@ to ensure-stripedbass-month-header [fname]
   ]
 end
 
-to-report patches-month-file
-  report (word "results_patches_" stamp_1 "_" month ".csv")
+to-report patches-month-file [mnum]
+  let mname item (mnum - 1) month-list
+  report (word "results_patches_" stamp_1 "_" mname ".csv")
 end
 
 to ensure-patches-month-header [fname]
@@ -93,7 +94,11 @@ end
 
 to maybe-export-patches-at-month-change
   if monthnum != last-exported-patch-monthnum [
-    export-patch-results-monthly
+
+    ;; export the month that just finished (the old month)
+    export-patch-results-monthly last-exported-patch-monthnum
+
+    ;; now advance the "last exported" marker to the new month
     set last-exported-patch-monthnum monthnum
   ]
 end
@@ -128,7 +133,12 @@ to initialize-results-reporter
     stripedbass-sample-size
     " exported."
   )
-
+  ;; patch totals
+  set results-file-patches (word "results_patches_" stamp_1 "_ALL.csv")
+  file-open results-file-patches
+  ;; optionally print a header here too
+  file-close
+  
   ;; daily totals file
   set results-file-daily (word "results_daily_" stamp_1 ".csv")
   file-open results-file-daily
@@ -215,27 +225,30 @@ to report-fish-results
 end
 
 
-to export-patch-results-monthly
-  let fname patches-month-file
+to export-patch-results-monthly [mnum]
+  let fname patches-month-file mnum
   ensure-patches-month-header fname
   file-open fname
 
-  ask patches [
+  ;; IMPORTANT: write the month fields using mnum, not current monthnum/month
+  let mname item (mnum - 1) month-list
+
+  ask patches with [patch-terrain = "water"] [
     file-print (word
-      monthnum "," month "," day "," ticks ","
+      mnum "," mname "," day "," ticks ","  ;; day is fine if it’s “current day at export”
       pxcor "," pycor ","
       forage-visits "," forager-count "," forage-species ","
       prey-eaten-in-patch "," tidal-transport-in-patch ","
       ticks-spent-alewife "," visits-by-alewife ","
       ticks-spent-stripedbass "," visits-by-stripedbass ","
-      Hg-foraging-risk-alewife "," MeHg-foraging-risk-alewife ","
-      Hg-foraging-risk-stripedbass "," MeHg-foraging-risk-stripedbass ","
-      Hg-foraging-risk-total-alewife "," MeHg-foraging-risk-total-alewife ","
-      Hg-foraging-risk-total-stripedbass "," MeHg-foraging-risk-total-stripedbass ","
-      Hg-exp-risk-alewife "," MeHg-exp-risk-alewife ","
-      Hg-exp-risk-stripedbass "," MeHg-exp-risk-stripedbass ","
-      Hg-exp-risk-total-alewife "," MeHg-exp-risk-total-alewife ","
-      Hg-exp-risk-total-stripedbass "," MeHg-exp-risk-total-stripedbass
+      hg-foraging-risk-alewife "," mehg-foraging-risk-alewife ","
+      hg-foraging-risk-stripedbass "," mehg-foraging-risk-stripedbass ","
+      hg-foraging-risk-total-alewife "," mehg-foraging-risk-total-alewife ","
+      hg-foraging-risk-total-stripedbass "," mehg-foraging-risk-total-stripedbass ","
+      hg-exp-risk-alewife "," mehg-exp-risk-alewife ","
+      hg-exp-risk-stripedbass "," mehg-exp-risk-stripedbass ","
+      hg-exp-risk-total-alewife "," mehg-exp-risk-total-alewife ","
+      hg-exp-risk-total-stripedbass "," mehg-exp-risk-total-stripedbass
     )
   ]
 

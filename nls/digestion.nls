@@ -4,7 +4,7 @@ to digest
   if stomach-contents > 0 [
 
     ;; Amount digested
-    let digested (stomach-contents * digestion-rate)
+    let digested (stomach-contents * digestion-rate * digestion-efficiency)
     let digested-Hg ((digested / stomach-contents) * stomach-contents-Hg)
     let digested-MeHg ((digested / stomach-contents) * stomach-contents-MeHg)
 
@@ -14,7 +14,7 @@ to digest
     set stomach-contents-MeHg (max list 0 (stomach-contents-MeHg - digested-MeHg))
 
     ;; Convert digested biomass to energy
-    let usable-energy (digested * digestion-efficiency * 100)
+    let usable-energy (digested * 100)
     set energy energy + usable-energy
 
     ;; =============================================
@@ -25,7 +25,7 @@ to digest
       let surplus (energy - 100)
 
       ;; lipid that can be stored from surplus
-      let lipid-added (surplus / 40)
+      let lipid-added (surplus / 100)
 
       ;; apply storage efficiency
       set lipid-added (lipid-added * lipid-catabolism-efficiency)
@@ -34,7 +34,7 @@ to digest
       set weight weight + lipid-added
 
       ;; energy cost
-      set energy energy - (lipid-added * 40)
+      set energy energy - (lipid-added * 100)
     ]
 
     ;; contaminant bookkeeping

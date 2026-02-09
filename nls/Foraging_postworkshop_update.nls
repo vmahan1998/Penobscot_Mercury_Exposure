@@ -116,8 +116,8 @@ if filter-feed? [
       
     ;; --- Biomagnification ---
     let biomag-factor (random-float 30) + 60  ;; random 60–90
-    let hg-assimilated (patch-spm * spm-mehg * biomag-factor * prey-assimilated)
-    let mehg-assimilated (patch-spm * spm-hg * (biomag-factor / 10) * prey-assimilated)
+    let hg-assimilated (patch-spm * spm-hg * biomag-factor * prey-assimilated)
+    let mehg-assimilated (patch-spm * spm-mehg * (biomag-factor / 10) * prey-assimilated)
     set mehg-foraging-undigested mehg-assimilated
     set hg-foraging-undigested hg-assimilated  
       
@@ -156,11 +156,8 @@ to mark-foraging-event  ;; turtle context
     ;; ----------------------------------
     if sp = alewives [
       ;; spatio-temporal lists
-      set Hg-foraging-risk-alewife
-        lput (list ticks hg-risk) Hg-foraging-risk-alewife
-
-      set MeHg-foraging-risk-alewife
-        lput (list ticks mehg-risk) MeHg-foraging-risk-alewife
+      set Hg-foraging-risk-alewife hg-risk
+      set MeHg-foraging-risk-alewife mehg-risk
 
       ;; cumulative spatial totals
       set Hg-foraging-risk-total-alewife
@@ -172,11 +169,9 @@ to mark-foraging-event  ;; turtle context
 
     if sp = stripedbass [
       ;; spatio-temporal lists
-      set Hg-foraging-risk-stripedbass
-        lput (list ticks hg-risk) Hg-foraging-risk-stripedbass
-
-      set MeHg-foraging-risk-stripedbass
-        lput (list ticks mehg-risk) MeHg-foraging-risk-stripedbass
+      set Hg-foraging-risk-stripedbass hg-risk
+      set MeHg-foraging-risk-stripedbass mehg-risk
+    
 
       ;; cumulative spatial totals
       set Hg-foraging-risk-total-stripedbass

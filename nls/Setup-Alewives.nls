@@ -124,7 +124,7 @@ to setup-alewives
     ;; Speed = 1.5–3.0 × body length per second, converted to 5-minute step
     let swim-multiplier (0.5 + random-float 0.5)
     set max-speed (size * swim-multiplier * 300) ;; speed from m/s to m / 5 minutes
-    set speed 0.1
+    set speed (max-speed / 4)
     set energy 100
 
     ;; =====================================
@@ -192,7 +192,7 @@ to setup-alewives
     truncated-normal mean-distance sd-distance min-distance max-distance
     
     set base-vision-distance (base-vision-distance-meters  / 3) ;convert to patch units
-    set min-vision-distance 1 ;convert to patch units
+    set min-vision-distance 0.1 ;convert to patch units
     set vision-distance base-vision-distance
     set body-depth length-size * 0.30
     calculate-vision

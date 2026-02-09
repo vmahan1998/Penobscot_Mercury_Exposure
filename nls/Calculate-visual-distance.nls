@@ -1,6 +1,6 @@
 ;; scale encounters to real population dynamics -- realistic encounters to penobscot despite population levels
 to calculate-vision
-  ;; baseline rho from 2020 proportions
+  ;; baseline rho from 2020 population proportions (324 pred, 1952567 prey)
   let rho_i (324 / 1952567)
 
   ;; current simulated rho

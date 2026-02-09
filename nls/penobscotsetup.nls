@@ -1,5 +1,5 @@
 to setup-penobscot-migration
-  set stamp_1 "1_22_2026" ;; test pred vision-distance
+  set stamp_1 "1_27_2026" ;; test pred vision-distance
   set export-interval 12  ;; example: export every 12 ticks
   setup-alewives
   setup-stripedbass
@@ -40,20 +40,20 @@ to setup-penobscot-migration
   set prey-eaten-in-patch 0
     
   ;; Risk from Foraging
-    set Hg-foraging-risk-alewife [];; mercury risk from patch
-    set MeHg-foraging-risk-alewife [];; methylmercury risk from patch
-    set Hg-foraging-risk-stripedbass []
-    set MeHg-foraging-risk-stripedbass []
+    set Hg-foraging-risk-alewife 0;; mercury risk from patch
+    set MeHg-foraging-risk-alewife 0;; methylmercury risk from patch
+    set Hg-foraging-risk-stripedbass 0
+    set MeHg-foraging-risk-stripedbass 0
     set Hg-foraging-risk-total-alewife 0;; mercury risk from patch
     set MeHg-foraging-risk-total-alewife 0;; methylmercury risk from patch
     set Hg-foraging-risk-total-stripedbass 0 
     set MeHg-foraging-risk-total-stripedbass 0
   
   ;; Risk from Exposure
-    set Hg-exp-risk-alewife [];; mercury risk from patch
-    set MeHg-exp-risk-alewife [];; methylmercury risk from patch
-    set Hg-exp-risk-stripedbass []
-    set MeHg-exp-risk-stripedbass []
+    set Hg-exp-risk-alewife 0;; mercury risk from patch
+    set MeHg-exp-risk-alewife 0;; methylmercury risk from patch
+    set Hg-exp-risk-stripedbass 0
+    set MeHg-exp-risk-stripedbass 0
     set Hg-exp-risk-total-alewife 0;; mercury risk from patch
     set MeHg-exp-risk-total-alewife 0;; methylmercury risk from patch
     set Hg-exp-risk-total-stripedbass 0

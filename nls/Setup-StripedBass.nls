@@ -205,7 +205,7 @@ to setup-stripedbass
     truncated-normal mean-distance sd-distance min-distance max-distance
     
     set base-vision-distance (base-vision-distance-meters / 3) ;convert to patch units
-    set min-vision-distance 1 ;convert to patch units
+    set min-vision-distance 0.1 ;convert to patch units
     set vision-distance base-vision-distance
   ]
 end
